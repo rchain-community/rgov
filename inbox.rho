@@ -1,0 +1,139 @@
+new $stdout, Inbox in {
+stdout!("begin") |
+contract Inbox(capabilities) = {
+  new read, write, peek, box in {
+    capabilities!(bundle+{*read}, bundle+{*write}, bundle+{*peek}) |
+    box!(Nil) |
+
+    contract read(ret) = {
+      for (items <- box) {
+        ret!(*items) |
+        box!(*items)
+      }
+    } |
+    contract read(type,ret) = {
+      //stdout!(["type",*type]) |
+      for (items <- box) {
+        match (*items) {
+          {[=*type, ...item] | rest} => {
+            //stdout!(item) |
+            ret!(item) |
+            box!(rest)
+          }
+          _ => {box!(*items) | ret!(Nil) | stdout!([*type,"not found"])}
+        }
+      }
+    } |
+    contract read(type,subtype,ret) = {
+      //stdout!(["type",*type]) |
+      for (items <- box) {
+        match (*items) {
+          {[=*type, =*subtype, ...item] | rest} => {
+            //stdout!(item) |
+            ret!(item) |
+            box!(rest)
+          }
+          _ => {
+            box!(*items)|ret!(Nil) | stdout!([*type, *subtype, "not found"])
+          }
+        }
+      }
+    } |
+
+    contract peek(ret) = {
+      for (items <- box) {
+        ret!(*items) |
+        box!(*items)
+      }
+    } |
+    contract peek(type,ret) = {
+      //stdout!(["type",*type]) |
+      for (items <- box) {
+        match (*items) {
+          {[=*type, ...item] | rest} => {
+            //stdout!(item) |
+            ret!(item) |
+            box!(*items)
+          }
+          _ => {box!(*items) | ret!(Nil) | stdout!([*type,"not found"])}
+        }
+      }
+    } |
+    contract peek(type,subtype,ret) = {
+      //stdout!(["type",*type]) |
+      for (items <- box) {
+        match (*items) {
+          {[=*type, =*subtype, ...item] | rest} => {
+            //stdout!(item) |
+            ret!(item) |
+            box!(*items)
+          }
+          _ => {
+            box!(*items)|ret!(Nil) | stdout!([*type, *subtype, "not found"])
+          }
+        }
+      }
+    } |
+
+    contract write(@message,ret) = {
+       for (items <- box) {
+//stdout!(["items", *items]) |
+         match message {
+          [type, subtype, map /\ {a: b, ..._} ] => {
+            match *items {
+              {[=type, =subtype, oldmap] | more } => {
+                box!([type, subtype, map.union(oldmap)] | more) |
+           //stdout!([type, subtype, map.union(oldmap)]) |
+                ret!("added.")
+              }
+              _ => {
+stdout!(["message", message]) |
+                box!(*items | message) |
+                ret!("sent...")
+              }
+            }
+          }
+          _ => {
+            //stdout!([*message, *items]) |
+            box!(*items | message) |
+            ret!("sent.")
+          }
+        }
+      }
+    }
+  }
+} |
+new capabilities, ack, ack1, message, uriCh, ret, $insertArbitrary in {
+  stdout!("hello world") |
+  insertArbitrary!(bundle+{*Inbox}, *uriCh)|
+  for (uri <- uriCh) {
+    stdout!(["#define $Inbox", *uri])
+  } |
+  Inbox!(*capabilities) |
+  for (receive, send, peek <- capabilities) {
+    stdout!("received capabilities") |
+  insertArbitrary!(*send, *uriCh)|
+    send!(["values","test", {"a": "b", "b": "c"}], *ack) |
+    send!(["chat",$myusername ++ ": Watson come quickly!"], *ack) |
+    send!(["chat",$myusername, "Watson come now!"], *ack) |
+    send!(["chat","hello world"], *ack) |
+    for ( uri <- uriCh;  _ <- ack; _ <- ack; _ <- ack; _ <- ack) {
+      stdout!(["inbox",*uri]) | // for testing temprarily
+      send!(["values","test", {"a": "x", "c": "d"}], *ret) |
+      for ( map <- ret ) {peek!("values","test",*stdout)} |
+      //receive!(["chat", _ ], *message) |
+      receive!("chat", *message) |
+      for ( text <- message ) {
+        stdout!(*text)
+      } |
+      receive!("chat", $myusername, *message) |
+      for ( text <- message ) {
+        stdout!(*text)
+      } |
+      receive!("chat", *message) |
+      for ( text <- message ) {
+        stdout!(*text)
+      }
+    }
+  }
+}}
