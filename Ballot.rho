@@ -1,5 +1,5 @@
-/// @title Voting with liquid delegation.
-
+// @title Voting with liquid delegation.
+// originally from https://github.com/rchain-community/rchain-api/blob/master/examples/voting-locker/chairRole.rho
 new Ballot,
 trace(`rho:io:stderr`),
 stdout(`rho:io:stdout`)
