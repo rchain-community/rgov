@@ -1,3 +1,4 @@
+// originally from https://github.com/rchain-community/rchain-api/blob/master/examples/voting-locker/locker.rho
 new Locker,
 trace(`rho:io:stderr`),
 stdout(`rho:io:stdout`),
