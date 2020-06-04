@@ -1,0 +1,15 @@
+{
+  "name": "rchain-community",
+  "version": "0.0.1",
+  "description": "",
+  "main": "locker.rho",
+  "scripts": {},
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {},
+  "dependencies": {
+    "blakejs": "^1.1.0",
+    "rchain-toolkit": "0.2.4",
+    "uuid": "3.4.0"
+  }
+}

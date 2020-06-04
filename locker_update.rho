@@ -1,0 +1,22 @@
+// originally from https://github.com/rchain-community/rchain-api/blob/master/examples/voting-locker/locker.rho
+new
+  Locker,
+  lockerCh,
+  stdout(`rho:io:stdout`),
+  lookup(`rho:registry:lookup`)
+in {
+
+  lookup!(`rho:id:uri`, *lockerCh) |
+
+  for (locker <- lockerCh) {
+    stdout!("found locker") |
+    locker!(
+      "update",
+      // check utils/ to generate signature
+      "304402200f8644fc487e3f52bdf6f3c52a476938af231da76610561f1f4886eaa9607d4102207a7ff7cf5f6406b860794d3dc7034ff993c49a1c2d6874767e4b0b00fbb623b5",  
+      // check utils/ to generate new nonce
+      "abcdefafafafaffafa",
+      { "value": "hey" }
+    )
+  }
+}
