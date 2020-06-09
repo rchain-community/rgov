@@ -13,8 +13,8 @@ in {
   // Test / demo
    new lockerCh, ackCh, rx in {
     Locker!(
-      "pubkey",
-      "abcdef",
+      "public key",
+      "abcdefafafafaffafa",
       *lockerCh
     ) |
 
@@ -30,8 +30,9 @@ in {
   } | 
 
   new uriCh in {
-    insertArbitrary!(*Locker, *uriCh) | for(@uri <- uriCh) {
-      stdout!(["#define $Locker",uri])
+    insertArbitrary!(*Locker, *uriCh) |
+    for(@uri <- uriCh) {
+      stdout!(["#define $Locker", uri])
     }
   } |
 
@@ -51,40 +52,44 @@ in {
 
       // Update the value of items in itemsCh
       // Need a valid signature and a new nonce
-      contract self(@"update", @{signature /\ String}, @{nextNonce /\ String}, @{more /\ {..._}}) = {
-        
-        trace!({"locker.update": more}) |
-        
-        for(@nonce <<- nonceCh) {
-          stdout!(nonce) |
-          stdout!(pubKey) |
+      contract self(
+        @"update",
+        @{signature /\ String},
+        @{nextNonce /\ String},
+        @{more /\ {..._}},
+        updateReturn
+      ) = {
 
+        trace!({"locker.update": more}) |
+
+        for(@nonce <<- nonceCh) {
           blake2b256!(
             nonce.toUtf8Bytes(),
             *hashCh
           ) |
 
           for (@hash <- hashCh) {
+
+            trace!("locker.update; verify signature") |
+
             secpVerify!(
               hash,
               signature.hexToBytes(),
               pubKey.hexToBytes(),
               *verifySignatureCh
             ) |
-            
+
             for (@result <- verifySignatureCh) {
-              stdout!(result) |
               match result {
                 true => {
-                  trace!("signature verified") |
                   for (_ <- nonceCh; @items <- itemsCh) {
                     nonceCh!(nextNonce) |
                     itemsCh!(items.union(more)) |
-                    trace!("update successful")
+                    updateReturn!((true, items.union(more)))
                   }
                 }
                 _ => {
-                  trace!("wrong signature")
+                  updateReturn!((false, "wrong signature"))
                 }
               }
             }
@@ -92,26 +97,48 @@ in {
         }        
       } |
 
-
-      // Get items in itemsCh
+      // Get the value of items in itemsCh
       // Need a valid signature and a new nonce
-      // TODO
-      contract self(@"get", @{sig /\ ByteArray}, @nextNonce, fail, return) = {
-        trace!("locker.get(...)") |
-        for(@nonce <- nonceCh) {
-          if (nonce + 1 != nextNonce) {
-            fail!({"expected nonce": nonce + 1}) |
-            nonceCh!(nonce)
-          } else {
-            nonceCh!(nextNonce) |
-            // TODO: real sig checking over nonce
-            if ("dead".hexToBytes() ++ sig != pubKey) {
-              fail!("bad signature")
-            } else {
-              for (@items <- itemsCh) {
-                // trace!({"get items": items}) |
-                itemsCh!(items) |
-                return!(items)
+      contract self(
+        @"get",
+        @{signature /\ String},
+        @{nextNonce /\ String},
+        getReturn
+      ) = {
+
+        trace!("locker.get") |
+
+        for(@nonce <<- nonceCh) {
+
+          blake2b256!(
+            nonce.toUtf8Bytes(),
+            *hashCh
+          ) |
+
+          for (@hash <- hashCh) {
+
+            trace!("locker.get; verify signature") |
+
+            secpVerify!(
+              hash,
+              signature.hexToBytes(),
+              pubKey.hexToBytes(),
+              *verifySignatureCh
+            ) |
+
+            for (@result <- verifySignatureCh) {
+              match result {
+                true => {
+                  for (@items <<- itemsCh) {
+                    for (_ <- nonceCh) {
+                      nonceCh!(nextNonce) |
+                      getReturn!((true, items))
+                    }
+                  }
+                }
+                _ => {
+                  getReturn!((false, "wrong signature"))
+                }
               }
             }
           }
