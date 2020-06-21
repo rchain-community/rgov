@@ -1,19 +1,19 @@
 // @title Voting with liquid delegation.
 // originally from https://github.com/rchain-community/rchain-api/blob/master/examples/voting-locker/chairRole.rho
-new Ballot,
+new Issue,
 trace(`rho:io:stderr`),
 stdout(`rho:io:stdout`)
 in {
   new insertArbitrary(`rho:registry:insertArbitrary`), uriCh in {
-    insertArbitrary!(bundle+{*Ballot}, *uriCh) | for(@uri <- uriCh) {
-      stdout!(["#define $Ballot", uri])
+    insertArbitrary!(bundle+{*Issue}, *uriCh) | for(@uri <- uriCh) {
+      stdout!(["#define $Issue", uri])
     }
   }
   |
 
   // See example / demo below.
-  //contract Ballot(@{proposalNames /\ Set(hd, ...tail)}, return) = {
-  contract Ballot(@proposalNames , return) = {
+  //contract Issue(@{proposalNames /\ Set(hd, ...tail)}, return) = {
+  contract Issue(@proposalNames , return) = {
     new admin, tally, voterCh in {
       stdout!("creating ballot") |
       return!(bundle+{*admin}, bundle+{*tally}) |
@@ -118,10 +118,10 @@ in {
   }
   |
   new bCh, v1Ch, v2Ch, v3Ch, v4Ch in {
-    trace!("creating Ballot") |
-    Ballot!(Set("Lincoln", "Douglas"), *bCh) |
+    trace!("creating Issue") |
+    Issue!(Set("Lincoln", "Douglas"), *bCh) |
     for (admin, tally <- bCh) {
-      trace!({"Ballot returned": *admin}) |
+      trace!({"Issue returned": *admin}) |
       admin!("giveRightToVote", "Owans", *v1Ch) |
       admin!("giveRightToVote", "jimscarver", *v2Ch) |
       admin!("giveRightToVote", "aviation_hacker", *v3Ch) |
