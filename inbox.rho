@@ -1,4 +1,5 @@
 new Inbox,
+deployId, //(`rho:rchain:deployId`),
 insertArbitrary(`rho:registry:insertArbitrary`),
 lookup(`rho:registry:lookup`),
 log(`rho:io:stderr`)
@@ -64,6 +65,14 @@ in {
           }
         }
       }
+    }
+  }
+  |
+  new uriCh in {
+    insertArbitrary!(*Inbox, *uriCh) |
+    for (@uri <- uriCh) {
+      log!({"Inbox": uri}) |
+      deployId!(uri)
     }
   }
   |
