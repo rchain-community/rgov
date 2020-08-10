@@ -1,0 +1,25 @@
+new return(`rho:rchain:deployId`), stdout(`rho:io:stdout`), mylocker(`rho:rchain:deployerId`), ack in {
+stdout!("we are 1") |
+   contract mylocker(@"get",key,return) = {
+stdout!("we are 2") |
+    for ( mystuff <<- lockerCh ) {
+     return!(*mystuff.get(key))
+   }} |
+  contract mylocker(@"set",key,value,return) = {
+stdout!("we are 3") |
+    for ( mystuff <- lockerCh ) {
+     if ( *value == Nil ) {
+       lockerCh!(*mystuff.delete(key)) 
+     } else {
+      lockerCh!(*mystuff.set(*key,*value))
+     } |
+     return!(*mystuff)
+   }} |
+ mylocker!("set",{"y": 1 },*ack) |
+stdout!("we are 4") |
+ for (_ <- ack ) {
+stdout!("we are 5") |
+  mylocker!("read", *ack) |
+   for (mystuff <- ack ) {stdout!("we are 6") |
+    return!(*mystuff)
+}}}
