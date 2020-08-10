@@ -1,149 +1,40 @@
-// originally from https://github.com/rchain-community/rchain-api/blob/master/examples/voting-locker/locker.rho
-new
-  Locker,
-  verifySignatureCh,
-  trace(`rho:io:stderr`),
-  stdout(`rho:io:stdout`),
-  insertArbitrary(`rho:registry:insertArbitrary`),
-  secpVerify(`rho:crypto:secp256k1Verify`),
-  blake2b256(`rho:crypto:blake2b256Hash`)
-  // lookup(`rho:registry:lookup`)
-in {
-
-  // Test / demo
-   new lockerCh, ackCh, rx in {
-    Locker!(
-      "public key",
-      "abcdefafafafaffafa",
-      *lockerCh
-    ) |
-
-    for (locker <- lockerCh) {
-
-      new uriCh in {
-        insertArbitrary!(*locker, *uriCh) |
-        for(@uri <- uriCh) {
-          stdout!(["locker created at",uri])
-        }
-      }
-    }
-  } | 
-
-  new uriCh in {
-    insertArbitrary!(*Locker, *uriCh) |
-    for(@uri <- uriCh) {
-      stdout!(["#define $Locker", uri])
-    }
-  } |
-
-  contract Locker(@{pubKey /\ String}, @{initialNonce /\ String}, return) = {
-    new self, itemsCh, nonceCh, publicKeyCh, hashCh in {
-
-      trace!("making locker") |
-      return!(*self) |
-      itemsCh!({}) |
-      nonceCh!(initialNonce) |
-
-      // Get nonce
-      contract self(@"getNonce", return) = {
-        for(@nonce <<- nonceCh) { return!(nonce) }
-      } |
-
-
-      // Update the value of items in itemsCh
-      // Need a valid signature and a new nonce
-      contract self(
-        @"update",
-        @{signature /\ String},
-        @{nextNonce /\ String},
-        @{more /\ {..._}},
-        updateReturn
-      ) = {
-
-        trace!({"locker.update": more}) |
-
-        for(@nonce <<- nonceCh) {
-          blake2b256!(
-            nonce.toUtf8Bytes(),
-            *hashCh
-          ) |
-
-          for (@hash <- hashCh) {
-
-            trace!("locker.update; verify signature") |
-
-            secpVerify!(
-              hash,
-              signature.hexToBytes(),
-              pubKey.hexToBytes(),
-              *verifySignatureCh
-            ) |
-
-            for (@result <- verifySignatureCh) {
-              match result {
-                true => {
-                  for (_ <- nonceCh; @items <- itemsCh) {
-                    nonceCh!(nextNonce) |
-                    itemsCh!(items.union(more)) |
-                    updateReturn!((true, items.union(more)))
-                  }
-                }
-                _ => {
-                  updateReturn!((false, "wrong signature"))
-                }
-              }
-            }
-          }
-        }        
-      } |
-
-      // Get the value of items in itemsCh
-      // Need a valid signature and a new nonce
-      contract self(
-        @"get",
-        @{signature /\ String},
-        @{nextNonce /\ String},
-        getReturn
-      ) = {
-
-        trace!("locker.get") |
-
-        for(@nonce <<- nonceCh) {
-
-          blake2b256!(
-            nonce.toUtf8Bytes(),
-            *hashCh
-          ) |
-
-          for (@hash <- hashCh) {
-
-            trace!("locker.get; verify signature") |
-
-            secpVerify!(
-              hash,
-              signature.hexToBytes(),
-              pubKey.hexToBytes(),
-              *verifySignatureCh
-            ) |
-
-            for (@result <- verifySignatureCh) {
-              match result {
-                true => {
-                  for (@items <<- itemsCh) {
-                    for (_ <- nonceCh) {
-                      nonceCh!(nextNonce) |
-                      getReturn!((true, items))
-                    }
-                  }
-                }
-                _ => {
-                  getReturn!((false, "wrong signature"))
-                }
-              }
-            }
-          }
-        }
-      }
-    }
-  }
-}
+new return(`rho:rchain:deployId`), stdout(`rho:io:stdout`), mylocker(`rho:rchain:deployerId`), ack in {
+stdout!("we are 1") |
+  new lockerCh in {
+   lockerCh!({}) |
+   contract mylocker(@"read",return) = {
+stdout!("we are 2") |
+    for ( mystuff <<- lockerCh ) {
+     return!(*mystuff)
+   }} |
+  contract mylocker(@"write",stuff,return) = {
+stdout!("we are 3") |
+    for ( mystuff <- lockerCh ) {
+     lockerCh!(*stuff) |
+     return!(*mystuff)
+   }} | 
+   contract mylocker(@"get",key,return) = {
+stdout!("we are 2") |
+    for ( mystuff <<- lockerCh ) {
+     return!(*mystuff.get(key))
+   }} |
+  contract mylocker(@"set",key,value,return) = {
+stdout!("we are 3") |
+    for ( mystuff <- lockerCh ) {
+     if ( *value == Nil ) {
+       lockerCh!(*mystuff.delete(key))
+     } else {
+      lockerCh!(*mystuff.set(*key,*value))
+     } |
+     return!(*mystuff)
+  }} |
+ mylocker!("write",{"x": 5 },*ack) |
+ for (_ <- ack ) {
+  mylocker!("set",{"y": 1 },*ack) |
+stdout!("we are 4") |
+ for (_ <- ack ) {
+stdout!("we are 5") |
+  mylocker!("read", *ack) |
+   for (mystuff <- ack ) {stdout!("we are 6") |
+    return!(*mystuff)
+}}}}}
