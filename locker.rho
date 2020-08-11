@@ -1,8 +1,9 @@
-new return(`rho:rchain:deployId`), stdout(`rho:io:stdout`), mylocker(`rho:rchain:deployerId`), ack in {
+new return(`rho:rchain:deployId`), stdout(`rho:io:stdout`), 
+mylocker(`rho:rchain:deployerId`), ack in {
 stdout!("we are 1") |
   new lockerCh in {
    lockerCh!({}) |
-   contract mylocker(@"read",return) = {
+   contract mylocker(@"read",return) = { 
 stdout!("we are 2") |
     for ( mystuff <<- lockerCh ) {
      return!(*mystuff)
@@ -16,13 +17,13 @@ stdout!("we are 3") |
    contract mylocker(@"get",key,return) = {
 stdout!("we are 2") |
     for ( mystuff <<- lockerCh ) {
-     return!(*mystuff.get(key))
+     return!(*mystuff.get(*key))
    }} |
   contract mylocker(@"set",key,value,return) = {
 stdout!("we are 3") |
     for ( mystuff <- lockerCh ) {
      if ( *value == Nil ) {
-       lockerCh!(*mystuff.delete(key))
+       lockerCh!(*mystuff.delete(*key))
      } else {
       lockerCh!(*mystuff.set(*key,*value))
      } |
@@ -30,7 +31,7 @@ stdout!("we are 3") |
   }} |
  mylocker!("write",{"x": 5 },*ack) |
  for (_ <- ack ) {
-  mylocker!("set",{"y": 1 },*ack) |
+  mylocker!("set","y", 1,*ack) |
 stdout!("we are 4") |
  for (_ <- ack ) {
 stdout!("we are 5") |
