@@ -1,25 +1,23 @@
-new return(`rho:rchain:deployId`), stdout(`rho:io:stdout`), mylocker(`rho:rchain:deployerId`), ack in {
+new return/*(`rho:rchain:deployId`)*/, stdout(`rho:io:stdout`), 
+mylocker/*(`rho:rchain:deployerId`)*/, ack in {
 stdout!("we are 1") |
-   contract mylocker(@"get",key,return) = {
-stdout!("we are 2") |
-    for ( mystuff <<- lockerCh ) {
-     return!(*mystuff.get(key))
-   }} |
-  contract mylocker(@"set",key,value,return) = {
-stdout!("we are 3") |
-    for ( mystuff <- lockerCh ) {
-     if ( *value == Nil ) {
-       lockerCh!(*mystuff.delete(key)) 
-     } else {
-      lockerCh!(*mystuff.set(*key,*value))
-     } |
-     return!(*mystuff)
-   }} |
- mylocker!("set",{"y": 1 },*ack) |
-stdout!("we are 4") |
+
+ mylocker!("get","x",*ack) |
+ for (@x <- ack ) {|
+stdout!(("x = ", x)) |
+  mylocker!("set","y", 1+x ,*ack) |
  for (_ <- ack ) {
-stdout!("we are 5") |
+stdout!("we set y") |
   mylocker!("read", *ack) |
-   for (mystuff <- ack ) {stdout!("we are 6") |
+   for (mystuff <- ack ) {stdout!(("we are done", *mystuff)) |
     return!(*mystuff)
-}}}
+}}}}
+/*
+"we are 1"
+"we are 2"
+("x = ", 5)
+"we are 3"
+"we set y"
+"we are 2"
+("we are done", {"x" : 5, "y" : 6, "z" : 6})
+*/
