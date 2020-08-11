@@ -3,7 +3,7 @@ mylocker/*(`rho:rchain:deployerId`)*/, ack in {
 stdout!("we are 1") |
 
  mylocker!("get","x",*ack) |
- for (@x <- ack ) {|
+ for (@x <- ack ) {
 stdout!(("x = ", x)) |
   mylocker!("set","y", 1+x ,*ack) |
  for (_ <- ack ) {

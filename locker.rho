@@ -1,26 +1,26 @@
 new return(`rho:rchain:deployId`), stdout(`rho:io:stdout`), 
 mylocker(`rho:rchain:deployerId`), ack in {
-stdout!("we are 1") |
+stdout!("defining locker") |
   new lockerCh in {
    lockerCh!({}) |
-   contract mylocker(@"read",return) = { 
-stdout!("we are 2") |
+   contract mylocker(@"read",return) = {
+stdout!("doing a locker read") |
     for ( mystuff <<- lockerCh ) {
      return!(*mystuff)
    }} |
   contract mylocker(@"write",stuff,return) = {
-stdout!("we are 3") |
+stdout!("doing a locker write") |
     for ( mystuff <- lockerCh ) {
      lockerCh!(*stuff) |
      return!(*mystuff)
    }} | 
    contract mylocker(@"get",key,return) = {
-stdout!("we are 2") |
+stdout!("doing a locker get") |
     for ( mystuff <<- lockerCh ) {
      return!(*mystuff.get(*key))
    }} |
   contract mylocker(@"set",key,value,return) = {
-stdout!("we are 3") |
+stdout!("doing a locker set") |
     for ( mystuff <- lockerCh ) {
      if ( *value == Nil ) {
        lockerCh!(*mystuff.delete(*key))
@@ -29,13 +29,15 @@ stdout!("we are 3") |
      } |
      return!(*mystuff)
   }} |
+  //Testing locker
  mylocker!("write",{"x": 5 },*ack) |
  for (_ <- ack ) {
   mylocker!("set","y", 1,*ack) |
-stdout!("we are 4") |
+stdout!("locker updated") |
  for (_ <- ack ) {
-stdout!("we are 5") |
+stdout!("reading locker") |
   mylocker!("read", *ack) |
-   for (mystuff <- ack ) {stdout!("we are 6") |
-    return!(*mystuff)
+   for (mystuff <- ack ) {
+    stdout!(*mystuff) |
+    return!(*mystuff) 
 }}}}}
