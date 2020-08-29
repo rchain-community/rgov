@@ -1,0 +1,71 @@
+// the secretary publishes (in the registry) a directory-related contract.
+// the (allegeged) member calls the contract with 2 return addresses;
+// the secretary does new unf1, uses toByteArray to turn it into bits and
+// uses some of those bits to suggest a dust amount on the 1st return address.
+// the member sends that much dust to REVdirectory (an address controlled by a contract)... and then
+// the secretary sends unf1 to the 2nd return address.
+new insertArbitrary,
+ SealerUnsealer,
+ lookup,
+ log(`rho:io:stderr`)
+in {
+    // secretary
+    new publicFacet in {
+        new uriCh in {
+            insertArbitrary!(bundle+{*publicFacet}, *uriCh) |
+            for (@uri <- uriCh) {
+                log!({"secretary public facet registered at": uri})
+            }
+
+        }
+    }
+    |
+    // member Alice
+    new brandCh, secCh, uriCh, amtCh, nCh, AliceDeployerId in {
+        match ("Alice Gov", "111aliceGovRev", [*AliceDeployerId, "memershipGovernanceSealer"], `rho:secretary`, "111secretaryREVAddr") {
+            (memLabel, memGovRevAddr, *mySealerLocker, secretaryURI, secretaryREVAddr) => {
+                SealerUnsealer!(memLabel, *brandCh) |
+                for(@[*sealer, *unsealer] <- brandCh) {
+                    // save the sealer where only Alice can find it.
+                    mySealerLocker!(*sealer) |
+                    lookup!(secretaryURI, *secCh) | {
+                        for (secretary <- secCh) {
+                            secretary!("register", memGovRevAddr, *unsealer, *amtCh, *nCh) |
+                            for (@dustAmt <- amtCh) {
+                                log!({"Attn registrant": memLabel, "from": memGovRevAddr, "to": secretaryREVAddr, "verification dust amount": dustAmt})
+                            } |
+                            for (notarizedMembership <- nCh) {
+                                insertArbitrary!(*notarizedMembership, *uriCh) |
+                                for (@uri <- uriCh) {
+                                    log!({"notarized membership": memLabel, "registered at": uri})
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+    |
+    new stateCh in {
+        stateCh!({}) |
+        contract insertArbitrary(@item, return) = {
+            for (@state <- stateCh) {
+                match "rho:registry/${ix}" %% {"ix": state.size()} {
+                    uri => {
+                        log!({"insertArbitrary": item, "at": uri}) |
+                        stateCh!(state.set(uri, item)) |
+                        return!(uri)
+                    }
+                }
+            }
+        }
+        |
+        contract lookup(@uri, return) = {
+            for (@state <<- stateCh) {
+                log!({"lookup": uri, "finds": state.get(uri)}) |
+                return!(state.get(uri))
+            }
+        }
+    }
+}
