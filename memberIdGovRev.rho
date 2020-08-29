@@ -16,16 +16,20 @@ in {
             for (@uri <- uriCh) {
                 log!({"secretary public facet registered at": uri})
             }
-
+        } |
+        contract publicFacet(@"register", memGovRevAddr, unsealer, amtCh, nCh) = {
+            new notarized in {
+                amtCh!(*notarized.toByteArray().slice(0, 4)) // todo: bytes to int?
+            }
         }
     }
     |
     // member Alice
     new brandCh, secCh, uriCh, amtCh, nCh, AliceDeployerId in {
-        match ("Alice Gov", "111aliceGovRev", [*AliceDeployerId, "memershipGovernanceSealer"], `rho:secretary`, "111secretaryREVAddr") {
+        match ("Alice Gov", "111aliceGovRev", [*AliceDeployerId, "memershipGovernanceSealer"], "rho:registry/0", "111secretaryREVAddr") {
             (memLabel, memGovRevAddr, *mySealerLocker, secretaryURI, secretaryREVAddr) => {
                 SealerUnsealer!(memLabel, *brandCh) |
-                for(@[*sealer, *unsealer] <- brandCh) {
+                for(@{"sealer": *sealer, "unsealer": *unsealer, ..._} <- brandCh) {
                     // save the sealer where only Alice can find it.
                     mySealerLocker!(*sealer) |
                     lookup!(secretaryURI, *secCh) | {
@@ -44,6 +48,12 @@ in {
                     }
                 }
             }
+        }
+    }
+    |
+    contract SealerUnsealer(@label, return) = {
+        new sealer, unsealer in {
+            return!({"brand": label, "sealer": *sealer, "unsealer": *unsealer })
         }
     }
     |
