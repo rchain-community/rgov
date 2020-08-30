@@ -13,29 +13,19 @@ const { log } = console;
 
 main().catch(err => console.error(err));
 
+function narrate(text, ...args) {
+    console.log("NARRATOR: ", text, ...args);
+}
+
 async function main() {
   const RevVault = await lookup(`rho:rchain:revVault`); // [_, RevVault]
-
-  // fill in these constants _after_ the 1st run?
-  // `rho:id:76zs1zq8fjxdso8esecgqdbhy3akh8nn4eqq8pggoocups4fe9espc`,
-  // "11112aH4d1y2BkkzDhVSiE6iggkGaA9JNCMFVtvg2iqHXkbaCLLWzz") {
-  const memGovId = harden({
-    async register(memLabel, memGovRevAddr, secretaryURI, secretaryREVAddr) {
-      const { sealer, unsealer } = await SealerUnsealer.make(memLabel);
-      const secretary = await lookup(secretaryURI);
-      log({"member": memLabel, "looked up secretary": secretary, "at": secretaryURI});
-      log({"Attn registrant": memLabel, "stand by for REV from": memGovRevAddr, "to": secretaryREVAddr})
-      const notarizedMembership = await secretary.register(memGovRevAddr, unsealer);
-      const uri = await insertArbitrary(bundlePlus(notarizedMembership));
-      log({"notarized membership": memLabel, "registered at": uri});
-    }
-  });
 
   const Secretary = harden({
     async make() {
       const memRevCh = new Channel();
       memRevCh(RhoSet());
       const self = harden({
+        toString: () => `<full Secretary rights>`,
         async addMemberRevAddr(addr) {
           const memRevs = await memRevCh.get();
           // console.log('add', { memRevs });
@@ -47,11 +37,32 @@ async function main() {
       const secRevAddr = await RevAddress.fromUnforgeable(self);
       const secVault = await RevVault.findOrCreate(secRevAddr);
       const publicFacet = harden({
+        toString: () => `<membership access to directory>`,
         async register(memGovRevAddr, unsealer) {
           const memRevs = await memRevCh.peek();
           if (memRevs.contains(memGovRevAddr)) {
             const notarized = new Channel();
-            const amt = deref(notarized).toByteArray().slice(0, 3); // todo: bytes to int?
+            const bytesToInt = bytes => bytes.reduce((acc, b) => acc * 0x100 + b)
+            const amt = bytesToInt(deref(notarized).toByteArray().slice(0, 3));
+            console.log(`TODO: const result = ${secVault}.transfer(${memGovRevAddr}, ${amt}, "@@AUTH KEY TODO")`);
+            const challenge = new Channel();
+            challenge.get().then(([response, cont]) => {
+                console.log(`TODO: challenge response should combine amt ${amt}, unsealer ${unsealer}`);
+                if (response === amt) {
+                    console.log({"secretary challenge OK": amt});
+                    const rights = harden({
+                        toString: () => `<${memGovRevAddr}, ${unsealer} notarized*(TODO) by ${publicFacet}>`,
+                        unseal: box => unsealer(box),
+                        // method to divulge REV address?
+                        vouch: "@@TODO: actual notary / inspector",
+                    });
+                    cont(rights);
+                } else {
+                    console.log({"challenge expected": amt, "actual": response});
+                    return null;
+                }
+            });
+            return challenge; // bundle+{}?
           } else {
             throw new Error("no such REV address on file");
           }
@@ -74,12 +85,38 @@ async function main() {
   });
 
   const { self: s1, pubURI: secretaryURI, revAddr: secretaryREVAddr, pub } = await Secretary.make();
-  log({"secretary1": s1});
+  narrate("The RChain secretary public facet is available at", secretaryURI);
 
-  // save the sealer where only Alice can find it.
-  const AliceDeployerId = new Channel();
   const myGovRevAddr = "111aliceGovRev";
+  const memLabel = "Alice Gov";
+  narrate(`Member Alice chose ${myGovRevAddr} as her governance REV address.`);
+
+  narrate(`Since she registered it with the coop, the coop secretary registers it on chain using the closely held ${s1}.`)
   await s1.addMemberRevAddr(myGovRevAddr);
-  const mySealerLocker = new Channel(RhoList(deref(AliceDeployerId), "memershipGovernanceSealer"))
-  mySealerLocker(await memGovId.register("Alice Gov", myGovRevAddr, secretaryURI, secretaryREVAddr));
+
+  const { sealer, unsealer } = await SealerUnsealer.make(memLabel);
+  narrate(`Alice creates a { sealer: ${sealer}, unsealer: ${unsealer} } pair which work much like a private/public key pair, but using only rholang; no crypto.`);
+  const secretary = await lookup(secretaryURI);
+  narrate(`Alice deploys code to look up the coop secretary at ${secretaryURI} (result: ${secretary}) ...`);
+  narrate(`... and register her gov REV address ${myGovRevAddr} and unsealer ${unsealer}`);
+  narrate("Alice then stands by for some dust REV to be deposited at ${myGovRevAddr}.");
+  const notarizedMembership = await secretary.register(myGovRevAddr, unsealer).then(async challenge => {
+    console.log(`TODO: explain that challenge ${challenge} is held near deployId too...`);
+    const amtDeposited = 66051;
+    narrate(`Alice saw a transfer of ${amtDeposited} revettes (${amtDeposited / 10.0**8} REV)`);
+    const cont = new Channel();
+    challenge([amtDeposited, cont]);
+    return cont.get();
+  });
+  const uri = await insertArbitrary(bundlePlus(notarizedMembership));
+  narrate(`She published her membership rights ${notarizedMembership} at ${uri}, which might serve the role of a membership card.`);
+  log(`TODO: the secretary should publish it and keep the URI paired with the REV Addr`);
+  const aliceDeployerId = new Channel();
+  narrate(`${aliceDeployerId} is Alice's deployerId; i.e. a channel only she can refer to.`);
+  const mySealerLocker = new Channel(RhoList(deref(aliceDeployerId), "memershipGovernanceSealer"));
+  narrate(`Likewise, only she has access to channels derived from it, such as ${mySealerLocker}`);
+  mySealerLocker(sealer);
+  narrate(`She stored her sealer (${sealer}) there.`);
+
+  console.log(`TODO: Alice uses her sealer ${sealer} to vote.`)
 }
