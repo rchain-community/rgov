@@ -6,9 +6,8 @@ contract Inbox(capabilities) = {
     box!(Nil) |
 
     contract read(ret) = {
-      for (items <- box) {
-        ret!(*items) |
-        box!(*items)
+      for (items <<- box) {
+        ret!(*items)
       }
     } |
     contract read(type,ret) = {
@@ -41,35 +40,33 @@ contract Inbox(capabilities) = {
     } |
 
     contract peek(ret) = {
-      for (items <- box) {
-        ret!(*items) |
-        box!(*items)
+      for (items <<- box) {
+        ret!(*items)
       }
     } |
     contract peek(type,ret) = {
       //stdout!(["type",*type]) |
-      for (items <- box) {
+      for (items <<- box) {
         match (*items) {
-          {[=*type, ...item] | rest} => {
-            //stdout!(item) |
-            ret!(item) |
-            box!(*items)
+        // ... |["chat", "joes rev addr", {"date":222222 "content": "hello from joe" }] | ...
+          {[=*type, ...rest] | tail} => {
+            //stdout!(rest) |
+            ret!(rest)
           }
-          _ => {box!(*items) | ret!(Nil) | stdout!([*type,"not found"])}
+          _ => { ret!(Nil) | stdout!([*type,"not found"])}
         }
       }
     } |
     contract peek(type,subtype,ret) = {
       //stdout!(["type",*type]) |
-      for (items <- box) {
+      for (items <<- box) {
         match (*items) {
           {[=*type, =*subtype, ...item] | rest} => {
             //stdout!(item) |
-            ret!(item) |
-            box!(*items)
+            ret!(item) 
           }
           _ => {
-            box!(*items)|ret!(Nil) | stdout!([*type, *subtype, "not found"])
+           ret!(Nil) | stdout!([*type, *subtype, "not found"])
           }
         }
       }
@@ -77,7 +74,6 @@ contract Inbox(capabilities) = {
 
     contract write(@message,ret) = {
        for (items <- box) {
-//stdout!(["items", *items]) |
          match message {
           [type, subtype, map /\ {a: b, ..._} ] => {
             match *items {
@@ -87,7 +83,6 @@ contract Inbox(capabilities) = {
                 ret!("added.")
               }
               _ => {
-stdout!(["message", message]) |
                 box!(*items | message) |
                 ret!("sent...")
               }
