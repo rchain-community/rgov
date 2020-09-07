@@ -1,19 +1,63 @@
 new RevAddress(`rho:rev:address`),
-    deployerId(`rho:rchain:deployerId`),
+    deployerId, //(`rho:rchain:deployerId`),
+    deployerRevAddr,
  log(`rho:io:stderr`)
 in {
-    new go in {
-        contract go(_) = {
-            new revAddrCh, deployerPubKeyBytesCh, DeployerIdOps(`rho:rchain:deployerId:ops`) in {
-                DeployerIdOps!("pubKeyBytes", *deployerId, *deployerPubKeyBytesCh) |
-                for (@deployerPubKeyBytes <- deployerPubKeyBytesCh) {
-                    RevAddress!("fromPublicKey", deployerPubKeyBytes, *revAddrCh) |
-                    for (@deployerRevAddr <- revAddrCh) {
-                        log!({ "deployer REV address": deployerRevAddr, "pubKeyBytes": deployerPubKeyBytes, "deployerId": *deployerId })
-                    }
+    new Secretary in {
+        // testing
+        new ack1 in {
+            Secretary!(*ack1) |
+            for (@{"self": *s1, "memberAccess": *m1, ..._} <- ack1) {
+                s1!("addMemberRevAddr", "11112kwNc41QiBafVDWFKprqSsEeBrCXAKkiDWKJGPyARPAY1KC6Q5", *ack1) |
+                for(@true <- ack1) {
+                    m1!("vote", { "President": "Lincoln" }, Nil)
                 }
             }
         } |
-        go!(Nil)
+
+        contract Secretary(return) = {
+            new self, memberAccess, memberRevAddrCh in {
+                return!({"self": *self, "memberAccess": *memberAccess}) |
+                memberRevAddrCh!(Set()) |
+
+                contract self(@"addMemberRevAddr", @addr, return) = {
+                    // @@TODO: validate that @addr is a valid REV Address
+                    for (@memberRevAddr <- memberRevAddrCh) {
+                        memberRevAddrCh!(memberRevAddr.union(Set(addr))) |
+                        return!(true)
+                    }
+                } |
+
+                // TODO: separate election from directory of members?
+                contract memberAccess(@"vote", @response /\ Map, return) = {
+                    new ch in {
+                        deployerRevAddr!(*ch) |
+                        for (@addr <- ch) {
+                            for (@memberRevAddr <- memberRevAddrCh) {
+                                if (memberRevAddr.contains(addr)) {
+                                    log!({"good vote": response, "from": addr}) |
+                                    return!(true)
+                                } else {
+                                    log!({"voter not authorized": addr}) |
+                                    return!(false)
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    } |
+    contract deployerRevAddr(return) = {
+        new revAddrCh, deployerPubKeyBytesCh, DeployerIdOps(`rho:rchain:deployerId:ops`) in {
+            DeployerIdOps!("pubKeyBytes", *deployerId, *deployerPubKeyBytesCh) |
+            for (@deployerPubKeyBytes <- deployerPubKeyBytesCh) {
+                RevAddress!("fromPublicKey", deployerPubKeyBytes, *revAddrCh) |
+                for (@deployerRevAddr <- revAddrCh) {
+                    log!({ "deployer REV address": deployerRevAddr, "pubKeyBytes": deployerPubKeyBytes, "deployerId": *deployerId }) |
+                    return!(deployerRevAddr)
+                }
+            }
+        }
     }
 }
