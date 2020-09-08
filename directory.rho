@@ -38,7 +38,8 @@ new directory in {
      }
    }
   } |
-  new $stdout, $lookup, $insertArbitrary, uriCh, read, write, ret, ack in {
+  new stdout(`rho:io:stdout`), lookup(`rho:registry:lookup`), insertArbitrary(`rho:registry:insertArbitrary`),
+    uriCh, read, write, ret, ack in {
     insertArbitrary!(bundle+{*directory},*uriCh) |
     for (uri <- uriCh ) {
       stdout!(["#define $Directory",*uri])
