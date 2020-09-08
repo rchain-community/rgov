@@ -49,7 +49,8 @@ new directory in {
       @write!("hello","world", *ack) |
       @write!("this","that", *ack) |
       @grant!("hello", *ret) |
-      for( hello <- ret; _ <- ack; _ <- ack ) {
+      for(_ <- ack ) { Nil } |
+      for( hello <- ret; _ <- ack ) {
         stdout!("got grant.") |
         @read!(*ret) |
         for ( amap <- ret ) {
