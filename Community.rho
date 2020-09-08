@@ -53,30 +53,25 @@ insertArbitrary(`rho:registry:insertArbitrary`), uriCh, ret, ack in {
             }
           } |
     contract Community (@"request", @name, @userid, return) = {
-        for ( @{map /\  {=name: *infoCh, ..._}} <- commMap ) {
-          commMap!(map) |
-          for ( @{info /\ {"request": *inbox, ..._ }}  <- infoCh ) {
             //stdout!(*info) |
+        for ( @{map /\  {=name: *infoCh, ..._}} <<- commMap ) {
+          for ( @{info /\ {"request": *inbox, ..._ }}  <<- infoCh ) {
             inbox!(["Community", "request", name, userid])|
-            infoCh!(info) |
             return!(info)
           }
         }
       } |
     contract Community (@"lookup", @name, return) = {
-        for ( @{map /\  {=name: *infoCh, ..._}} <- commMap ) {
-          commMap!(map) |
-          for ( info <- infoCh ) {
+        for ( @{map /\  {=name: *infoCh, ..._}} <<- commMap ) {
+          for ( info <<- infoCh ) {
             //stdout!(*info) |
-            infoCh!(*info) |
             return!(*info)
           }
         }
       } |
     contract Community (@"lookup", return) = {
-        for ( @map <- commMap ) {
+        for ( @map <<- commMap ) {
           //stdout!(map) |
-          commMap!(map) |
           return!(map)
         }
     } |
