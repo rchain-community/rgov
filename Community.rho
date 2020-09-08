@@ -16,7 +16,8 @@ insertArbitrary(`rho:registry:insertArbitrary`), uriCh, ret, ack in {
                     commMap!(comms) |
                     return!(Nil)
                 } else {
-                  lookup!($Directory,*ret) |
+                  // ISSUE: $Directory URI changes
+                  lookup!(`rho:id:6jw9y8b93hun8xgy96b9yyf3tn4hfxjdr66yk5o1hfhc4qqfbdj59o`,*ret) |
                   for ( Directory <- ret ) {
                     stdout!(["got directory", *Directory]) |
                     Directory!(*ret) |
