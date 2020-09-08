@@ -1,131 +1,134 @@
-new Inbox,
-deployId, //(`rho:rchain:deployId`),
-insertArbitrary(`rho:registry:insertArbitrary`),
-lookup(`rho:registry:lookup`),
-log(`rho:io:stderr`)
-in {
-  log!("@@hi from Inbox test")|
-  new announceCh, wallClock in {
+new stdout(`rho:io:stdout`), Inbox in {
+stdout!("begin") |
+contract Inbox(capabilities) = {
+  new read, write, peek, box in {
+    capabilities!(bundle+{*read}, bundle+{*write}, bundle+{*peek}) |
+    box!(Nil) |
 
-    new secretaryDeployer in {
-      match [*secretaryDeployer, "mailbox"] {
-        locker => {
-          Inbox!(locker) |
-          for (@{"inbox": *inbox, "address": address, ..._} <<- @locker) {
-            // log!({"sec address": secBox.get("address")}) |
-            announceCh!!(address) |
-            for (_ <- wallClock) {
-              new ch in {
-                inbox!("peek", 0, *ch) |
-                for (@method, @args <- ch) {
-                  log!({"@@sec inbox received": method, "args": args}) |
-                  match method {
-                    "register" => {
-                      inbox!("extract", 0, Nil) |
-                      new ticket in {
-                        lookup!(args.get("replyTo"), *ch) |
-                        for (memBox <- ch) {
-                          log!({"@@grant at": args.get("replyTo"), "ticket": *ticket}) |
-                          memBox!("grant", {"ticket": *ticket}, Nil)
-                        }
-                      }
-                    }
-                  }
-                }
+    contract read(ret) = {
+      for (items <<- box) {
+        ret!(*items)
+      }
+    } |
+    contract read(type,ret) = {
+      //stdout!(["type",*type]) |
+      for (items <- box) {
+        match (*items) {
+          {[=*type, ...item] | rest} => {
+            //stdout!(item) |
+            ret!(item) |
+            box!(rest)
+          }
+          _ => {box!(*items) | ret!(Nil) | stdout!([*type,"not found"])}
+        }
+      }
+    } |
+    contract read(type,subtype,ret) = {
+      //stdout!(["type",*type]) |
+      for (items <- box) {
+        match (*items) {
+          {[=*type, =*subtype, ...item] | rest} => {
+            //stdout!(item) |
+            ret!(item) |
+            box!(rest)
+          }
+          _ => {
+            box!(*items)|ret!(Nil) | stdout!([*type, *subtype, "not found"])
+          }
+        }
+      }
+    } |
+
+    contract peek(ret) = {
+      for (items <<- box) {
+        ret!(*items)
+      }
+    } |
+    contract peek(type,ret) = {
+      //stdout!(["type",*type]) |
+      for (items <<- box) {
+        match (*items) {
+        // ... |["chat", "joes rev addr", {"date":222222 "content": "hello from joe" }] | ...
+          {[=*type, ...rest] | tail} => {
+            //stdout!(rest) |
+            ret!(rest)
+          }
+          _ => { ret!(Nil) | stdout!([*type,"not found"])}
+        }
+      }
+    } |
+    contract peek(type,subtype,ret) = {
+      //stdout!(["type",*type]) |
+      for (items <<- box) {
+        match (*items) {
+          {[=*type, =*subtype, ...item] | rest} => {
+            //stdout!(item) |
+            ret!(item) 
+          }
+          _ => {
+           ret!(Nil) | stdout!([*type, *subtype, "not found"])
+          }
+        }
+      }
+    } |
+
+    contract write(@message,ret) = {
+       for (items <- box) {
+         match message {
+          [type, subtype, map /\ {a: b, ..._} ] => {
+            match *items {
+              {[=type, =subtype, oldmap] | more } => {
+                box!([type, subtype, map.union(oldmap)] | more) |
+           //stdout!([type, subtype, map.union(oldmap)]) |
+                ret!("added.")
+              }
+              _ => {
+                box!(*items | message) |
+                ret!("sent...")
               }
             }
           }
-        }
-      }
-    }
-    |
-    new member1Deployer in {
-      match [*member1Deployer, "mailbox"] {
-        mem1Box => {
-          Inbox!(mem1Box) |
-          for (@{"inbox": inbox, "address": address, ..._} <<- @mem1Box) {
-            for (@secAddr <<- announceCh) {
-              log!({"mem1 got secAddr": secAddr}) |
-              new ch in {
-                lookup!(secAddr, *ch) |
-                for (secBox <- ch) {
-                  log!({"mem1 got secBox": *secBox}) |
-                  secBox!("register", {
-                    "title": "Meeting 123",
-                    "nickName": "mem1",
-                    "replyTo": address
-                    }, *ch) |
-                  for (_ <- ch) {
-                    log!({"@@sent": "request to register", "title": "Meeting 123", "from": address}) |
-                    wallClock!(Nil)
-                  }
-                }
-              }
-            }
+          _ => {
+            //stdout!([*message, *items]) |
+            box!(*items | message) |
+            ret!("sent.")
           }
         }
       }
     }
   }
-  |
-  new uriCh in {
-    insertArbitrary!(*Inbox, *uriCh) |
-    for (@uri <- uriCh) {
-      log!({"Inbox": uri}) |
-      deployId!(uri)
-    }
-  }
-  |
-  contract Inbox(return) = {
-    // log!({"Inbox return": *return}) |
-    new inbox, shared, msgsCh, addrCh in {
-      msgsCh!([]) |
-
-      insertArbitrary!(*shared, *addrCh) |
-      for (@address <- addrCh) {
-        log!({"inbox address": address, " external facet": *shared}) |
-        return!({"inbox": *inbox, "shared": *shared, "address": address})
-      }
-
-      |
-      contract shared(@method /\ String, @args /\ Map, return) = {
-        // log!({"shared (deliver)": method, "args": args}) |
-        for (@msgs <- msgsCh) {
-          msgsCh!(msgs ++ [(method, args)]) |
-          return!(Nil)
-        }
-      }
-      |
-      contract inbox(@"getExternalFacet", return) = {
-        // log!({"getExternalFacet": *return}) |
-        return!(*shared)
-      }
-      |
-      contract inbox(@"peek", @ix /\ Int, return) = {
-        // log!({"peek at": ix}) |
-        for (@msgs <<- msgsCh) {
-          // log!({"peek msgs length": msgs.length()}) |
-          match msgs.nth(ix) {
-            (method, args) => return!(method, args)
-            _ => return!(Nil, Nil)
-          }
-        }
-      }
-      |
-      contract inbox(@"extract", @ix /\ Int, return) = {
-        for (@msgs <- msgsCh) {
-          // log!({"extract msgs length": msgs.length()}) |
-          if (ix < msgs.length()) {
-            msgsCh!(msgs.slice(0, ix) ++ msgs.slice(ix + 1, msgs.length())) |
-            match msgs.nth(ix) {
-              (method, args) => return!(method, args)
-            }
-          } else {
-            msgsCh!(msgs) |
-            return!(Nil)
-          }
-        }
+} |
+new capabilities, ack, ack1, ack2, ack3, ack4, ack5, message, uriCh, ret, insertArbitrary(`rho:registry:insertArbitrary`) in {
+  stdout!("hello world") |
+  insertArbitrary!(bundle+{*Inbox}, *uriCh)|
+  for (uri <- uriCh) {
+    stdout!(["#define $Inbox", *uri])
+  } |
+  Inbox!(*capabilities) |
+  for (receive, send, peek <- capabilities) {
+    stdout!("received capabilities") |
+  insertArbitrary!(*send, *uriCh)|
+    send!(["values","test", {"a": "b", "b": "c"}], *ack) |
+    send!(["chat","myusername" ++ ": Watson come quickly!"], *ack1) |
+    send!(["chat","myusername", "Watson come now!"], *ack1) |
+    send!(["chat","hello world"], *ack) |
+    for ( uri <- uriCh;  _ <- ack; _ <- ack1; _ <- ack2; _ <- ack3) {
+      stdout!(["inbox",*uri]) | // for testing temprarily
+      send!(["values","test", {"a": "x", "c": "d"}], *ret) |
+      for ( map <- ret ) {peek!("values","test",*stdout)} |
+      //receive!(["chat", _ ], *message) |
+      receive!("chat", *message) |
+      for ( text <- message ) {
+        stdout!(*text)
+      } |
+      receive!("chat", "myusername", *message) |
+      for ( text <- message ) {
+        stdout!(*text)
+      } |
+      receive!("chat", *message) |
+      for ( text <- message ) {
+        stdout!(*text)
       }
     }
   }
-}
+}}
