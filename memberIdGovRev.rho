@@ -1,63 +1,121 @@
 new RevAddress(`rho:rev:address`),
-    deployerId, //(`rho:rchain:deployerId`),
-    deployerRevAddr,
- log(`rho:io:stderr`)
+deployerId, //(`rho:rchain:deployerId`),
+lookup(`rho:registry:lookup`),
+insertArbitrary(`rho:registry:insertArbitrary`),
+CommunityCh,
+Secretary,
+deployerRevAddr,
+log(`rho:io:stderr`)
 in {
-    new Secretary in {
-        // testing
-        new ack1 in {
-            Secretary!(*ack1) |
-            for (@{"self": *s1, "memberAccess": *m1, ..._} <- ack1) {
-                s1!("addMemberRevAddr", "11112kwNc41QiBafVDWFKprqSsEeBrCXAKkiDWKJGPyARPAY1KC6Q5", *ack1) |
-                for(@true <- ack1) {
-                    m1!("vote", { "President": "Lincoln" }, Nil)
+  // 2020-09-07 21:08:33,192 [node-runner-123] DEBUG coop.rchain.rholang.stdout - ["#define $Community", `rho:id:btj3ed38shhid31863fkjhwmdc6qc6c3kkes1bqg1q4ixxogub8apa`]
+  lookup!(`rho:id:acuror4aqstn4hhidyxxo5zwrno7xogieoeinaiszjt7tuyip7hzp7`, *CommunityCh) | for (Community <- CommunityCh) {
+    log!({"Community from registry": *Community}) |
+
+    // generate new community name for each run :-/
+    match *Secretary.toByteArray().slice(8, 12) {
+      b4 => {
+        match {"Coop Membership ${b0}${b1}${b2}${b3}" %% { "b0": b4.nth(0), "b1": b4.nth(1), "b2": b4.nth(2), "b3": b4.nth(3) }} {
+          memName => { log!({"gen community name": memName, "Secretary": *Secretary }) |
+
+            // testing...
+            new irlAck in {
+              // secretary process
+              new sCh, ack1 in {
+                Secretary!(*ack1) |
+                for (s1 <- ack1) {
+                  s1!("addMemberRevAddrs", Set("11112kwNc41QiBafVDWFKprqSsEeBrCXAKkiDWKJGPyARPAY1KC6Q5"), *ack1) | for (_ <- ack1) {
+                    irlAck!(Nil) |
+                    log!({"IRL ack for REV Address": "11112kwNc41QiBafVDWFKprqSsEeBrCXAKkiDWKJGPyARPAY1KC6Q5"})
+                  }
                 }
-            }
-        } |
+              } |
+              // member Alice process
+              new ch1, InboxCh in {
+                lookup!(`rho:id:65egcpa54pns8pr4nug7zpsew89fkrkxt4xfxezrcozswsfeaxauxx`, *InboxCh) | for (Inbox <- InboxCh) {
+                  log!({"Inbox from registry": *Inbox}) |
+                  Inbox!(*ch1) | for(receive, send, peek <- ch1) {
+                    log!({"Alice's inbox": [*receive, *send, *peek]}) |
+                    // Alice waits for real-life acknolwedgement that her address is registered.
+                    for(_ <- irlAck) {
+                      // ISSUE: need to submit my inbox (*write) along with membership application.
+                      Community!("request", memName, "11112kwNc41QiBafVDWFKprqSsEeBrCXAKkiDWKJGPyARPAY1KC6Q5", *ch1) |
+                      for (@ack <- ch1) {
+                        log!({"request for membership returned": ack}) |
 
-        contract Secretary(return) = {
-            new self, memberAccess, memberRevAddrCh in {
-                return!({"self": *self, "memberAccess": *memberAccess}) |
-                memberRevAddrCh!(Set()) |
-
-                contract self(@"addMemberRevAddr", @addr, return) = {
-                    // @@TODO: validate that @addr is a valid REV Address
-                    for (@memberRevAddr <- memberRevAddrCh) {
-                        memberRevAddrCh!(memberRevAddr.union(Set(addr))) |
-                        return!(true)
+                        // Tests passed; register Secretary
+                        new uriCh in {
+                          insertArbitrary!(bundle+{*Secretary}, *uriCh) |
+                          for (@uri <- uriCh) { log!(["#define Secretary", uri]) }
+                        }
+                      }
                     }
+                  }
+                }
+              }
+            } |
+
+            contract Secretary(return) = {
+              new self, ch1, membershipStore, revAddrCheckInbox in {
+                return!(*self) |
+                membershipStore!(Set()) |
+
+                contract self(@"addMemberRevAddrs", @addrs, return) = {
+                  // @@TODO: validate that @addrs are valid REV Addresses?
+                  for (@memberRevAddr <- membershipStore) {
+                    membershipStore!(memberRevAddr.union(addrs)) |
+                    return!(true)
+                  }
                 } |
 
-                // TODO: separate election from directory of members?
-                contract memberAccess(@"vote", @response /\ Map, return) = {
-                    new ch in {
-                        deployerRevAddr!(*ch) |
-                        for (@addr <- ch) {
-                            for (@memberRevAddr <- memberRevAddrCh) {
-                                if (memberRevAddr.contains(addr)) {
-                                    log!({"good vote": response, "from": addr}) |
-                                    return!(true)
-                                } else {
-                                    log!({"voter not authorized": addr}) |
-                                    return!(false)
-                                }
+                // TODO: remove member address
+                // IDEA: get all addresses? closely held or published?
+                // IDEA: clear all addresses?
+
+                // The inbox for handling membership requests is automated: it checks REV addresses.
+                // WARNING: uses ambient authority to deployer public key. Subject to confused deputy risks.
+                Community!("new", memName, bundle+{*revAddrCheckInbox}, *ch1) | for (@{"admin": *admin, ..._} <- ch1) {
+                  log!({"membership community admin": *admin}) |
+
+                  new ch in { Community!("lookup", memName, *ch ) | for (@info <- ch) { log!({"community name": memName, "info": info})}} |
+
+                  // ["Community", "request", name, userid]
+                  contract revAddrCheckInbox(@["Community", "request", _name, allegedAddr]) = { // ISSUE: no return?!
+                    log!({"memership request revAddr": allegedAddr, "inbox": "@@*inbox", "community name": _name}) |
+                    new ch2, ch3 in {
+                      deployerRevAddr!(*ch2) |
+                      for (@signerRevAddr <- ch2) {
+                        for (@membership <<- membershipStore) {
+                          match (signerRevAddr == allegedAddr, membership.contains(signerRevAddr)) {
+                            (true, true) => {
+                              admin!("add user", signerRevAddr, Nil /*@@*inbox*/, *ch3) | for (@directoryUpdateRights <- ch3) {
+                                //return!("Request accepted. Welcome! Directory update rights are on their way to your inbox.") |
+                                //inbox!(directoryUpdateRights)
+                                Nil
+                              }
                             }
+                            //@@(false, _) => inbox!(["error", "REV Address in request does not match deployer."])
+                            //@@(_, false) => inbox!(["error", "REV Address not in membership records."])
+                          }
                         }
+                      }
                     }
+                  }
                 }
+              }
             }
+          }
+        }}}} |
+
+  contract deployerRevAddr(return) = {
+    new revAddrCh, deployerPubKeyBytesCh, DeployerIdOps(`rho:rchain:deployerId:ops`) in {
+      DeployerIdOps!("pubKeyBytes", *deployerId, *deployerPubKeyBytesCh) |
+      for (@deployerPubKeyBytes <- deployerPubKeyBytesCh) {
+        RevAddress!("fromPublicKey", deployerPubKeyBytes, *revAddrCh) |
+        for (@deployerRevAddr <- revAddrCh) {
+          log!({ "deployer REV address": deployerRevAddr, "pubKeyBytes": deployerPubKeyBytes, "deployerId": *deployerId }) |
+          return!(deployerRevAddr)
         }
-    } |
-    contract deployerRevAddr(return) = {
-        new revAddrCh, deployerPubKeyBytesCh, DeployerIdOps(`rho:rchain:deployerId:ops`) in {
-            DeployerIdOps!("pubKeyBytes", *deployerId, *deployerPubKeyBytesCh) |
-            for (@deployerPubKeyBytes <- deployerPubKeyBytesCh) {
-                RevAddress!("fromPublicKey", deployerPubKeyBytes, *revAddrCh) |
-                for (@deployerRevAddr <- revAddrCh) {
-                    log!({ "deployer REV address": deployerRevAddr, "pubKeyBytes": deployerPubKeyBytes, "deployerId": *deployerId }) |
-                    return!(deployerRevAddr)
-                }
-            }
-        }
+      }
     }
+  }
 }
