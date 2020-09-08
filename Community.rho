@@ -1,6 +1,6 @@
 new Community, commMap, stdout(`rho:io:stdout`), lookup(`rho:registry:lookup`), 
 insertArbitrary(`rho:registry:insertArbitrary`), uriCh, ret, ack in {
-    insertArbitrary!(*Community,*uriCh) |
+    insertArbitrary!(bundle+{*Community},*uriCh) |
     for ( uri <- uriCh ) {
        stdout!(["#define $Community",*uri])
     } |
