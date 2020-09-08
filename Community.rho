@@ -8,7 +8,6 @@ insertArbitrary(`rho:registry:insertArbitrary`), uriCh, ret, ack in {
     contract Community (@"new", @name, inbox, return) = {
         new admin, methods, userlist, infoCh, ret in {
             userlist!([]) | methods!({}) |
-	          infoCh!({}) |
             stdout!("creating community.") |
             for (@comms <- commMap ) {
                 if ( comms.get(name) != Nil ) {
