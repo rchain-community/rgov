@@ -82,7 +82,8 @@ insertArbitrary(`rho:registry:insertArbitrary`), uriCh, ret, ack in {
     } |
     Community!("new","test", Nil, *ret) |
     Community!("new","test2", Nil, *ret) |
-    for ( @{"admin": admin, "read": read, "write": write, "grant": grant} <- ret; _ <- ret ) {
+    for (_ <- ret) { Nil } |
+    for ( @{"admin": admin, "read": read, "write": write, "grant": grant} <- ret ) {
       stdout!("got em") |
       Community!("lookup","test",*stdout) |
       Community!("lookup","test2",*stdout) |
