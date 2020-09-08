@@ -98,7 +98,7 @@ contract Inbox(capabilities) = {
     }
   }
 } |
-new capabilities, ack, ack1, message, uriCh, ret, insertArbitrary(`rho:registry:insertArbitrary`) in {
+new capabilities, ack, ack1, ack2, ack3, ack4, ack5, message, uriCh, ret, insertArbitrary(`rho:registry:insertArbitrary`) in {
   stdout!("hello world") |
   insertArbitrary!(bundle+{*Inbox}, *uriCh)|
   for (uri <- uriCh) {
@@ -109,10 +109,10 @@ new capabilities, ack, ack1, message, uriCh, ret, insertArbitrary(`rho:registry:
     stdout!("received capabilities") |
   insertArbitrary!(*send, *uriCh)|
     send!(["values","test", {"a": "b", "b": "c"}], *ack) |
-    send!(["chat","myusername" ++ ": Watson come quickly!"], *ack) |
-    send!(["chat","myusername", "Watson come now!"], *ack) |
+    send!(["chat","myusername" ++ ": Watson come quickly!"], *ack1) |
+    send!(["chat","myusername", "Watson come now!"], *ack1) |
     send!(["chat","hello world"], *ack) |
-    for ( uri <- uriCh;  _ <- ack; _ <- ack; _ <- ack; _ <- ack) {
+    for ( uri <- uriCh;  _ <- ack; _ <- ack1; _ <- ack2; _ <- ack3) {
       stdout!(["inbox",*uri]) | // for testing temprarily
       send!(["values","test", {"a": "x", "c": "d"}], *ret) |
       for ( map <- ret ) {peek!("values","test",*stdout)} |
