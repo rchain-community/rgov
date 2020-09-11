@@ -6,7 +6,9 @@
   "scripts": {},
   "author": "",
   "license": "ISC",
-  "devDependencies": {},
+  "devDependencies": {
+    "jake": "^10.8.2"
+  },
   "dependencies": {
     "blakejs": "^1.1.0",
     "rchain-toolkit": "0.2.4",
