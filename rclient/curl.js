@@ -3,7 +3,7 @@
  * @param {{ http: any }} powers
  * @returns {Promise<string>}
  */
-function curl(url, { http }) {
+export function curl(url, { http }) {
   return new Promise((resolve, reject) => {
     const req = http.get(url, response => {
       let str = '';
@@ -17,4 +17,3 @@ function curl(url, { http }) {
     req.on('error', reject);
   });
 }
-exports.curl = curl;

@@ -1,8 +1,9 @@
 'use strict';
-const { desc, file, directory, rule, task, FileList, Task } = require('jake');
-const exec = require('child_process').execSync;
 const http = require('http');
-const { curl } = require('./lib_cjs/curl');
+const exec = require('child_process').execSync;
+const { desc, directory, task } = require('jake');
+const mjs = require('esm')(module);
+const { curl } = mjs('./lib_cjs/curl');
 
 const SRCS = ['inbox.rho'];
 
