@@ -3,6 +3,7 @@
  *
  * See https://jakejs.com/
  */
+// @ts-check
 'use strict';
 const io = {
   fs: require('fs'),
@@ -10,12 +11,14 @@ const io = {
   exec: require('child_process').execSync,
   clock: () => new Date(),
 };
+// @ts-ignore
 const { desc, directory, task } = require('jake');
 
 // Our own libraries are written as ES6 modules.
 require = require('esm')(module);
 const { nodeFetch } = require('./rclient/curl');
 const { RNode } = require('./rclient/rnode');
+const { getDataForDeploy } = require('./rnode-client/rnode-web');
 const { sign } = require('./rclient/deploySig');
 
 const { freeze } = Object;
@@ -62,8 +65,15 @@ SRCS.forEach(src => {
       { term, timestamp, validAfterBlockNumber, ...phloConfig });
     console.log('deploy:', { term: term.slice(0, 24), api: shard.boot });
 
-    await shard.validator.deploy(signed);
-    console.log('TODO: get result');
+    const deployResult = await shard.validator.deploy(signed);
+    console.log('deployed', src, { deployResult });
+
+    const onProgress = async () => {
+      console.log('standing by for return from', src, '...');
+      return false;
+    }
+    const value = getDataForDeploy(shard.observer, signed.signature, onProgress, { setTimeout, clearTimeout });
+    console.log('value from', src, value);
   });
 });
 
