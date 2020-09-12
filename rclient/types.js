@@ -1,4 +1,10 @@
 /**
+ * ref
+ * https://github.com/rchain/rchain/blob/dev/node/src/main/scala/coop/rchain/node/web/WebApiRoutes.scala
+ * https://github.com/rchain/rchain/blob/dev/node/src/main/scala/coop/rchain/node/web/AdminWebApiRoutes.scala
+ * https://github.com/rchain/rchain/blob/dev/casper/src/main/scala/coop/rchain/casper/api/BlockAPI.scala
+ * https://github.com/rchain/rchain/blob/dev/node/src/main/scala/coop/rchain/node/api/WebApi.scala#L120
+ *
  * @typedef {{
  *    term: string,
  *    timestamp: number, // milliseconds
@@ -65,27 +71,21 @@
     block: LightBlockInfo
   |} }RhoExprWithBlock
 
-  @typedef {{
-    getBlocks(depth: number): Promise<LightBlockInfo[]>,
-  }} RNode
-
   @typedef { {
-    getBlocks(depth: number): Promise<LightBlockInfo[]>,  // @augments RNode doesn't seem to work
+    getBlocks(depth: number): Promise<LightBlockInfo[]>,
     listenForDataAtName(request: DataRequest): Promise<DataResponse>,
     getBlock(hash: string): Promise<BlockInfo>,
     findDeploy(deployId: string): Promise<LightBlockInfo>,
     exploratoryDeploy(string): Promise<ExploratoryDeployResponse>,
   } } Observer
 
-  @augments Observer
   @typedef { {
-    getBlocks(depth: number): Promise<LightBlockInfo[]>,  // @augments RNode doesn't seem to work
-    listenForDataAtName(request: DataRequest): Promise<DataResponse>,
-    getBlock(hash: string): Promise<BlockInfo>,
-    findDeploy(deployId: string): Promise<LightBlockInfo>,
-    exploratoryDeploy(string): Promise<ExploratoryDeployResponse>,
     deploy(r: DeployRequest): Promise<string>
   } } Validator
+
+  @typedef { {
+    propose(): Promise<string>
+  } } RNodeAdmin
 
   @typedef { {
     setTimeout: typeof setTimeout,

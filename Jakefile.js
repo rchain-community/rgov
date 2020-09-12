@@ -6,10 +6,11 @@
 // @ts-check
 'use strict';
 const io = {
+  sched: { setInterval, clearInterval },
+  clock: () => new Date(),
   fs: require('fs'),
   http: require('http'),
   exec: require('child_process').execSync,
-  clock: () => new Date(),
 };
 // @ts-ignore
 const { desc, directory, task } = require('jake');
@@ -34,21 +35,38 @@ exports.startShard = startShard;
  */
 function startShard() {
   io.exec('docker-compose up -d', { cwd: 'docker-shard' });
+  console.log('TODO: wait for "MultiParentCasper instance created." in the log');
 }
 
-let shard = ((readFileSync, http, dotEnv = 'docker-shard/.env') => {
+let shard = ((readFileSync, http, sched, dotEnv = 'docker-shard/.env') => {
   const fetch = nodeFetch({ http });
   const env = parseEnv(readFileSync(dotEnv, 'utf8'));
   const api = {
+    admin: `http://${env.MY_NET_IP}:40405`,
     boot: `http://${env.MY_NET_IP}:40403`,
     read: `http://${env.MY_NET_IP}:40413`,
   };
+  const rnode = RNode(fetch);
+
+  const proposer =  rnode.admin(api.admin);
+  const SECOND = 1000;
+  let proposing = false;
+  const pid = sched.setInterval(() => {
+    if (!proposing) {
+      proposing = true;
+      proposer.propose()
+      .then(() => { proposing = false; })
+      .catch(_err => { proposing = false; })
+    }
+  }, 2 * SECOND);
+
   return freeze({
     env, ...api,
-    validator: RNode(fetch, api.boot),
-    observer: RNode(fetch, api.read),
+    validator: rnode.validator(api.boot),
+    observer: rnode.observer(api.read),
+    stopProposing: () => sched.cancelInterval(pid),
   });
-})(io.fs.readFileSync, io.http);
+})(io.fs.readFileSync, io.http, io.sched);
 
 directory(',deployed');
 
@@ -61,7 +79,7 @@ SRCS.forEach(src => {
     const [{ blockNumber: validAfterBlockNumber }] = await shard.observer.getBlocks(1);
     const timestamp = io.clock().valueOf();
 
-    const signed = sign(shard.env.WALLET_PRIVATE,
+    const signed = sign(shard.env.VALIDATOR_BOOT_PRIVATE,
       { term, timestamp, validAfterBlockNumber, ...phloConfig });
     console.log('deploy:', { term: term.slice(0, 24), api: shard.boot });
 
@@ -72,13 +90,13 @@ SRCS.forEach(src => {
       console.log('standing by for return from', src, '...');
       return false;
     }
-    const value = getDataForDeploy(shard.observer, signed.signature, onProgress, { setTimeout, clearTimeout });
+    const value = await getDataForDeploy(shard.observer, signed.signature, onProgress, { setTimeout, clearTimeout });
     console.log('value from', src, value);
   });
 });
 
 desc('deploy *.rho');
-task('default', SRCS.map(src => `,deployed/${src}`), {concurrency: 4}, () => {
+task('default', SRCS.map(src => `,deployed/${src}`), {concurrency: 1}, () => {
   console.log({ SRCS });
 });
 
