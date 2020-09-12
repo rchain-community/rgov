@@ -40,10 +40,6 @@
     systemDeployError: string,
   }} DeployInfo
 
-  @typedef {{
-    getBlocks(depth: number): Promise<LightBlockInfo[]>,
-  }} RNode
-
   @typedef { {| ExprString: {| data: string |} |} |
               {| ExprInt: {| data: number |} |} |
               {| ExprUri: {| data: string |} |} |
@@ -69,8 +65,12 @@
     block: LightBlockInfo
   |} }RhoExprWithBlock
 
-  @augments RNode
+  @typedef {{
+    getBlocks(depth: number): Promise<LightBlockInfo[]>,
+  }} RNode
+
   @typedef { {
+    getBlocks(depth: number): Promise<LightBlockInfo[]>,  // @augments RNode doesn't seem to work
     listenForDataAtName(request: DataRequest): Promise<DataResponse>,
     getBlock(hash: string): Promise<BlockInfo>,
     findDeploy(deployId: string): Promise<LightBlockInfo>,
@@ -79,6 +79,16 @@
 
   @augments Observer
   @typedef { {
+    getBlocks(depth: number): Promise<LightBlockInfo[]>,  // @augments RNode doesn't seem to work
+    listenForDataAtName(request: DataRequest): Promise<DataResponse>,
+    getBlock(hash: string): Promise<BlockInfo>,
+    findDeploy(deployId: string): Promise<LightBlockInfo>,
+    exploratoryDeploy(string): Promise<ExploratoryDeployResponse>,
     deploy(r: DeployRequest): Promise<string>
   } } Validator
+
+  @typedef { {
+    setTimeout: typeof setTimeout,
+    clearTimeout: typeof clearTimeout,
+  } } SchedulerAccess
 */
