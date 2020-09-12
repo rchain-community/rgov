@@ -12,6 +12,7 @@
   },
   "dependencies": {
     "blakejs": "^1.1.0",
+    "google-protobuf": "^3.13.0",
     "rchain-toolkit": "0.2.4",
     "uuid": "3.4.0"
   }
