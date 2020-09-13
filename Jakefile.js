@@ -20,12 +20,50 @@ require = require('esm')(module);
 const { nodeFetch } = require('./rclient/curl');
 const { RNode } = require('./rclient/rnode');
 const { sign } = require('./rclient/deploySig');
-const { deploy1 } = require('./rclient/rhopm');
+const { deploy1, fixupImports } = require('./rclient/rhopm');
 
 const { freeze, fromEntries, values } = Object;
 
 const SRCS = ['inbox.rho', 'directory.rho', 'Community.rho'];
-const TARGETS = fromEntries(SRCS.map(src => [src, `rho_modules/${src.replace(/\.rho$/, '.json')}`]));
+const rhoInfoPath = src => `rho_modules/${src.replace(/\.rho$/, '.json')}`;
+const TARGETS = fromEntries(SRCS.map(src => [src, rhoInfoPath(src)]));
+
+let shard = shardIO(io.fs.readFileSync, io.http, io.sched);
+const signWithKey = dd => sign(shard.env.VALIDATOR_BOOT_PRIVATE, dd)
+
+desc('deploy *.rho');
+task('default', ['startShard', 'rho_modules', ...values(TARGETS)], {concurrency: 1}, () => {
+  console.log({ SRCS });
+});
+
+directory('rho_modules');
+
+contract('inbox.rho')
+contract('directory.rho')
+contract('Community.rho', ['directory.rho']);
+
+function contract(src, deps = []) {
+  console.log('@@setting up task for', TARGETS[src], src);
+  desc(`deploy ${src}`);
+  const depTargets = deps.map(d => TARGETS[d]);
+  file(TARGETS[src], [src, ...depTargets], async () => {
+    console.log('reading', { depTargets });
+    const reading = depTargets.map(fn => io.fs.promises.readFile(fn, 'utf8'));
+    const info = (await Promise.all(reading)).map(txt => JSON.parse(txt));
+    const byDep = fromEntries(info.map(
+      ({ src, dataForDeploy: { data: { expr: { ExprUri: { data: uri } }}}}) => [src, uri]));
+    console.log({src, byDep});
+    const termRaw = await io.fs.promises.readFile(src, 'utf8');
+    const term = fixupImports(src, termRaw, byDep);
+    shard.startProposing();
+    const { dataForDeploy, signed } = await deploy1(src, term, io.clock().valueOf(), shard.validator, shard.observer, signWithKey);
+    shard.stopProposing();
+
+    console.log('info from', src, dataForDeploy);
+    await io.fs.promises.writeFile(TARGETS[src], JSON.stringify({ src, signed, dataForDeploy }, null, 2));
+  });
+}
+
 
 exports.startShard = startShard;
 /**
@@ -38,7 +76,7 @@ function startShard() {
   console.log('TODO: wait for "MultiParentCasper instance created." in the log');
 }
 
-let shard = ((readFileSync, http, sched, dotEnv = 'docker-shard/.env') => {
+function shardIO(readFileSync, http, sched, dotEnv = 'docker-shard/.env') {
   const fetch = nodeFetch({ http });
   const env = parseEnv(readFileSync(dotEnv, 'utf8'));
   const api = {
@@ -51,43 +89,33 @@ let shard = ((readFileSync, http, sched, dotEnv = 'docker-shard/.env') => {
   const proposer = rnode.admin(api.admin);
   const SECOND = 1000;
   let proposing = false;
-  const pid = sched.setInterval(() => {
-    if (!proposing) {
-      proposing = true;
-      proposer.propose()
-      .then(() => { proposing = false; })
-      .catch(_err => { proposing = false; })
-    }
-  }, 2 * SECOND);
+  let waiters = 0;
+  let pid;
 
   return freeze({
     env, ...api,
     validator: rnode.validator(api.boot),
     observer: rnode.observer(api.read),
-    stopProposing: () => sched.clearInterval(pid),
+    startProposing() {
+      waiters += 1;
+      if (typeof pid !== 'undefined') { return; }
+      pid = sched.setInterval(() => {
+        if (!proposing) {
+          proposing = true;
+          proposer.propose()
+          .then(() => { proposing = false; })
+          .catch(_err => { proposing = false; })
+        }
+      }, 2 * SECOND);
+    },
+    stopProposing() {
+      if (waiters <= 0) { return; }
+      waiters =- 1;
+      sched.clearInterval(pid);
+      pid = undefined;
+    },
   });
-})(io.fs.readFileSync, io.http, io.sched);
-
-directory('rho_modules');
-
-SRCS.forEach(src => {
-  desc(`deploy ${src}`);
-  file(TARGETS[src], [src], async () => {
-    const signWithKey = dd => sign(shard.env.VALIDATOR_BOOT_PRIVATE, dd)
-    const { dataForDeploy, signed } = await deploy1(src, shard.validator, shard.observer, signWithKey,
-      { readFile: io.fs.promises.readFile, clock: io.clock })
-
-    console.log('info from', src, dataForDeploy);
-    await io.fs.promises.writeFile(TARGETS[src], JSON.stringify({ src, signed, dataForDeploy }, null, 2));
-  });
-});
-
-desc('deploy *.rho');
-task('default', ['startShard', 'rho_modules', ...values(TARGETS)], {concurrency: 1}, () => {
-  console.log({ SRCS });
-  shard.stopProposing();
-});
-
+}
 
 function parseEnv(txt) {
   const env = {};
