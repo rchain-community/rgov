@@ -1,8 +1,9 @@
-new Community, commMap, stdout(`rho:io:stdout`), lookup(`rho:registry:lookup`), 
+new Community, commMap, deployId(`rho:rchain:deployId`), stdout(`rho:io:stdout`), lookup(`rho:registry:lookup`),
 insertArbitrary(`rho:registry:insertArbitrary`), uriCh, ret, ack in {
     insertArbitrary!(bundle+{*Community},*uriCh) |
-    for ( uri <- uriCh ) {
-       stdout!(["#define $Community",*uri])
+    for ( @uri <- uriCh ) {
+       stdout!(["#define $Community", uri]) |
+       deployId!(uri)
     } |
     commMap!({}) |
     contract Community (@"new", @name, inbox, return) = {
@@ -15,8 +16,9 @@ insertArbitrary(`rho:registry:insertArbitrary`), uriCh, ret, ack in {
                     commMap!(comms) |
                     return!(Nil)
                 } else {
-                  // ISSUE: $Directory URI changes
-                  lookup!(`rho:id:6jw9y8b93hun8xgy96b9yyf3tn4hfxjdr66yk5o1hfhc4qqfbdj59o`,*ret) |
+                  match ("import", "./directory.rho", `rho:id:...`) {
+                    (_, _, directoryURI) => lookup!(directoryURI, *ret)
+                  } |
                   for ( Directory <- ret ) {
                     stdout!(["got directory", *Directory]) |
                     Directory!(*ret) |
