@@ -46,12 +46,11 @@
     systemDeployError: string,
   }} DeployInfo
 
-  @typedef { {| ExprString: {| data: string |} |} |
-              {| ExprInt: {| data: number |} |} |
-              {| ExprUri: {| data: string |} |} |
-              {| ExprMap: {| data: { [string]: RhoExpr } |}
+  @typedef { { ExprString: { data: string } } |
+              { ExprInt: { data: number } } |
+              { ExprUri: { data: string } } |
               // ... others; see https://github.com/rchain/rchain/blob/dev/node/src/main/scala/coop/rchain/node/api/WebApi.scala#L120
-            |} } RhoExpr;
+            } RhoExpr
   @typedef {{
     expr: RhoExpr[],
     block: LightBlockInfo,

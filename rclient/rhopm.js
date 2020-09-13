@@ -6,84 +6,33 @@ const { RNode } = require('./rnode');
 
 const { keys, freeze, fromEntries } = Object;
 
-const phloConfig = { phloPrice: 1, phloLimit: 250000 };
-
 export const rhoDir = 'rho_modules';
-export const rhoInfoPath = src => `${rhoDir}/${src.replace(/\.rho$/, '.json')}`;
+export const rhoInfoPath = (src) =>
+  `${rhoDir}/${src.replace(/\.rho$/, '.json')}`;
+export const importPattern = /match\s*\("import",\s*"(?<specifier>[^"]+)",\s*`(?<uri>rho:id:[^`]*)`\)/g;
 
-export function makeContractTask(TARGETS, { jake, io, shard, signWithKey }) {
-  const { fs: { promises: { readFile, writeFile } }, clock } = io;
-  return function contractTask(src, deps = []) {
-    const depTargets = deps.map(d => TARGETS[d]);
-    jake.desc(`deploy ${src}${deps.length ? ' -> ' : ''}${deps}`);
-    jake.file(TARGETS[src], [src, ...depTargets], async () => {
-      const { signed, dataForDeploy } = await deployContract(src, depTargets, shard,
-        { readFile: readFile, clock, signWithKey });
-      await writeFile(TARGETS[src], JSON.stringify({ src, signed, dataForDeploy }, null, 2));
-    });
+function log(...args) {
+  if (!process.env.LOG_RHOPM_QUIET) {
+    console.log(...args);
   }
 }
 
-
 /**
- * @param {string} src
- * @param {string} term
- * @param {number} timestamp
- * @param {Validator} validator
- * @param {Observer} observer
- * @param {(dd: DeployData) => DeployRequest} sign
+ * @param {{src: string, dataForDeploy: DataForDeploy }} info
+ * @typedef {{ data: { expr: RhoExpr }}} DataForDeploy
  */
-export async function deploy1(src, term, timestamp, validator, observer, sign) {
-  console.log('@@@', { src, imports: findImports(term) });
-
-  console.log('get recent block from', observer.apiBase());
-  const [{ blockNumber: validAfterBlockNumber }] = await observer.getBlocks(1);
-
-  const signed = sign({ term, timestamp, validAfterBlockNumber, ...phloConfig });
-  console.log('deploy:', { term: term.slice(0, 24), validAfterBlockNumber, api: validator.apiBase() });
-
-  const deployResult = await validator.deploy(signed);
-  console.log('deployed', src, { deployResult });
-
-  const onProgress = async () => {
-    console.log('standing by for return from', src, '...');
-    return false;
-  };
-  const dataForDeploy = await getDataForDeploy(observer, signed.signature, onProgress, { setTimeout, clearTimeout });
-  console.log('value from', src, dataForDeploy);
-  return { dataForDeploy, signed };
-}
-
-
-/**
- * @param {string} src
- * @param {string[]} depTargets
- */
-export async function deployContract(src, depTargets, shard, { readFile, clock, signWithKey }) {
-  console.log('reading', { depTargets });
-  const reading = depTargets.map(fn => readFile(fn, 'utf8'));
-  const info = (await Promise.all(reading)).map(txt => JSON.parse(txt));
-  const byDep = fromEntries(info.map(
-    ({ src, dataForDeploy: { data: { expr: { ExprUri: { data: uri } }}}}) => [src, uri]));
-  console.log({src, byDep});
-  const termRaw = await readFile(src, 'utf8');
-  const term = fixupImports(src, termRaw, byDep);
-  shard.startProposing();
-  const { dataForDeploy, signed } = await deploy1(src, term, clock().valueOf(), shard.validator, shard.observer, signWithKey);
-  shard.stopProposing();
-
-  console.log('info from', src, dataForDeploy);
-  return { signed, dataForDeploy };
-};
-
-export const importPattern = /match\s*\("import",\s*"(?<specifier>[^"]+)",\s*`(?<uri>rho:id:[^`]*)`\)/g;
-
-/**
- * @param {string} term
- * @returns { string[] }
- */
-export function findImports(term) {
-  return [...term.matchAll(importPattern)].map(m => notNull(m.groups).specifier);
+export function depEntry(info) {
+  const {
+    src: dep,
+    dataForDeploy: {
+      data: {
+        expr: {
+          ExprUri: { data: uri },
+        },
+      },
+    },
+  } = info;
+  return [dep, uri];
 }
 
 /**
@@ -96,11 +45,30 @@ export function fixupImports(src, term, uriByDep) {
     const dep = specifier.replace(/^\.\//, ''); // TODO: more path resolution?
     const uri = uriByDep[dep];
     if (!uri) {
-      throw new Error(`failed to satisfy ${src} -> ${dep} dependency among ${keys(uriByDep)}`);
+      throw new Error(
+        `failed to satisfy ${src} -> ${dep} dependency among ${keys(uriByDep)}`,
+      );
     }
-    return `match ("import", "${specifier}", \`${uri}\`)`
+    return `match ("import", "${specifier}", \`${uri}\`)`;
   };
   return term.replace(importPattern, each);
+}
+
+/**
+ * @param {string} src
+ * @param {string[]} depTargets
+ * @param {{ readFile: typeof import('fs').promises.readFile }} io
+ * @returns { Promise<string> }
+ */
+export async function resolveDeps(src, depTargets, { readFile }) {
+  log('resolve', { src });
+  const termRaw = await readFile(src, 'utf8');
+  log('resolve', { src, depTargets });
+  const reading = depTargets.map((fn) => readFile(fn, 'utf8'));
+  const info = (await Promise.all(reading)).map((txt) => JSON.parse(txt));
+  const byDep = fromEntries(info.map(depEntry));
+  log({ src, byDep });
+  return fixupImports(src, termRaw, byDep);
 }
 
 /**
@@ -109,12 +77,124 @@ export function fixupImports(src, term, uriByDep) {
  * @returns {T}
  */
 function notNull(x) {
-  if (!x) { throw new Error('null!'); }
+  if (!x) {
+    throw new Error('null!');
+  }
   return x;
 }
 
+/**
+ * @param {string} term
+ * @returns { string[] }
+ */
+export function findImports(term) {
+  return [...term.matchAll(importPattern)].map(
+    (m) => notNull(m.groups).specifier,
+  );
+}
 
-export function shardIO(readFileSync, http, sched, dotEnv = 'docker-shard/.env') {
+/** @type { (n: number) => (s: string) => string } */
+const abbr = (n) => (s) =>
+  (s.length > n ? `${s.slice(0, n)}...` : s).replace(/\s+/g, ' ');
+
+export function PkgManager({ io, shard, signWithKey }) {
+  const {
+    fs: {
+      promises: { readFile },
+    },
+    sched: { setTimeout, clearTimeout },
+    clock,
+  } = io;
+
+  /** @type { (parts?: string[], limit?: number) => (...more: string[]) => void } */
+  const progressFn = (parts = [], limit = 24) => (...more) => {
+    more.map(abbr(limit)).forEach((s) => {
+      parts.push(s);
+    });
+    log(...parts);
+  };
+
+  return freeze({
+    /**
+     * @param {string} src
+     * @param {string[]} deps
+     * @returns {Promise<{ src: string, signed: DeployRequest, dataForDeploy: DataForDeploy }>}
+     */
+    async deploy(src, deps) {
+      const depTargets = deps.map(rhoInfoPath);
+      const progress = progressFn([src]);
+
+      progress('deps:', `${depTargets.length}`);
+      const term = await resolveDeps(src, depTargets, { readFile });
+
+      progress('{', abbr(24)(term), '}', shard.observer.apiBase(), 'after:');
+      const timestamp = clock().valueOf();
+      const [
+        { blockNumber: validAfterBlockNumber },
+      ] = await shard.observer.getBlocks(1);
+
+      const signed = signWithKey({ term, timestamp, validAfterBlockNumber });
+
+      shard.startProposing();
+
+      progress(`${validAfterBlockNumber}`, 'sig:', signed.signature, 'deploy');
+      await shard.validator.deploy(signed);
+
+      const onProgress = async () => {
+        progress('@'); // (very) short for "still waiting for data at name"
+        return false; // don't abort; keep trying.
+      };
+      const dataForDeploy = await getDataForDeploy(
+        shard.observer,
+        signed.signature,
+        onProgress,
+        { setTimeout, clearTimeout },
+      );
+      progress(JSON.stringify(dataForDeploy.data.expr.ExprUri.data));
+      shard.stopProposing();
+
+      return { src, signed, dataForDeploy };
+    },
+  });
+}
+
+export function makeContractTask(TARGETS, { jake, io, shard, signWithKey }) {
+  const mgr = PkgManager({ io, shard, signWithKey });
+  const { writeFile } = io.fs.promises;
+
+  return function contractTask(src, deps = []) {
+    const depTargets = deps.map((d) => TARGETS[d]);
+    jake.desc(`deploy ${src}${deps.length ? ' -> ' : ''}${deps}`);
+    jake.file(TARGETS[src], [src, ...depTargets], async () => {
+      const { signed, dataForDeploy } = await mgr.deploy(src, deps);
+
+      await writeFile(
+        TARGETS[src],
+        JSON.stringify({ src, signed, dataForDeploy }, null, 2),
+      );
+    });
+  };
+}
+
+/** @type {(txt: string) => {[name: string]: string}} */
+function parseEnv(txt) {
+  const bindings = txt
+    .split('\n')
+    .filter((line) => !line.trim().startsWith('#'))
+    .map((line) => line.match(/(?<name>\w+)\s*=\s*(?<value>.*)/))
+    .filter((parts) => parts && parts.groups)
+    // @ts-ignore
+    .map((parts) => [parts.groups.name, parts.groups.value]);
+  return Object.fromEntries(bindings);
+}
+
+export function shardIO(
+  readFileSync,
+  http,
+  sched,
+  dotEnv = 'docker-shard/.env',
+  period = 2 * 1000,
+) {
   const fetch = nodeFetch({ http });
   const env = parseEnv(readFileSync(dotEnv, 'utf8'));
   const api = {
@@ -125,43 +205,41 @@ export function shardIO(readFileSync, http, sched, dotEnv = 'docker-shard/.env')
   const rnode = RNode(fetch);
 
   const proposer = rnode.admin(api.admin);
-  const SECOND = 1000;
   let proposing = false;
   let waiters = 0;
   let pid;
 
   return freeze({
-    env, ...api,
+    env,
+    ...api,
     validator: rnode.validator(api.boot),
     observer: rnode.observer(api.read),
     startProposing() {
       waiters += 1;
-      if (typeof pid !== 'undefined') { return; }
+      if (typeof pid !== 'undefined') {
+        return;
+      }
       pid = sched.setInterval(() => {
         if (!proposing) {
           proposing = true;
-          proposer.propose()
-          .then(() => { proposing = false; })
-          .catch(_err => { proposing = false; })
+          proposer
+            .propose()
+            .then(() => {
+              proposing = false;
+            })
+            .catch((_err) => {
+              proposing = false;
+            });
         }
-      }, 2 * SECOND);
+      }, period);
     },
     stopProposing() {
-      if (waiters <= 0) { return; }
-      waiters =- 1;
+      if (waiters <= 0) {
+        return;
+      }
+      waiters -= 1;
       sched.clearInterval(pid);
       pid = undefined;
     },
   });
-}
-
-function parseEnv(txt) {
-  const env = {};
-  for (const line of txt.split('\n')) {
-    if (line.trim().startsWith('#')) { continue; }
-    const parts = line.match(/(?<name>\w+)\s*=\s*(?<value>.*)/);
-    if (!parts) { continue; }
-    env[parts.groups.name] = parts.groups.value;
-  }
-  return env;
 }

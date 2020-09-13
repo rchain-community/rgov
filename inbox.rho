@@ -1,4 +1,6 @@
-new deployId(`rho:rchain:deployId`), stdout(`rho:io:stdout`), Inbox in {
+new Inbox,
+  deployId(`rho:rchain:deployId`),
+  stdout(`rho:io:stdout`) in {
 stdout!("begin") |
 contract Inbox(capabilities) = {
   new read, write, peek, box in {
