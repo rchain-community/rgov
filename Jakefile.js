@@ -43,6 +43,7 @@ task('default', ['startShard', rhoDir, ...values(TARGETS)], {concurrency: 1}, ()
   console.log({ SRCS });
 });
 
+desc('start local shard with validator, observer')
 task('startShard', [], () => {
   io.exec('docker-compose up -d', { cwd: 'docker-shard' });
   console.log('TODO: wait for "MultiParentCasper instance created." in the log');
