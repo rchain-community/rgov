@@ -1,4 +1,4 @@
-new stdout(`rho:io:stdout`), Inbox in {
+new deployId(`rho:rchain:deployId`), stdout(`rho:io:stdout`), Inbox in {
 stdout!("begin") |
 contract Inbox(capabilities) = {
   new read, write, peek, box in {
@@ -101,8 +101,9 @@ contract Inbox(capabilities) = {
 new capabilities, ack, ack1, ack2, ack3, ack4, ack5, message, uriCh, ret, insertArbitrary(`rho:registry:insertArbitrary`) in {
   stdout!("hello world") |
   insertArbitrary!(bundle+{*Inbox}, *uriCh)|
-  for (uri <- uriCh) {
-    stdout!(["#define $Inbox", *uri])
+  for (@uri <- uriCh) {
+    stdout!(["#define $Inbox", uri]) |
+    deployId!(uri)
   } |
   Inbox!(*capabilities) |
   for (receive, send, peek <- capabilities) {
