@@ -13,19 +13,19 @@ const io = {
   exec: require('child_process').execSync,
 };
 // @ts-ignore
-const { desc, directory, task } = require('jake');
+const { desc, directory, file, task } = require('jake');
 
 // Our own libraries are written as ES6 modules.
 require = require('esm')(module);
 const { nodeFetch } = require('./rclient/curl');
 const { RNode } = require('./rclient/rnode');
-const { getDataForDeploy } = require('./rnode-client/rnode-web');
 const { sign } = require('./rclient/deploySig');
+const { deploy1 } = require('./rclient/rhopm');
 
-const { freeze } = Object;
-const phloConfig = { phloPrice: 1, phloLimit: 250000 };
+const { freeze, fromEntries, values } = Object;
 
 const SRCS = ['inbox.rho', 'directory.rho', 'Community.rho'];
+const TARGETS = fromEntries(SRCS.map(src => [src, `rho_modules/${src.replace(/\.rho$/, '.json')}`]));
 
 exports.startShard = startShard;
 /**
@@ -48,7 +48,7 @@ let shard = ((readFileSync, http, sched, dotEnv = 'docker-shard/.env') => {
   };
   const rnode = RNode(fetch);
 
-  const proposer =  rnode.admin(api.admin);
+  const proposer = rnode.admin(api.admin);
   const SECOND = 1000;
   let proposing = false;
   const pid = sched.setInterval(() => {
@@ -64,40 +64,28 @@ let shard = ((readFileSync, http, sched, dotEnv = 'docker-shard/.env') => {
     env, ...api,
     validator: rnode.validator(api.boot),
     observer: rnode.observer(api.read),
-    stopProposing: () => sched.cancelInterval(pid),
+    stopProposing: () => sched.clearInterval(pid),
   });
 })(io.fs.readFileSync, io.http, io.sched);
 
-directory(',deployed');
+directory('rho_modules');
 
 SRCS.forEach(src => {
   desc(`deploy ${src}`);
-  task(`,deployed/${src}`, [src, ',deployed', 'startShard'], async () => {
-    const term = await io.fs.promises.readFile(src, 'utf8');
+  file(TARGETS[src], [src], async () => {
+    const signWithKey = dd => sign(shard.env.VALIDATOR_BOOT_PRIVATE, dd)
+    const { dataForDeploy, signed } = await deploy1(src, shard.validator, shard.observer, signWithKey,
+      { readFile: io.fs.promises.readFile, clock: io.clock })
 
-    console.log('get recent block from', shard.read);
-    const [{ blockNumber: validAfterBlockNumber }] = await shard.observer.getBlocks(1);
-    const timestamp = io.clock().valueOf();
-
-    const signed = sign(shard.env.VALIDATOR_BOOT_PRIVATE,
-      { term, timestamp, validAfterBlockNumber, ...phloConfig });
-    console.log('deploy:', { term: term.slice(0, 24), api: shard.boot });
-
-    const deployResult = await shard.validator.deploy(signed);
-    console.log('deployed', src, { deployResult });
-
-    const onProgress = async () => {
-      console.log('standing by for return from', src, '...');
-      return false;
-    }
-    const value = await getDataForDeploy(shard.observer, signed.signature, onProgress, { setTimeout, clearTimeout });
-    console.log('value from', src, value);
+    console.log('info from', src, dataForDeploy);
+    await io.fs.promises.writeFile(TARGETS[src], JSON.stringify({ src, signed, dataForDeploy }, null, 2));
   });
 });
 
 desc('deploy *.rho');
-task('default', SRCS.map(src => `,deployed/${src}`), {concurrency: 1}, () => {
+task('default', ['startShard', 'rho_modules', ...values(TARGETS)], {concurrency: 1}, () => {
   console.log({ SRCS });
+  shard.stopProposing();
 });
 
 
