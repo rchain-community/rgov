@@ -72,6 +72,7 @@
   |} }RhoExprWithBlock
 
   @typedef { {
+    apiBase(): string,
     getBlocks(depth: number): Promise<LightBlockInfo[]>,
     listenForDataAtName(request: DataRequest): Promise<DataResponse>,
     getBlock(hash: string): Promise<BlockInfo>,
@@ -80,10 +81,12 @@
   } } Observer
 
   @typedef { {
+    apiBase(): string,
     deploy(r: DeployRequest): Promise<string>
   } } Validator
 
   @typedef { {
+    adminBase(): string,
     propose(): Promise<string>
   } } RNodeAdmin
 

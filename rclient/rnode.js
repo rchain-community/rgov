@@ -42,18 +42,24 @@ export function RNode(fetch) {
   return freeze({
     /** @type { (apiBase: string) => Validator } */
     validator: (apiBase) => freeze({
+      apiBase: () => apiBase,
+
       /** @type { (request: DeployRequest) => Promise<string> } */
       deploy: request => fetchJSON(`${apiBase}/api/deploy`, request),
     }),
 
     /** @type { (adminBase: string) => RNodeAdmin } */
     admin: (adminBase) => freeze({
+      adminBase: () => adminBase,
+
       /** @type { () => Promise<string> } */
       propose: () => fetchJSON(`${adminBase}/api/propose`, ''),
     }),
 
     /** @type { (apiBase: string) => Observer } */
     observer: (apiBase) => freeze({
+      apiBase: () => apiBase,
+
       /** @type { (request: DataRequest) => Promise<DataResponse> } */
       listenForDataAtName: request => fetchJSON(`${apiBase}/api/data-at-name`, request),
 
