@@ -1,0 +1,131 @@
+swagger: "2.0"
+info:
+  title: "RChain node (rnode)"
+  version: "0.9.25.2"
+  license:
+    name: "Apache 2.0"
+    url: "http://www.apache.org/licenses/LICENSE-2.0.html"
+paths:
+  /status:
+    get:
+      responses:
+        "200":
+          description: "OK"
+          schema:
+            $ref: "#/definitions/StatusResponse"
+  /api/blocks/{depth}:
+    get:
+      tags:
+      - observer
+      parameters:
+        - in: path
+          name: depth
+          type: integer
+          required: true
+      responses:
+        "200":
+          description: "OK"
+          schema:
+            $ref: ""#/definitions/LightBlockInfo[]"
+  /api/block/{hash}:
+    get:
+      tags:
+      - observer
+      parameters:
+        - in: path
+          name: hash
+          type: string
+          required: true
+      responses:
+        "200":
+          description: "OK"
+          schema:
+            $ref: ""#/definitions/BlockInfo"
+  /api/deploy/{deployId}:
+    get:
+      tags:
+      - observer
+      parameters:
+        - in: path
+          name: deployId
+          type: string
+          required: true
+      responses:
+        "200":
+          description: "OK"
+          schema:
+            $ref: ""#/definitions/LightBlockInfo"
+  /api/explore-deploy:
+    post:
+      tags:
+        - observer
+      parameters:
+        - in: body
+          name: term
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: "OK"
+          schema:
+            $ref: "#/definitions/ExploratoryDeployResponse"
+  /api/data-at-name:
+    post:
+      tags:
+        - observer
+      parameters:
+        - in: body
+          name: request
+          schema:
+            $ref: "#/definitions/DataRequest"
+      responses:
+        "200":
+          description: "OK"
+          schema:
+            $ref: "#/definitions/DataResponse"
+  /api/deploy:
+    post:
+      tags:
+      - validator
+      parameters:
+      - in: body
+        name: request
+        required: true
+        schema:
+          $ref: "#/definitions/DeployRequest"
+      responses:
+        "200":
+          description: "OK"
+          schema:
+            type: string
+  /api/propose:
+    post:
+      tags:
+      - admin
+      responses:
+        "200":
+          description: "OK"
+          schema:
+            type: string
+definitions:
+  StatusResponse:
+    type: "object"
+    required: 
+      - address
+      - version
+      - peers
+      - nodes
+    properties:
+      address:
+        type: string
+        example: "rnode://ebffd419dea60220734ccea8875e86d87bac10a7@boot?protocol=40400&discovery=40404"
+      version:
+        type: string
+        example: "RChain Node 0.9.25.2 (3181d40a86c7d03ba005141150b390f0e82a4e88)"
+      peers:
+        type: integer
+        example: 1
+      nodes:
+        type: integer
+        example: 1
