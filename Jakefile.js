@@ -25,8 +25,7 @@ const { desc, directory, task } = jake;
 // Our own libraries are written as ES6 modules.
 // eslint-disable-next-line no-global-assign
 require = require('esm')(module);
-const { sign } = require('./rclient/deploySig');
-const rhopm = require('./rclient/rhopm');
+const { rhopm, signDeploy: sign } = require('rchain-api');
 
 /**
  * BEGIN project-specific tasks and dependencies.
@@ -37,14 +36,25 @@ const TARGETS = Object.fromEntries(
   SRCS.map((src) => [src, rhopm.rhoInfoPath(src)]),
 );
 
+// TODO: refactor:
+//  - move ./rclient (i.e. rhopm) to RChain-API
+//  - use io.fs.readFileSync to get shard URLs, account key
+//  - use io.http.request + URLs to make validator, observer
+//  - use validator + io.sched to make CapTP-like proxy to deployerId
+//  - rhopm needs proxy
+
 /**
  * See also https://github.com/rchain-community/rchain-docker-shard
  * https://github.com/rchain-community/liquid-democracy/issues/17
  * https://github.com/tgrospic/rnode-client-js
  */
 const shard = rhopm.shardIO(io.fs.readFileSync, io.http, io.sched);
-const signWithKey = dd =>
-  sign(shard.env.VALIDATOR_BOOT_PRIVATE, { ...dd, phloPrice: 1, phloLimit: 250000 });
+const signWithKey = (dd) =>
+  sign(shard.env.VALIDATOR_BOOT_PRIVATE, {
+    ...dd,
+    phloPrice: 1,
+    phloLimit: 250000,
+  });
 
 desc(`deploy ${SRCS}`);
 task('default', ['startShard', rhopm.rhoDir, ...Object.values(TARGETS)], () => {
