@@ -1,14 +1,14 @@
-new Community, commMap, stdout(`rho:io:stdout`), lookup(`rho:registry:lookup`), 
+new Community, commMap, deployId(`rho:rchain:deployId`), stdout(`rho:io:stdout`), lookup(`rho:registry:lookup`),
 insertArbitrary(`rho:registry:insertArbitrary`), uriCh, ret, ack in {
-    insertArbitrary!(*Community,*uriCh) |
-    for ( uri <- uriCh ) {
-       stdout!(["#define $Community",*uri])
+    insertArbitrary!(bundle+{*Community},*uriCh) |
+    for ( @uri <- uriCh ) {
+       stdout!(["#define $Community", uri]) |
+       deployId!(uri)
     } |
     commMap!({}) |
     contract Community (@"new", @name, inbox, return) = {
         new admin, methods, userlist, infoCh, ret in {
             userlist!([]) | methods!({}) |
-	          infoCh!({}) |
             stdout!("creating community.") |
             for (@comms <- commMap ) {
                 if ( comms.get(name) != Nil ) {
@@ -16,7 +16,9 @@ insertArbitrary(`rho:registry:insertArbitrary`), uriCh, ret, ack in {
                     commMap!(comms) |
                     return!(Nil)
                 } else {
-                  lookup!($Directory,*ret) |
+                  match ("import", "./directory.rho", `rho:id:...`) {
+                    (_, _, directoryURI) => lookup!(directoryURI, *ret)
+                  } |
                   for ( Directory <- ret ) {
                     stdout!(["got directory", *Directory]) |
                     Directory!(*ret) |
@@ -53,36 +55,32 @@ insertArbitrary(`rho:registry:insertArbitrary`), uriCh, ret, ack in {
             }
           } |
     contract Community (@"request", @name, @userid, return) = {
-        for ( @{map /\  {=name: *infoCh, ..._}} <- commMap ) {
-          commMap!(map) |
-          for ( @{info /\ {"request": *inbox, ..._ }}  <- infoCh ) {
             //stdout!(*info) |
+        for ( @{map /\  {=name: *infoCh, ..._}} <<- commMap ) {
+          for ( @{info /\ {"request": *inbox, ..._ }}  <<- infoCh ) {
             inbox!(["Community", "request", name, userid])|
-            infoCh!(info) |
             return!(info)
           }
         }
       } |
     contract Community (@"lookup", @name, return) = {
-        for ( @{map /\  {=name: *infoCh, ..._}} <- commMap ) {
-          commMap!(map) |
-          for ( info <- infoCh ) {
+        for ( @{map /\  {=name: *infoCh, ..._}} <<- commMap ) {
+          for ( info <<- infoCh ) {
             //stdout!(*info) |
-            infoCh!(*info) |
             return!(*info)
           }
         }
       } |
     contract Community (@"lookup", return) = {
-        for ( @map <- commMap ) {
+        for ( @map <<- commMap ) {
           //stdout!(map) |
-          commMap!(map) |
           return!(map)
         }
     } |
     Community!("new","test", Nil, *ret) |
     Community!("new","test2", Nil, *ret) |
-    for ( @{"admin": admin, "read": read, "write": write, "grant": grant} <- ret; _ <- ret ) {
+    for (_ <- ret) { Nil } |
+    for ( @{"admin": admin, "read": read, "write": write, "grant": grant} <- ret ) {
       stdout!("got em") |
       Community!("lookup","test",*stdout) |
       Community!("lookup","test2",*stdout) |
