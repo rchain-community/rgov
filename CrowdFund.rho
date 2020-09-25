@@ -8,14 +8,21 @@ REVAddress(`rho:REVAddress`) in {
       holdingsCh!([])
       |
       contract beneficiarySeat(@"claim", dest, ret) = {
-        if (BLOCK_TIME > deadline) {
-          for (@holdings <<- holdingsCh) {
-            parallelMap(holdings, transfer!(EACH, dest, ACC), ret)
-          }
-        } else {
+        if (BLOCK_TIME < deadline) {
           ret3!((false, {"deadline": deadline, "current": BLOCK_TME,
             "message": "payout not available until after deadline"}))
+        } else if (contributionTotal < target) {
+          ret3!((false, {"deadline": deadline, "current": BLOCK_TME,
+            "message": "funding target not reached"}))
+        } else {
+          for (@holdings <<- holdingsCh) {
+            parallelMap(holdings, transfer!(EACH, dest, ACC), *ret)
+          }
         }
+      }
+      |
+      contract publicFacet(@"status", return) = {
+        return!({"terms": {"target": target, "deadline": deadline}, "pledges": pledges})
       }
       |
       contract publicFacet(@"contribute",
@@ -30,12 +37,18 @@ REVAddress(`rho:REVAddress`) in {
                 match txOk {
                   true => for (@true <- ack) {
                     ret2!(contributorSeat) |
-                    contract seat("withdraw", ret3) = {
-                      if(BLOCK_TIME > deadline) {
-                        ret3!((true, refund))
-                      } else {
+                    contract contributorSeat("withdraw", ret3) = {
+                      if(BLOCK_TIME <= deadline) {
                         ret3!((false, {"deadline": deadline, "current": BLOCK_TME,
                           "message": "refund not available until after deadline"}))
+                      } else if (contributions >= target) {
+                        ret3!((false, {"contributions": TODO, "target": target,
+                          "message": "refund not available after funding target reached"}))
+                      } else {
+                        for (@holdings <- holdingsCh) {
+                          holdingsCh!(holdings ++ [refund]) |
+                          ret3!((true, "pledge accepted"))
+                        }
                       }
                     }
                   }
