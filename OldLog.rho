@@ -1,0 +1,26 @@
+new Log, 
+stdout(`rho:io:stdout`),
+insertArbitrary(`rho:registry:insertArbitrary`) in {
+    contract Log(return) = {
+        new logCh, myLog in{
+            logCh!([]) | 
+            return!(*myLog) |
+            contract myLog(message, return) = {
+                for(list <- logCh) {
+                    logCh!(list ++ [message]) |
+                    return!(true)
+                }
+            } 
+            contract myLog(return) = {
+                for(list <- logCh) {
+                    return!(list) |
+                    logCh!([])
+                }
+            }
+        }
+    }
+    insertArbitrary!(*Log, *uriCh) |
+        for(@uri <- uriCh) {
+          stdout!(["Log contract created at",uri])
+        }
+}

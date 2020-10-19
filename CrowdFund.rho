@@ -1,0 +1,51 @@
+// UNTESTED sketch
+new log, CrowdFund,
+REVAddress(`rho:REVAddress`) in {
+    contract CrowdFund(@target /\ Int, @deadline /\ Int, ret1) = {
+        new beneficiarySeat, publicFacet, holdingsCh in {
+            ret1!({"beneficiarySeat": *beneficiarySeat, "publicFacet": publicFacet}) |
+
+            holdingsCh!([])
+            |
+            contract beneficiarySeat(@"claim", dest, ret) = {
+                if (BLOCK_TIME > deadline) {
+                    for (@holdings <<- holdingsCh) {
+                        parallelMap(holdings, transfer!(EACH, dest, ACC), ret)
+                    }
+                } else {
+                    ret3!((false, {"deadline": deadline, "current": BLOCK_TME,
+                                    "message": "payout not available until after deadline"}))
+                }
+            }
+            |
+            contract publicFacet(@"contribute",
+                // a payment is a vault from unforgeable along with the unforgeable
+                @{"vault": *pv, "key": *punf},
+                ret2
+            ) = {
+                new refundCh, contributorSeat in {
+                    REVAddress!("fromUnforgeable", *self, *contributorSeat) | for(refund <- refundCh) {
+                        new txCh in {
+                            transfer!({"vault": *pv, "key": *punf}, refund, *ack) | for (@txOk <- txCh) {
+                                match txOk {
+                                    true => for (@true <- ack) {
+                                        ret2!(contributorSeat) |
+                                        contract seat("withdraw", ret3) = {
+                                            if(BLOCK_TIME > deadline) {
+                                                ret3!((true, refund))
+                                            } else {
+                                                ret3!((false, {"deadline": deadline, "current": BLOCK_TME,
+                                                            "message": "refund not available until after deadline"}))
+                                            }
+                                        }
+                                    }
+                                    _ => ret3!((false, "tx failed @@why"))
+                                }
+                            }               
+                        }
+                    }
+                }
+            }
+        }
+    }
+}

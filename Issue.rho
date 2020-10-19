@@ -1,45 +1,23 @@
-/**
- * @title Ballot - a one-member-one-vote contract
- *
- * "A member may cast his or her vote solely by means of written
- * or electronic ballot. Whether or not the member is present in
- * person at the meeting or by proxy, his or her vote will be counted
- * only if (a) it is submitted on the form of ballot furnished by
- * the Secretary for use in connection with the meeting, and
- * (b) the executed ballot is received by the Secretary no later than
- * whatever deadline for ballot submissions the
- * Nominating and Governance Committee may designate for the purpose
- * of allowing the Secretary sufficient time to count the votes cast,
- * which deadline may not be more than seven days prior to the
- * commencement of the meeting"
- * -- Artile II section 6 Amended Bylaws October 8, 2018
- * https://github.com/rchain/board/blob/master/Bylaws.md#user-content-voting
- *
- * Note: the questions and answers are fixed before any ballots are issued.
- *
- * TODO: cancelBallot method in case a member loses control
- *       of their ballot and requests a re-issue.
- * ISSUE: put voter states in a map to give them names (e.g. to support cancel)?
- * ISSUE: keep voter metadata?
- */
-new Secretary, Voter,
+// @title Voting with liquid delegation.
+// originally from https://github.com/rchain-community/rchain-api/blob/master/examples/voting-locker/chairRole.rho
+new Issue,
 trace(`rho:io:stderr`),
 log(`rho:io:stderr`)
 in {
   new insertArbitrary(`rho:registry:insertArbitrary`), uriCh in {
-    insertArbitrary!(bundle+{*Secretary}, *uriCh) | for(@uri <- uriCh) {
-      log!({"Secretary": uri})
+    insertArbitrary!(bundle+{*Issue}, *uriCh) | for(@uri <- uriCh) {
+      stdout!(["#define $Issue", uri])
     }
   }
   |
 
-  // Demo / example
-  new ack, v1Ch, v2Ch, v3Ch, v4Ch in {
-    // Construct a Secretary by giving a title and a map from
-    // question to set of answers.
-    Secretary!("Lincoln v Douglas", {"President": Set("Lincoln", "Douglas")}, *ack) |
-    for (secretary <- ack) {
-      log!({"Secretary returned": *secretary}) |
+  // See example / demo below.
+  //contract Issue(@{proposalNames /\ Set(hd, ...tail)}, return) = {
+  contract Issue(@proposalNames , return) = {
+    new admin, tally, voterCh in {
+      stdout!("creating ballot") |
+      return!(bundle+{*admin}, bundle+{*tally}) |
+       voterCh!({}) |
 
       // Instruct the secretary to issueBallot for each voter.
       secretary!("issueBallot", *v1Ch) | // "Owans"
@@ -162,49 +140,30 @@ in {
     }
   }
   |
-  contract Voter(@questions, return) = {
-    new voter, choicesCh in {
-      // return a channel for casting votes and for reading the results
-      // ISSUE: we trust the caller to peek at the choices and not consume them.
-      return!(bundle+{*voter}, bundle-{*choicesCh}) |
-      choicesCh!({}) |
-      contract voter(@"vote", @newChoices /\ Map, return) = {
-        // log!({"voter": *voter, "newChoices": newChoices}) |
-        for (@previous <- choicesCh) {
-          // log!({"voter": *voter, "newChoices": newChoices, "previous": previous}) |
-          new checkChoices in {
-            checkChoices!(newChoices, previous)
-            |
-            // ISSUE: reuse reduce from some standard library?
-            contract checkChoices(@toCheck, @checked) = {
-              match toCheck {
-                {} => {
-                  log!({"voter": *voter, "choices": checked, "replaced": previous}) |
-                  choicesCh!(checked) |
-                  return!((true, checked))
-                }
-                { q: a, ...rest} => {
-                  match questions.get(q) {
-                    Nil => {
-                      choicesCh!(previous) |
-                      log!({"voter": *voter, "no such question": q}) |
-                      return!((false, "no such question", q))
-                    }
-                    answers => {
-                      match answers.contains(a) {
-                        false => {
-                          choicesCh!(previous) |
-                          log!({"voter": *voter, "question": q, "no such answer": a, "checked": checked}) |
-                          return!((false, "no such answer", q, a))
-                        }
-                        true => {
-                          checkChoices!(rest, checked.set(q, a))
-                        }
-                      }
-                    }
-                  }
-                }
-              }
+  new bCh, v1Ch, v2Ch, v3Ch, v4Ch in {
+    trace!("creating Issue") |
+    Issue!(Set("Lincoln", "Douglas"), *bCh) |
+    for (admin, tally <- bCh) {
+      trace!({"Issue returned": *admin}) |
+      admin!("giveRightToVote", "Owans", *v1Ch) |
+      admin!("giveRightToVote", "jimscarver", *v2Ch) |
+      admin!("giveRightToVote", "aviation_hacker", *v3Ch) |
+      admin!("giveRightToVote", "momchilov", *v4Ch) |
+      for(v1 <- v1Ch; v2 <- v2Ch; v3 <- v3Ch; v4 <- v4Ch) {
+        v3!("delegate", "jimscarver", *v3Ch) |
+        v2!("delegate", "Owens", *v3Ch) |
+        v2!("delegate", "Owans", *v3Ch) |
+        for(_ <- v3Ch; _ <- v3Ch ) {
+          trace!("voting.") |
+          v1!("vote", "Lincoln", *trace, *v1Ch) |
+          v1!("vote", "Douglas", *trace, *v1Ch) |
+          v1!("vote", "Abe Lincoln", *trace, *v1Ch) |
+          v4!("vote", "Lincoln", *trace, *v2Ch) |
+          for(_ <- v1Ch; _ <- v1Ch; _ <- v1Ch; _ <- v2Ch) {
+            trace!("votes done") |
+            tally!(*bCh) |
+            for(@w <- bCh) {
+              trace!({"tally": w})
             }
           }
         }

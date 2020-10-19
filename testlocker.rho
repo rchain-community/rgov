@@ -1,0 +1,23 @@
+new return(`rho:rchain:deployId`), stdout(`rho:io:stdout`), 
+mylocker(`rho:rchain:deployerId`), ack in {
+stdout!("we are 1") |
+
+ mylocker!("get","x",*ack) |
+ for (@x <- ack ) {
+stdout!(("x = ", x)) |
+  mylocker!("set","z", 1+x ,*ack) |
+ for (_ <- ack ) {
+stdout!("we set y") |
+  mylocker!("read", *ack) |
+   for (mystuff <- ack ) {stdout!(("we are done", *mystuff)) |
+    return!(*mystuff)
+}}}}
+/*
+"we are 1"
+"we are 2"
+("x = ", 5)
+"we are 3"
+"we set y"
+"we are 2"
+("we are done", {"x" : 5, "y" : 6, "z" : 6})
+*/

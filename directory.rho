@@ -1,4 +1,4 @@
-new directory in {
+new deployId(`rho:rchain:deployId`), directory in {
   contract directory(capabilities) = {
     new mapCh, read, write, grant in {
      mapCh!({}) |
@@ -41,8 +41,9 @@ new directory in {
   new stdout(`rho:io:stdout`), lookup(`rho:registry:lookup`), insertArbitrary(`rho:registry:insertArbitrary`),
     uriCh, read, write, ret, ack in {
     insertArbitrary!(bundle+{*directory},*uriCh) |
-    for (uri <- uriCh ) {
-      stdout!(["#define $Directory",*uri])
+    for (@uri <- uriCh ) {
+      stdout!(["#define $Directory", uri]) |
+      deployId!(uri)
     } |
     directory!(*ret) |
     for ( @{"read": read, "write": write, "grant": grant, ..._ } <- ret ) {
