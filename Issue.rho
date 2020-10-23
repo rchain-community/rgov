@@ -127,16 +127,16 @@ in {
       admin!("giveRightToVote", "aviation_hacker", *v3Ch) |
       admin!("giveRightToVote", "momchilov", *v4Ch) |
       for(v1 <- v1Ch; v2 <- v2Ch; v3 <- v3Ch; v4 <- v4Ch) {
-        v3!("delegate", "jimscarver", *v3Ch) |
-        v2!("delegate", "Owens", *v3Ch) |
-        v2!("delegate", "Owans", *v3Ch) |
-        for(_ <- v3Ch; _ <- v3Ch ) {
+        v3!("delegate", "jimscarver", *v2Ch) |
+        v2!("delegate", "Owens", *v1Ch) |
+        v2!("delegate", "Owans", *v4Ch) |
+        for(_ <- v2Ch; _ <- v1Ch; _ <- v4Ch ) {
           trace!("voting.") |
           v1!("vote", "Lincoln", *trace, *v1Ch) |
-          v1!("vote", "Douglas", *trace, *v1Ch) |
-          v1!("vote", "Abe Lincoln", *trace, *v1Ch) |
-          v4!("vote", "Lincoln", *trace, *v2Ch) |
-          for(_ <- v1Ch; _ <- v1Ch; _ <- v1Ch; _ <- v2Ch) {
+          v1!("vote", "Douglas", *trace, *v2Ch) |
+          v1!("vote", "Abe Lincoln", *trace, *v3Ch) |
+          v4!("vote", "Lincoln", *trace, *v4Ch) |
+          for(_ <- v1Ch; _ <- v2Ch; _ <- v3Ch; _ <- v4Ch) {
             trace!("votes done") |
             tally!(*bCh) |
             for(@w <- bCh) {
