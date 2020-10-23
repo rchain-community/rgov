@@ -1,12 +1,15 @@
 // @title Voting with liquid delegation.
 // originally from https://github.com/rchain-community/rchain-api/blob/master/examples/voting-locker/chairRole.rho
 new Issue,
+deployId(`rho:rchain:deployId`),
 trace(`rho:io:stderr`),
 stdout(`rho:io:stdout`)
 in {
   new insertArbitrary(`rho:registry:insertArbitrary`), uriCh in {
     insertArbitrary!(bundle+{*Issue}, *uriCh) | for(@uri <- uriCh) {
       stdout!(["#define $Issue", uri])
+      |
+      deployId!(uri)
     }
   }
   |

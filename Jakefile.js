@@ -27,7 +27,7 @@ const { rhopm, makeAccount, signDeploy: sign } = require('rchain-api');
  * BEGIN project-specific tasks and dependencies.
  */
 
-const SRCS = ['inbox.rho', 'directory.rho', 'Community.rho'];
+const SRCS = ['inbox.rho', 'Issue.rho', 'directory.rho', 'Community.rho'];
 const TARGETS = Object.fromEntries(
   SRCS.map((src) => [src, rhopm.rhoInfoPath(src)]),
 );
@@ -78,4 +78,5 @@ const contractTask = rhopm.makeContractTask(TARGETS, {
 
 contractTask('inbox.rho');
 contractTask('directory.rho');
+contractTask('Issue.rho');
 contractTask('Community.rho', ['directory.rho']);
