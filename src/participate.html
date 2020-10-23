@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <title>Liquid Democracy Participation Experiment</title>
+</head>
+
+<body>
+  <div>
+    <h1>Liquid Democracy Participation Experiment</h1>
+
+    <form>
+      <fieldset>
+        <div>
+          <select id="nodeControl">
+            <option name="node" value="https://observer.services.mainnet.rchain.coop" selected>mainnet</option>
+            <option name="node" value="https://observer.testnet.rchain.coop">testnet</option>
+          </select>
+        </div>
+        <div id="actionControl" class="mount">
+          <label>Action:
+            <select name="action">
+              <option>Check Registration</option>
+            </select>
+            </span>
+          </label>
+          <!-- prettier-ignore -->
+          <textarea id='rholang-term' cols="80" rows="16"></textarea>
+        </div>
+        <button id="run">Run</button>
+      </fieldset>
+    </form>
+    <section id="resultSection" style="display: none">
+      <h2>Result</h2>
+      <pre id="result"></pre>
+      <h2>Block Info</h2>
+      <small>
+        <pre id="blockInfo"></pre>
+      </small>
+    </section>
+    <section id="problemSection" style="display: none">
+      <h3>Problem</h3>
+      <pre id="problem"></pre>
+    </section>
+  </div>
+  <hr />
+  <address>
+    by Dan Connolly, Jim Whitescarver,
+    <br />
+    and the <a href="https://github.com/rchain-community/">RChain Community</a>
+  </address>
+
+  <script type="module">
+    import './participate.js';
+  </script>
+</body>
+
+</html>
