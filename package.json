@@ -2,7 +2,7 @@
   "name": "liquid-democracy-rchain",
   "version": "0.0.1",
   "description": "",
-  "main": "locker.rho",
+  "main": "Jakefile.js",
   "scripts": {
     "lint-fix": "eslint --fix '**/*.{js,jsx}'",
     "lint-check": "eslint '**/*.{js,jsx}'"
