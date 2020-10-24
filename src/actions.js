@@ -9,6 +9,24 @@ export const actions = {
   helloWorld: {
     template: `new world in { world!("Hello!") }`,
   },
+  checkBalance: {
+    fields: {
+      myGovRevAddr: { type: 'walletRevAddr' },
+    },
+    template: `new return, lookup(\`rho:registry:lookup\`), RevVaultCh, vaultCh, balanceCh
+    in {
+      lookup!(\`rho:rchain:revVault\`, *RevVaultCh) |
+      for (@(_, RevVault) <- RevVaultCh) {
+        @RevVault!("findOrCreate", myGovRevAddr, *vaultCh) |
+        for (@(true, vault) <- vaultCh) {
+          @vault!("balance", *balanceCh) |
+          for (@balance <- balanceCh) {
+            return!({"revAddr": myGovRevAddr, "balance (REVe-8)": balance})
+          }
+        }
+      }
+    }`,
+  },
   checkRegistration: {
     fields: {
       myGovRevAddr: { type: 'walletRevAddr' },

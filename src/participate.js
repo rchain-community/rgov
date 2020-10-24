@@ -122,13 +122,17 @@ function buildUI({ html, formValue, busy, getEthProvider, mount, fetch }) {
         const exprs = values(state.fields).map(({ value, type }) =>
           type === 'uri' ? `\`${value}\`` : JSON.stringify(value),
         );
-        state.term = `match (${exprs.join(', ')}) {
-            (${keys(state.fields).join(', ')}) => {${
+        state.term = `match [${exprs.join(', ')}] {
+            [${keys(state.fields).join(', ')}] => {${
           actions[state.action].template
         }
       }
     }`;
       }
+      // TODO: use net selector onchange to update observer
+      observer = rnode.observer(formValue('#nodeControl'));
+      state.result = undefined;
+      state.problem = undefined;
     },
     /** @type {Record<string, FieldSpec>} */
     fields: {},
@@ -280,10 +284,12 @@ function runControl(state, { html, busy }) {
           <pre id="result">
 ${state.result ? pprint(state.result.map(RhoExpr.parse)) : ''}</pre
           >
+          <!-- TODO
           <h2>Block Info</h2>
           <small>
             <pre id="blockInfo"></pre>
           </small>
+          -->
         </section>
         <section id="problemSection" ...${hide(!state.problem)}>
           <h3>Problem</h3>
