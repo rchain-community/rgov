@@ -9,6 +9,23 @@ export const actions = {
   helloWorld: {
     template: `new world in { world!("Hello!") }`,
   },
+  endorse: {
+    fields: {
+      them: { type: 'string', value: '' },
+      endorseContract: { type: 'uri', value: '@@todo' },
+    },
+    template: `
+    new deployId(\`rho:rchain:deployId\`),
+      lookup(\`rho:registry:lookup\`),
+      regCh
+    in {
+      lookup!(endorseContract, *regCh) |
+      for (endorse <- regCh) {
+        endorse!(them, *deployId)
+      }
+    }
+    `,
+  },
   checkBalance: {
     fields: {
       myGovRevAddr: { type: 'walletRevAddr' },

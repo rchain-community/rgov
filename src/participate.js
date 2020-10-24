@@ -16,15 +16,49 @@ const { freeze, keys, values, entries } = Object;
 
 // TODO: UI for phloLimit
 const maxFee = { phloPrice: 1, phloLimit: 0.05 * 100000000 };
-// TODO: rotate validators
-const VALIDATOR_BASE = 'https://node2.testnet.rchain-dev.tk';
+
+// TODO: ISSUE: are networks really const? i.e. design-time data?
+const NETWORKS = {
+  testnet: {
+    observerBase: 'https://observer.services.mainnet.rchain.coop',
+    // TODO: rotate validators
+    validatorBase: 'https://node2.testnet.rchain-dev.tk',
+  },
+  mainnet: {
+    observerBase: 'https://observer.services.mainnet.rchain.coop',
+  },
+};
+
+const AGM2020_MEMBERS =
+  'rho:id:admzpibb3gxxp18idri7h6eneg4io6myfmcmjhufc6asy73bgrojop';
+
+// rnode.js:63 POST https://observer.services.mainnet.rchain.coop/api/explore-deploy 400 (Bad Request)
+// rnode.js:73 Uncaught (in promise) Error: File write failed: No space left on device
+const ROLL = `11112fZEixuoKqrGH6BxAPayFD8LWq9KRVFwcLvA5gg6GAaNEZvcKL
+11112PaJTzAUqVkfpyjUJpk2XWKS2QMtFfFE5iWq62vGRUaEH1ZcXj
+11112UccvordMtYMk3ALmZJRhCrjHsnxh52b2wqcDexQ63xoZAjVZF
+11112JXatAMBStxF79MbUyY9AbkiCjHFx2DAjwXvqVpQ3Yk24YQEDC
+1111mQx7bW17rJwKeYnUWAB4fN3yA1bTH4U6obRDH7dyv8mGvXSQz
+11112PNUTSEf1Gujfj4u415KQLy8S3NTWYW6QxdjDAK5Hj4RbHrMti
+11112hh67Rr4BVevdLYy46TKSASeapfCgeWWZpB5v7nf6agCK3tHF4
+1111J5bVLwMGNroxr9DCQguJnzWR74o4H6Tb4rakexoHSzZcow47r
+1111ye6MaahuvJfzUofP1bA5K5BxXD6Vbo6bi3HfaJnJaFq6mUpxB
+1111NLmTJyXbHqALwGJxz73DSXtuzXLoBqg6pzBvEVLWjdzBYaYCG
+1111229Y7xRnTRPMqbbXVyzAEVvAA1ikBvZNP3crck2Vji1dNpKbvH
+1111Fk3FQgPGCozndA28Kkkpk34Z4hAen8uAfsLhGw5JnXG8TtdZU
+111128XWevfc8z89JzxnwqPR9ive6uwBGCeo72p8TKqT8wRoy6ZgLo
+11112AQiVPXmASU2SGnS2qCQN5p3QyEcp2mZTYn5KmNwEKEswfuRp2
+`
+  .trim()
+  .split('\n');
 
 /**
+ * TODO: expect rather than unwrap (better diagnostics)
  * @param {T?} x
  * @returns {T}
  * @template T
  */
-function the(x) {
+function unwrap(x) {
   if (!x) throw new TypeError('unexpected null / undefined');
   return x;
 }
@@ -34,7 +68,7 @@ const optionSelected = (/** @type { boolean } */ bool) =>
 
 document.addEventListener('DOMContentLoaded', () => {
   /** @type {(selector: string) => HTMLElement} */
-  const $ = (selector) => the(document.querySelector(selector));
+  const $ = (selector) => unwrap(document.querySelector(selector));
 
   const html = htm.bind(m);
 
@@ -129,52 +163,88 @@ function buildUI({
   mount,
   fetch,
 }) {
-  let action = 'helloWorld';
   const rnode = RNode(fetch);
-  let observer = rnode.observer(formValue('#nodeControl'));
-  let validator = rnode.validator(VALIDATOR_BASE);
+  let action = 'helloWorld';
+  let network = 'testnet';
+  /** @type {{ observer: Observer, validator: Validator}} shard */
+  let shard;
+  let term = ''; //@@DEBUG
+  /** @type {Record<string, string>} */
+  let fieldValues = {};
 
   const state = {
+    get shard() {
+      return shard;
+    },
+    get network() {
+      return network;
+    },
+    set network(value) {
+      const net = NETWORKS[value];
+      if (!net) return;
+      network = value;
+      console.log({ network, net });
+      shard = {
+        observer: rnode.observer(net.observerBase),
+        validator: rnode.validator(net.validatorBase),
+      };
+
+      if (network !== 'mainnet') return; // TODO: roll on testnet?
+      lookupSet(shard.observer, AGM2020_MEMBERS).then((value) => {
+        state.roll = value;
+      });
+    },
+    /** @type { RevAddress[] } */
+    roll: ROLL, // @@DEBUG
     get action() {
       return action;
     },
     set action(value) {
       if (typeof value !== 'string') return;
       action = value;
-      state.fields = actions[state.action].fields || {};
+      const fields = actions[state.action].fields || {};
+      const init = Object.fromEntries(
+        entries(fields).map(([name, { value }]) => [name, value || '']),
+      );
+      state.fields = init;
+    },
+    get fields() {
+      return fieldValues;
+    },
+    set fields(/** @type {Record<String, string>} */ value) {
+      fieldValues = value;
+      const fields = actions[state.action].fields;
       const template = actions[state.action].template;
-      state.term = template;
-      if (keys(state.fields).length > 0) {
-        const exprs = values(state.fields).map(({ value, type }) =>
-          type === 'uri' ? `\`${value}\`` : JSON.stringify(value),
+      if (fields) {
+        const exprs = entries(fieldValues).map(([name, value]) =>
+          fields[name].type === 'uri' ? `\`${value}\`` : JSON.stringify(value),
         );
         state.term = `match [${exprs.join(', ')}] {
-            [${keys(state.fields).join(', ')}] => {${
-          actions[state.action].template
-        }
+          [${keys(fieldValues).join(', ')}] => {
+            ${template}
+          }
+        }`;
+      } else {
+        state.term = template;
       }
-    }`;
-      }
-      // TODO: use net selector onchange to update observer
-      observer = rnode.observer(formValue('#nodeControl'));
+    },
+    get term() {
+      return term;
+    },
+    set term(value) {
+      term = value;
       state.result = undefined;
       state.problem = undefined;
-    },
-    /** @type {Record<string, FieldSpec>} */
-    fields: {},
-    term: '',
-    get observer() {
-      return observer;
-    },
-    get validator() {
-      return validator;
     },
     result: undefined,
     problem: undefined,
   };
   state.action = action; // compute initial term
+  state.network = 'testnet'; // initialize shard
 
   mount('#actionControl', actionControl(state, { html, getEthProvider }));
+  mount('#groupControl', groupControl(state, { html }));
+  mount('#netControl', networkControl(state, { html }));
   mount(
     '#runControl',
     runControl(state, {
@@ -190,20 +260,22 @@ function buildUI({
 
 /**
  * @param {unknown} ctrl
- * @returns {HTMLInputElement | HTMLSelectElement}
+ * @returns {HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement}
  */
 function ckControl(ctrl) {
   if (
     !(ctrl instanceof HTMLInputElement) &&
-    !(ctrl instanceof HTMLSelectElement)
+    !(ctrl instanceof HTMLSelectElement) &&
+    !(ctrl instanceof HTMLTextAreaElement)
   )
     throw TypeError(String(ctrl));
   return ctrl;
 }
+
 /**
  * @param {{
  *   action: string,
- *   fields: Record<string, FieldSpec>,
+ *   fields: Record<string, string>,
  *   term: string,
  * }} state
  * @param {HTMLBuilder & EthSignAccess} io
@@ -221,19 +293,31 @@ function actionControl(state, { html, getEthProvider }) {
     MetaMaskAccount(ethereum),
   );
 
-  const fields = (/** @type {Record<string, FieldSpec>} */ fields) =>
+  const fty = (action, name) => {
+    const f = actions[action].fields;
+    if (!f) return 'string';
+    return f[name].type;
+  };
+
+  const fields = (
+    /** @type {string} */ action,
+    /** @type {Record<string, string>} */ fields,
+  ) =>
     entries(fields).map(
-      ([name, { value, type }]) =>
+      ([name, value]) =>
         html`<br /><label
             >${name}:
             <input
               name=${name}
               value=${value}
               onchange=${(/** @type {Event} */ event) => {
-                state.fields[name].value = ckControl(event.target).value;
+                state.fields = {
+                  ...state.fields,
+                  ...{ [name]: ckControl(event.target).value },
+                };
               }}
           /></label>
-          ${type === 'walletRevAddr'
+          ${fty(action, name) === 'walletRevAddr'
             ? html`<button
                 onclick=${(/** @type {Event} */ event) => {
                   event.preventDefault();
@@ -242,8 +326,10 @@ function actionControl(state, { html, getEthProvider }) {
                       console.log('@@@', { ethAddr });
                       const revAddr = getAddrFromEth(ethAddr);
                       if (!revAddr) throw new Error('bad ethAddr???');
-                      state.fields[name].value = revAddr;
-                      state.action = state.action; // rebuild term. hm.
+                      state.fields = {
+                        ...state.fields,
+                        ...{ [name]: revAddr },
+                      };
                       m.redraw();
                     }),
                   );
@@ -267,9 +353,19 @@ function actionControl(state, { html, getEthProvider }) {
             ${options(keys(actions))}
           </select>
         </label>
-        ${fields(state.fields)}
+        ${fields(state.action, state.fields)}
         <br />
-        <textarea cols="80" rows="16">${state.term}</textarea>
+        <textarea
+          cols="80"
+          rows="16"
+          onchange=${(event) => {
+            console.log('@@term textarea before', { term: state.term });
+            state.term = ckControl(event.target).value;
+            console.log('@@term textarea after', { term: state.term });
+          }}
+        >
+${state.term}</textarea
+        >
       `;
     },
   });
@@ -277,8 +373,7 @@ function actionControl(state, { html, getEthProvider }) {
 
 /**
  * @param {{
- *   observer: Observer,
- *   validator: Validator,
+ *   shard: { observer: Observer, validator: Validator },
  *   term: string,
  *   result?: RhoExpr[],
  *   problem?: string,
@@ -301,7 +396,7 @@ function runControl(
   const pprint = (obj) => JSON.stringify(obj, null, 2);
 
   async function explore(/** @type {string} */ term) {
-    const obs = state.observer;
+    const obs = state.shard.observer;
     state.problem = undefined;
     state.result = undefined;
     try {
@@ -317,8 +412,8 @@ function runControl(
   }
 
   async function deploy(/** @type {string} */ term) {
-    const obs = state.observer;
-    const val = state.validator;
+    const obs = state.shard.observer;
+    const val = state.shard.validator;
     state.problem = undefined;
     state.result = undefined;
 
@@ -351,9 +446,9 @@ function runControl(
         '#deploy',
         (async () => {
           const deploy = await startTerm(term, val, obs, account);
-          console.log(state.action, { deploy });
+          console.log('@@DEBUG', state.action, { deploy });
           const { expr } = await listenAtDeployId(obs, deploy);
-          console.log(state.action, { expr });
+          console.log('@@DEBUG', state.action, { expr });
           state.result = [expr];
         })(),
       );
@@ -399,6 +494,79 @@ ${state.result ? pprint(state.result.map(RhoExpr.parse)) : ''}</pre
           <h3>Problem</h3>
           <pre id="problem">${state.problem ? state.problem : ''}</pre>
         </section>`;
+    },
+  });
+}
+
+/**
+ * @param {Observer} observer
+ * @param {string} uri
+ */
+async function lookupSet(observer, uri) {
+  const term = `
+    new ret, ch, lookup(\`rho:registry:lookup\`) in {
+      lookup!(\`${uri}\`, *ch) |
+      for (@set <- ch) { ret!(set.toList())}
+    }`;
+  const x = await observer.exploratoryDeploy(term);
+  return RhoExpr.parse(x.expr);
+}
+
+function networkControl(state, { html }) {
+  return freeze({
+    view() {
+      return html`<div id="netControl">
+        <select
+          onchange=${(event) => (state.network = ckControl(event.target).value)}
+        >
+          <option name="network" value="mainnet">mainnet</option>
+          <option name="network" value="testnet" selected>testnet</option>
+        </select>
+      </div>`;
+    },
+  });
+}
+
+/**
+ * @param {{ roll: RevAddress[], action: string, fields: Record<string, string> }} state
+ * @param {HTMLBuilder} io
+ * @typedef { string } RevAddress
+ */
+function groupControl(state, { html }) {
+  let like_count = 3;
+
+  const nick = (revAddr) => revAddr.slice(5, 15);
+  const avatar = (revAddr) =>
+    `https://robohash.org/${revAddr}?size=64x64;set=set3`;
+
+  return freeze({
+    view() {
+      return html` <h3>Members</h3>
+        <div>
+          ${state.roll.map(
+            (revAddr) =>
+              html`
+                <div
+                  id="${revAddr}"
+                  data-revAddr=${revAddr}
+                  class="card avatar"
+                >
+                  <img valign="middle" src=${avatar(revAddr)} />
+                  <button
+                    class="like"
+                    onclick=${() => {
+                      state.action = 'endorse';
+                      state.fields = { ...state.fields, them: revAddr };
+                    }}
+                  >
+                    ❤️
+                  </button>
+                  <sup class="likes">${like_count}</sup><br />
+                  <strong class="name">${nick(revAddr)}</strong>
+                </div>
+              `,
+          )}
+        </div>`;
     },
   });
 }

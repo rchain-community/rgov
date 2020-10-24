@@ -9,14 +9,9 @@
   <div>
     <h1>Liquid Democracy Participation Experiment</h1>
 
+    <p>idea: give kudos to avatars. <a href="https://emojipedia.org/red-heart/">❤️</a></p>
     <form>
       <fieldset>
-        <div>
-          <select id="nodeControl">
-            <option name="node" value="https://observer.services.mainnet.rchain.coop">mainnet</option>
-            <option name="node" value="https://observer.testnet.rchain.coop" selected>testnet</option>
-          </select>
-        </div>
         <div id="actionControl" class="mount">
           <label>Action:
             <select name="action">
@@ -24,8 +19,15 @@
             </select>
             </span>
           </label>
+          <br />
           <!-- prettier-ignore -->
           <textarea id='rholang-term' cols="80" rows="16"></textarea>
+        </div>
+        <div id="netControl">
+          <select>
+            <option name="network" value="mainnet">mainnet</option>
+            <option name="network" value="testnet" selected>testnet</option>
+          </select>
         </div>
         <div id="runControl">
           <button id="run">Run</button>
@@ -44,6 +46,9 @@
         </div>
       </fieldset>
     </form>
+    <div id="groupControl">
+      <h3>Members...</h3>
+    </div>
   </div>
   <hr />
   <address>
