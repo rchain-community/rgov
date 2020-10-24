@@ -12,7 +12,7 @@ import {
   listenAtDeployId,
 } from 'rchain-api';
 import { actions } from './actions.js';
-const { freeze, keys, values, entries } = Object;
+const { freeze, keys, entries } = Object;
 
 // TODO: UI for phloLimit
 const maxFee = { phloPrice: 1, phloLimit: 0.05 * 100000000 };
@@ -26,6 +26,7 @@ const NETWORKS = {
   },
   mainnet: {
     observerBase: 'https://observer.services.mainnet.rchain.coop',
+    validatorBase: 'https://node12.root-shard.mainnet.rchain.coop',
   },
 };
 
@@ -161,6 +162,7 @@ function buildUI({
   setTimeout,
   getEthProvider,
   mount,
+  redraw,
   fetch,
 }) {
   const rnode = RNode(fetch);
@@ -171,6 +173,7 @@ function buildUI({
   let term = ''; //@@DEBUG
   /** @type {Record<string, string>} */
   let fieldValues = {};
+  let roll = [];
 
   const state = {
     get shard() {
@@ -190,12 +193,16 @@ function buildUI({
       };
 
       if (network !== 'mainnet') return; // TODO: roll on testnet?
+      if (roll.length > ROLL.length) return;
       lookupSet(shard.observer, AGM2020_MEMBERS).then((value) => {
-        state.roll = value;
+        roll = value;
+        redraw();
       });
     },
     /** @type { RevAddress[] } */
-    roll: ROLL, // @@DEBUG
+    get roll() {
+      return roll;
+    },
     get action() {
       return action;
     },
@@ -508,8 +515,12 @@ async function lookupSet(observer, uri) {
       lookup!(\`${uri}\`, *ch) |
       for (@set <- ch) { ret!(set.toList())}
     }`;
-  const x = await observer.exploratoryDeploy(term);
-  return RhoExpr.parse(x.expr);
+  console.log('lookupSet', { uri });
+  const {
+    expr: [items],
+  } = await observer.exploratoryDeploy(term);
+  console.log('lookupSet done.');
+  return RhoExpr.parse(items);
 }
 
 function networkControl(state, { html }) {
