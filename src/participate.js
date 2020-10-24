@@ -20,7 +20,7 @@ const maxFee = { phloPrice: 1, phloLimit: 0.05 * 100000000 };
 // TODO: ISSUE: are networks really const? i.e. design-time data?
 const NETWORKS = {
   testnet: {
-    observerBase: 'https://observer.services.mainnet.rchain.coop',
+    observerBase: 'https://observer.testnet.rchain.coop',
     // TODO: rotate validators
     validatorBase: 'https://node2.testnet.rchain-dev.tk',
   },
@@ -29,9 +29,6 @@ const NETWORKS = {
     validatorBase: 'https://node12.root-shard.mainnet.rchain.coop',
   },
 };
-
-const AGM2020_MEMBERS =
-  'rho:id:admzpibb3gxxp18idri7h6eneg4io6myfmcmjhufc6asy73bgrojop';
 
 // rnode.js:63 POST https://observer.services.mainnet.rchain.coop/api/explore-deploy 400 (Bad Request)
 // rnode.js:73 Uncaught (in promise) Error: File write failed: No space left on device
@@ -173,7 +170,9 @@ function buildUI({
   let term = ''; //@@DEBUG
   /** @type {Record<string, string>} */
   let fieldValues = {};
-  let roll = [];
+  /** @type {RhoExpr[]} */
+  let results = [];
+  const bindings = { mainnet: {}, testnet: { $roll: ROLL } };
 
   const state = {
     get shard() {
@@ -191,17 +190,7 @@ function buildUI({
         observer: rnode.observer(net.observerBase),
         validator: rnode.validator(net.validatorBase),
       };
-
-      if (network !== 'mainnet') return; // TODO: roll on testnet?
-      if (roll.length > ROLL.length) return;
-      lookupSet(shard.observer, AGM2020_MEMBERS).then((value) => {
-        roll = value;
-        redraw();
-      });
-    },
-    /** @type { RevAddress[] } */
-    get roll() {
-      return roll;
+      state.bindings = bindings[network];
     },
     get action() {
       return action;
@@ -240,10 +229,25 @@ function buildUI({
     },
     set term(value) {
       term = value;
-      state.result = undefined;
+      state.results = [];
       state.problem = undefined;
     },
-    result: undefined,
+    bindings: bindings[network],
+    get results() {
+      return results;
+    },
+    set results(/** @type {RhoExpr[]} */ value) {
+      results = value;
+      results.forEach((expr) => {
+        const decl = RhoExpr.parse(expr);
+        if (Array.isArray(decl)) {
+          const [kw, name, rhs] = decl;
+          if (kw !== '#define') return;
+          if (typeof name !== 'string') return;
+          state.bindings[name] = rhs;
+        }
+      });
+    },
     problem: undefined,
   };
   state.action = action; // compute initial term
@@ -382,7 +386,7 @@ ${state.term}</textarea
  * @param {{
  *   shard: { observer: Observer, validator: Validator },
  *   term: string,
- *   result?: RhoExpr[],
+ *   results: RhoExpr[],
  *   problem?: string,
  * }} state
  * @param {HTMLBuilder & FormAccess<any> & EthSignAccess & ScheduleAccess} io
@@ -405,13 +409,15 @@ function runControl(
   async function explore(/** @type {string} */ term) {
     const obs = state.shard.observer;
     state.problem = undefined;
-    state.result = undefined;
+    state.results = [];
     try {
+      console.log('explore...');
       const { expr, block } = await busy(
         '#explore',
         obs.exploratoryDeploy(term),
       );
-      state.result = expr;
+      console.log('... explore done.');
+      state.results = expr;
       // TODO? $('#blockInfo').textContent = pprint(block);
     } catch (err) {
       state.problem = err.message;
@@ -422,7 +428,7 @@ function runControl(
     const obs = state.shard.observer;
     const val = state.shard.validator;
     state.problem = undefined;
-    state.result = undefined;
+    state.results = [];
 
     const account = freeze({
       polling: () =>
@@ -456,7 +462,7 @@ function runControl(
           console.log('@@DEBUG', state.action, { deploy });
           const { expr } = await listenAtDeployId(obs, deploy);
           console.log('@@DEBUG', state.action, { expr });
-          state.result = [expr];
+          state.results = [expr];
         })(),
       );
       // TODO? $('#blockInfo').textContent = pprint(block);
@@ -485,10 +491,10 @@ function runControl(
         >
           Deploy
         </button>
-        <section id="resultSection" ...${hide(!state.result)}>
+        <section id="resultSection" ...${hide(!state.results)}>
           <h2>Result</h2>
           <pre id="result">
-${state.result ? pprint(state.result.map(RhoExpr.parse)) : ''}</pre
+${state.results ? pprint(state.results.map(RhoExpr.parse)) : ''}</pre
           >
           <!-- TODO
           <h2>Block Info</h2>
@@ -539,22 +545,29 @@ function networkControl(state, { html }) {
 }
 
 /**
- * @param {{ roll: RevAddress[], action: string, fields: Record<string, string> }} state
+ * @param {{ action: string, fields: Record<string, string>, bindings: Record<string, unknown> }} state
  * @param {HTMLBuilder} io
  * @typedef { string } RevAddress
  */
 function groupControl(state, { html }) {
-  let like_count = 3;
-
-  const nick = (revAddr) => revAddr.slice(5, 15);
-  const avatar = (revAddr) =>
+  const score = (/** @type { string } */ revAddr) => {
+    const kudos = state.bindings['$kudos'];
+    if (typeof kudos !== 'object' || !kudos) return 0;
+    const score = kudos[revAddr];
+    if (typeof score !== 'number') return 0;
+    return score;
+  };
+  const nick = (/** @type { string } */ revAddr) => revAddr.slice(5, 15);
+  const avatar = (/** @type { string } */ revAddr) =>
     `https://robohash.org/${revAddr}?size=64x64;set=set3`;
 
   return freeze({
     view() {
+      const roll = state.bindings['$roll'];
+      if (!Array.isArray(roll)) return;
       return html` <h3>Members</h3>
         <div>
-          ${state.roll.map(
+          ${roll.map(
             (revAddr) =>
               html`
                 <div
@@ -566,13 +579,13 @@ function groupControl(state, { html }) {
                   <button
                     class="like"
                     onclick=${() => {
-                      state.action = 'endorse';
+                      state.action = 'awardKudos';
                       state.fields = { ...state.fields, them: revAddr };
                     }}
                   >
                     ❤️
                   </button>
-                  <sup class="likes">${like_count}</sup><br />
+                  <sup class="likes">${score(revAddr) || ''}</sup><br />
                   <strong class="name">${nick(revAddr)}</strong>
                 </div>
               `,

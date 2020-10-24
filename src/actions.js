@@ -1,5 +1,12 @@
 // @ts-check
 
+// TODO: expression macros, blockly UX
+/** @type { FieldSpec } */
+const KudosReg = {
+  type: 'uri',
+  value: 'rho:id:eifmzammsbx8gg5fjghjn34pw6hbi6hqep7gyk4bei96nmra11m4hi',
+};
+
 /**
  * @typedef {{ template: string, fields?: Record<string, FieldSpec> }} ActionSpec
  * @typedef {{ type: 'string' | 'uri' | 'walletRevAddr', value?: string }} FieldSpec
@@ -9,19 +16,51 @@ export const actions = {
   helloWorld: {
     template: `new world in { world!("Hello!") }`,
   },
-  endorse: {
+  getRoll: {
+    fields: {
+      rollReg: {
+        type: 'uri',
+        // AGM2020 voter list on mainnet
+        value: 'rho:id:admzpibb3gxxp18idri7h6eneg4io6myfmcmjhufc6asy73bgrojop',
+      },
+    },
+    template: `
+    new ret, ch, lookup(\`rho:registry:lookup\`) in {
+      lookup!(rollReg, *ch) |
+      for (@set <- ch) {
+        ret!(["#define", "$roll", set.toList()])
+      }
+    }`,
+  },
+  peekKudos: {
+    fields: {
+      KudosReg,
+    },
+    template: `
+    new return,
+      lookup(\`rho:registry:lookup\`), ch
+    in {
+      lookup!(KudosReg, *ch) | for (Kudos <- ch) {
+        Kudos!("peek", *ch) | for (@current <-ch ) {
+          return!(["#define", "$kudos", current])
+        }
+      }
+    }
+    `,
+  },
+  awardKudos: {
     fields: {
       them: { type: 'string', value: '' },
-      endorseContract: { type: 'uri', value: '@@todo' },
+      KudosReg,
     },
     template: `
     new deployId(\`rho:rchain:deployId\`),
-      lookup(\`rho:registry:lookup\`),
-      regCh
+      lookup(\`rho:registry:lookup\`), ch
     in {
-      lookup!(endorseContract, *regCh) |
-      for (endorse <- regCh) {
-        endorse!(them, *deployId)
+      lookup!(KudosReg, *ch) | for (Kudos <- ch) {
+        Kudos!("award", them, *ch) | for (@current <- ch) {
+          deployId!(["#define", "$kudos", current])
+        }
       }
     }
     `,
@@ -38,7 +77,7 @@ export const actions = {
         for (@(true, vault) <- vaultCh) {
           @vault!("balance", *balanceCh) |
           for (@balance <- balanceCh) {
-            return!({"revAddr": myGovRevAddr, "balance (REVe-8)": balance})
+            return!(["#define", "$myBalance", balance]})
           }
         }
       }
@@ -64,8 +103,7 @@ export const actions = {
           insertArbitrary!(*send, *ret)|
           for (@uri <- ret) {
             @[*deployerId, lockerTag]!({"inbox": *send, "receive": *receive, "peek": *peek, "URI": uri}) |
-            // TODO: stdout!(["#define $inbox_" ++ $myusername, *uri])
-            deployId!({"inboxURI": "\${uri}" %% {"uri": uri }, "lockerTag": lockerTag})
+            deployId!(["#define", "$" ++ lockerTag, uri])
           }
         }
       }
@@ -86,7 +124,7 @@ export const actions = {
     {
       lookup!(votersUri, *ch) |
       for (@addrSet <- ch) {
-        return!(addrSet.contains(myGovRevAddr))
+        return!(["#define", "$agm2020voter", addrSet.contains(myGovRevAddr)])
       }
     }`,
   },
