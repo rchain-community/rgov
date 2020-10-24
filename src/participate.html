@@ -27,21 +27,23 @@
           <!-- prettier-ignore -->
           <textarea id='rholang-term' cols="80" rows="16"></textarea>
         </div>
-        <button id="run">Run</button>
+        <div id="runControl">
+          <button id="run">Run</button>
+          <section id="resultSection" style="display: none">
+            <h2>Result</h2>
+            <pre id="result"></pre>
+            <h2>Block Info</h2>
+            <small>
+              <pre id="blockInfo"></pre>
+            </small>
+          </section>
+          <section id="problemSection" style="display: none">
+            <h3>Problem</h3>
+            <pre id="problem"></pre>
+          </section>
+        </div>
       </fieldset>
     </form>
-    <section id="resultSection" style="display: none">
-      <h2>Result</h2>
-      <pre id="result"></pre>
-      <h2>Block Info</h2>
-      <small>
-        <pre id="blockInfo"></pre>
-      </small>
-    </section>
-    <section id="problemSection" style="display: none">
-      <h3>Problem</h3>
-      <pre id="problem"></pre>
-    </section>
   </div>
   <hr />
   <address>
