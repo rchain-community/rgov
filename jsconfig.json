@@ -10,9 +10,8 @@
       "declaration": true,
       "emitDeclarationOnly": true,
   */
-      "downlevelIteration": true,
       "strictNullChecks": true,
       "moduleResolution": "node",
     },
-    "include": ["rclient/**/*.js", "Jakefile.js", "exports.js", "rnode-client/rnode-web.js"],
+    "include": ["Jakefile.js", "src/*.js", "exports.js"],
   }
