@@ -44,9 +44,9 @@ export const actions = {
       for (Inbox <- inboxCh) {
         Inbox!(*capabilities) |
         for (receive, send, peek <- capabilities) {
-          @[*deployerId, lockerTag]!({"inbox": *send, "receive": *receive, "peek": *peek}) |
           insertArbitrary!(*send, *ret)|
           for (@uri <- ret) {
+            @[*deployerId, lockerTag]!({"inbox": *send, "receive": *receive, "peek": *peek, "URI": uri}) |
             // TODO: stdout!(["#define $inbox_" ++ $myusername, *uri])
             deployId!({"inboxURI": "\${uri}" %% {"uri": uri }, "lockerTag": lockerTag})
           }

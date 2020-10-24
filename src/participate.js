@@ -7,9 +7,17 @@ import {
   getEthProvider,
   MetaMaskAccount,
   getAddrFromEth,
+  signMetaMask,
+  startTerm,
+  listenAtDeployId,
 } from 'rchain-api';
 import { actions } from './actions.js';
 const { freeze, keys, values, entries } = Object;
+
+// TODO: UI for phloLimit
+const maxFee = { phloPrice: 1, phloLimit: 0.05 * 100000000 };
+// TODO: rotate validators
+const VALIDATOR_BASE = 'https://node2.testnet.rchain-dev.tk';
 
 /**
  * @param {T?} x
@@ -35,6 +43,8 @@ document.addEventListener('DOMContentLoaded', () => {
     busy: makeBusy($),
     formValue: (selector) => ckControl($(selector)).value,
     fetch,
+    setTimeout,
+    clock: () => Promise.resolve(Date.now()),
     getEthProvider: () => getEthProvider({ window }),
     mount: (selector, control) => m.mount($(selector), control),
     redraw: () => m.redraw(),
@@ -82,7 +92,7 @@ function makeBusy($) {
 }
 
 /**
- * @param { HTMLBuilder & EthSignAccess & MithrilMount & WebAccess & FormAccess<any> } io
+ * @param { HTMLBuilder & EthSignAccess & MithrilMount & WebAccess & FormAccess<any> & ScheduleAccess } io
  * @typedef {import('./actions').FieldSpec} FieldSpec
  *
  * @typedef {{
@@ -101,12 +111,28 @@ function makeBusy($) {
  * @typedef {{
  *   getEthProvider: () => Promise<MetaMaskProvider>
  * }} EthSignAccess
+ *
+ * @typedef {{
+ *   clock: () => Promise<number>,
+ *   setTimeout: typeof setTimeout,
+ * }} ScheduleAccess
+ *
  * @typedef { import('rchain-api/src/ethProvider').MetaMaskProvider } MetaMaskProvider
  */
-function buildUI({ html, formValue, busy, getEthProvider, mount, fetch }) {
+function buildUI({
+  html,
+  formValue,
+  busy,
+  clock,
+  setTimeout,
+  getEthProvider,
+  mount,
+  fetch,
+}) {
   let action = 'helloWorld';
   const rnode = RNode(fetch);
   let observer = rnode.observer(formValue('#nodeControl'));
+  let validator = rnode.validator(VALIDATOR_BASE);
 
   const state = {
     get action() {
@@ -140,13 +166,26 @@ function buildUI({ html, formValue, busy, getEthProvider, mount, fetch }) {
     get observer() {
       return observer;
     },
+    get validator() {
+      return validator;
+    },
     result: undefined,
     problem: undefined,
   };
   state.action = action; // compute initial term
 
   mount('#actionControl', actionControl(state, { html, getEthProvider }));
-  mount('#runControl', runControl(state, { html, formValue, busy }));
+  mount(
+    '#runControl',
+    runControl(state, {
+      html,
+      formValue,
+      busy,
+      clock,
+      getEthProvider,
+      setTimeout,
+    }),
+  );
 }
 
 /**
@@ -239,29 +278,85 @@ function actionControl(state, { html, getEthProvider }) {
 /**
  * @param {{
  *   observer: Observer,
+ *   validator: Validator,
  *   term: string,
  *   result?: RhoExpr[],
  *   problem?: string,
  * }} state
- * @param {HTMLBuilder & FormAccess<any>} io
+ * @param {HTMLBuilder & FormAccess<any> & EthSignAccess & ScheduleAccess} io
  *
  * @typedef {import('rchain-api').RhoExpr} RhoExpr
  * @typedef {import('rchain-api').Observer} Observer
+ * @typedef {import('rchain-api').Validator} Validator
+ * @typedef {import('rchain-api').DeployData} DeployData
  */
-function runControl(state, { html, busy }) {
+function runControl(
+  state,
+  { html, busy, getEthProvider, clock },
+  period = 5 * 1000,
+) {
   const hide = (/** @type { boolean } */ flag) =>
     flag ? { style: 'display: none' } : {};
 
   const pprint = (obj) => JSON.stringify(obj, null, 2);
 
-  async function run(/** @type {string} */ term) {
+  async function explore(/** @type {string} */ term) {
     const obs = state.observer;
     state.problem = undefined;
     state.result = undefined;
     try {
-      // TODO: busy()
-      const { expr, block } = await busy('#run', obs.exploratoryDeploy(term));
+      const { expr, block } = await busy(
+        '#explore',
+        obs.exploratoryDeploy(term),
+      );
       state.result = expr;
+      // TODO? $('#blockInfo').textContent = pprint(block);
+    } catch (err) {
+      state.problem = err.message;
+    }
+  }
+
+  async function deploy(/** @type {string} */ term) {
+    const obs = state.observer;
+    const val = state.validator;
+    state.problem = undefined;
+    state.result = undefined;
+
+    const account = freeze({
+      polling: () =>
+        // TODO: UI to cancel
+        new Promise((resolve) => {
+          setTimeout(resolve, period);
+        }),
+      async sign(/** @type { string } */ term) {
+        const [timestamp, [recent]] = await Promise.all([
+          clock(),
+          obs.getBlocks(1),
+        ]);
+        const ethereum = await getEthProvider();
+        return signMetaMask(
+          {
+            term,
+            ...maxFee,
+            timestamp,
+            validAfterBlockNumber: recent.blockNumber,
+          },
+          ethereum,
+        );
+      },
+    });
+
+    try {
+      await busy(
+        '#deploy',
+        (async () => {
+          const deploy = await startTerm(term, val, obs, account);
+          console.log(state.action, { deploy });
+          const { expr } = await listenAtDeployId(obs, deploy);
+          console.log(state.action, { expr });
+          state.result = [expr];
+        })(),
+      );
       // TODO? $('#blockInfo').textContent = pprint(block);
     } catch (err) {
       state.problem = err.message;
@@ -271,13 +366,22 @@ function runControl(state, { html, busy }) {
   return freeze({
     view() {
       return html`<button
-          id="run"
+          id="explore"
           onclick=${async (/** @type {Event} */ event) => {
             event.preventDefault();
-            run(state.term);
+            explore(state.term);
           }}
         >
-          Run
+          Explore
+        </button>
+        <button
+          id="deploy"
+          onclick=${async (/** @type {Event} */ event) => {
+            event.preventDefault();
+            deploy(state.term);
+          }}
+        >
+          Deploy
         </button>
         <section id="resultSection" ...${hide(!state.result)}>
           <h2>Result</h2>
