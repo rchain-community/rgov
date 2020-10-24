@@ -1,0 +1,22 @@
+new Kudos,
+  deployId(`rho:rchain:deployId`),
+  insertArbitrary(`rho:registry:insertArbitrary`),
+  state, regCh
+in {
+  insertArbitrary!(*Kudos, *regCh) | for (@uri <- regCh) { deployId!(uri) }
+  |
+  contract Kudos(@"peek", return) = { for (@current <<- state) { return!(current) } }
+  |
+  contract Kudos(@"award", @them /\ String, return) = {
+    for(@old <- state) {
+      match {old.set(them, old.getOrElse(them, 0) + 1)} {
+        current => {
+          state!(current) |
+          return!(current)
+        }
+      }
+    }
+  }
+  |
+  state!({})
+}
