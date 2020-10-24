@@ -27,6 +27,33 @@ export const actions = {
       }
     }`,
   },
+  newinbox: {
+    fields: {
+      lockerTag: { value: 'inbox', type: 'string' },
+      InboxURI: {
+        value: 'rho:id:ohyqkr5jmritq8chnwijpufbx3tan6d1hffiksg9qiz9rmuy97a51t',
+        type: 'uri',
+      },
+    },
+    template: `
+    new deployId(\`rho:rchain:deployId\`), deployerId(\`rho:rchain:deployerId\`),
+      lookup(\`rho:registry:lookup\`), insertArbitrary(\`rho:registry:insertArbitrary\`),
+      inboxCh, capabilities, ret
+    in {
+      lookup!(InboxURI, *inboxCh) |
+      for (Inbox <- inboxCh) {
+        Inbox!(*capabilities) |
+        for (receive, send, peek <- capabilities) {
+          @[*deployerId, lockerTag]!({"inbox": *send, "receive": *receive, "peek": *peek}) |
+          insertArbitrary!(*send, *ret)|
+          for (@uri <- ret) {
+            // TODO: stdout!(["#define $inbox_" ++ $myusername, *uri])
+            deployId!({"inboxURI": "\${uri}" %% {"uri": uri }, "lockerTag": lockerTag})
+          }
+        }
+      }
+    }`,
+  },
   checkRegistration: {
     fields: {
       myGovRevAddr: { type: 'walletRevAddr' },
