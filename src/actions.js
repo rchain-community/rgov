@@ -77,7 +77,7 @@ export const actions = {
         for (@(true, vault) <- vaultCh) {
           @vault!("balance", *balanceCh) |
           for (@balance <- balanceCh) {
-            return!(["#define", "$myBalance", balance]})
+            return!(["#define", "$myBalance", balance])
           }
         }
       }
