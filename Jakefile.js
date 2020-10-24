@@ -12,6 +12,8 @@ const io = {
   clock: () => Promise.resolve(Date.now()),
   fs: require('fs'),
   http: require('http'),
+  https: require('https'),
+  env: process.env,
   exec: require('child_process').execSync,
 };
 const jake = require('jake');
@@ -37,22 +39,50 @@ const TARGETS = Object.fromEntries(
  * https://github.com/rchain-community/liquid-democracy/issues/17
  * https://github.com/tgrospic/rnode-client-js
  */
-const shard = rhopm.shardIO(
-  io.fs.readFileSync('docker-shard/.env', 'utf8'),
-  io.http,
-  io.sched,
-);
+const { shard, account } = ((net) => {
+  const acct = (shard, pk) =>
+    makeAccount(
+      pk,
+      shard.observer,
+      {
+        setTimeout: io.sched.setTimeout,
+        clock: io.clock,
+        period: 7500,
+      },
+      { phloPrice: 1, phloLimit: 250000 },
+    );
+  switch (net) {
+    case 'local': {
+      const shard = rhopm.shardIO(
+        io.fs.readFileSync('docker-shard/.env', 'utf8'),
+        io.http,
+        io.sched,
+      );
+      return { shard, account: acct(shard, shard.env.VALIDATOR_BOOT_PRIVATE) };
+    }
+    case 'testnet': {
+      const api = {
+        // TODO: rotate validators
+        boot: 'https://node2.testnet.rchain-dev.tk',
+        read: 'https://observer.testnet.rchain.coop',
+      };
+      // TODO: narrow http usage to request()
+      // so http and https are compatible
+      const https = io.https;
+      const shard = rhopm.shardAccess(io.env, api, https, {
+        setInterval,
+        clearInterval,
+      });
+      const pk = io.env.VALIDATOR_BOOT_PRIVATE;
+      if (!pk) throw new RangeError('missing VALIDATOR_BOOT_PRIVATE');
+      return { shard, account: acct(shard, pk) };
+    }
 
-const account = makeAccount(
-  shard.env.VALIDATOR_BOOT_PRIVATE,
-  shard.observer,
-  {
-    setTimeout: io.sched.setTimeout,
-    clock: io.clock,
-    period: 7500,
-  },
-  { phloPrice: 1, phloLimit: 250000 },
-);
+    default:
+      throw new TypeError(net);
+    // return { shard: 1, account: 2 };
+  }
+})(process.env.NETWORK || 'local');
 
 desc(`deploy ${SRCS}`);
 task('default', ['startShard', rhopm.rhoDir, ...Object.values(TARGETS)], () => {
@@ -61,6 +91,7 @@ task('default', ['startShard', rhopm.rhoDir, ...Object.values(TARGETS)], () => {
 
 desc('start local shard with validator, observer');
 task('startShard', [], () => {
+  if (io.env.NETWORK !== 'local') return;
   io.exec('docker-compose up -d', { cwd: 'docker-shard' });
   console.log(
     'TODO: wait for "MultiParentCasper instance created." in the log',
