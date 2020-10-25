@@ -226,7 +226,7 @@ function buildUI({
       return term;
     },
     set term(value) {
-      term = value;
+      term = fixIndent(value);
       state.results = [];
       state.problem = undefined;
     },
@@ -279,6 +279,23 @@ function ckControl(ctrl) {
   )
     throw TypeError(String(ctrl));
   return ctrl;
+}
+
+function fixIndent(code) {
+  const lines = code.split('\n').map((l) => l.trim());
+  let level = 0;
+  for (let ix = 0; ix < lines.length; ix += 1) {
+    if (lines[ix].startsWith('}')) {
+      level -= 1;
+    }
+    if (level > 0) {
+      lines[ix] = '  '.repeat(level) + lines[ix];
+    }
+    if (lines[ix].endsWith('{')) {
+      level += 1;
+    }
+  }
+  return lines.join('\n');
 }
 
 /**
