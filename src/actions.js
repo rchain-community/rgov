@@ -34,7 +34,9 @@ export const actions = {
       rollReg: {
         type: 'uri',
         // AGM2020 voter list on mainnet
-        value: 'rho:id:admzpibb3gxxp18idri7h6eneg4io6myfmcmjhufc6asy73bgrojop',
+        // value: 'rho:id:admzpibb3gxxp18idri7h6eneg4io6myfmcmjhufc6asy73bgrojop',
+        // testnet
+        value: 'rho:id:kiijxigqydnt7ds3w6w3ijdszswfysr3hpspthuyxz4yn3ksn4ckzf',
       },
     },
     template: `
