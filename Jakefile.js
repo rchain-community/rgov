@@ -84,6 +84,25 @@ const { shard, account } = ((net) => {
       return { shard, account: acct(shard, pk) };
     }
 
+    // TODO: factor out overlap with testnet
+    case 'mainnet': {
+      const api = {
+        // TODO: rotate validators
+        read: 'https://observer.services.mainnet.rchain.coop',
+        boot: 'https://node12.root-shard.mainnet.rchain.coop',
+      };
+      // TODO: narrow http usage to request()
+      // so http and https are compatible
+      const https = io.https;
+      const shard = rhopm.shardAccess(io.env, api, https, {
+        setInterval,
+        clearInterval,
+      });
+      const pk = io.env.VALIDATOR_BOOT_PRIVATE;
+      if (!pk) throw new RangeError('missing VALIDATOR_BOOT_PRIVATE');
+      return { shard, account: acct(shard, pk) };
+    }
+
     default:
       throw new TypeError(net);
     // return { shard: 1, account: 2 };
