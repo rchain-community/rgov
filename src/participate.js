@@ -583,9 +583,9 @@ function groupControl(state, { html }) {
                       state.fields = { ...state.fields, them: revAddr };
                     }}
                   >
-                    ❤️
+                    ❤️ ${score(revAddr) || ''}
                   </button>
-                  <sup class="likes">${score(revAddr) || ''}</sup><br />
+                  <br />
                   <strong class="name">${nick(revAddr)}</strong>
                 </div>
               `,
