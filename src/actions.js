@@ -1,5 +1,7 @@
 // @ts-check
 
+// TODO: rholang goes in .rho files
+
 // TODO: expression macros, blockly UX
 /** @type { FieldSpec } */
 const KudosReg = {
@@ -15,6 +17,17 @@ const KudosReg = {
 export const actions = {
   helloWorld: {
     template: `new world in { world!("Hello!") }`,
+  },
+  peekInbox: {
+    fields: {
+      lockerTag: { value: 'inbox', type: 'string' },
+    },
+    template: `new deployId(\`rho:rchain:deployId\`), deployerId(\`rho:rchain:deployerId\`), ch
+    in {
+      for(@stuff <<- @[*deployerId, lockerTag]) {
+        @{stuff.get("peek")}!(*deployId)
+      }
+    }`,
   },
   getRoll: {
     fields: {
@@ -125,6 +138,61 @@ export const actions = {
       lookup!(votersUri, *ch) |
       for (@addrSet <- ch) {
         return!(["#define", "$agm2020voter", addrSet.contains(myGovRevAddr)])
+      }
+    }`,
+  },
+  newCommunity: {
+    fields: {
+      name: { value: '', type: 'string' },
+      lockerTag: { value: 'inbox', type: 'string' },
+      CommunityReg: {
+        value: 'rho:id:ojkxxx95izqftspy5515fj58z58qrcc3ii9gktjcdo8d9hcqqnsuc9',
+        type: 'uri',
+      },
+    },
+    template: `
+    new out, deployId(\`rho:rchain:deployId\`), deployerId(\`rho:rchain:deployerId\`),
+  lookup(\`rho:registry:lookup\`), ret, ret2
+in {
+  lookup!(CommunityReg, *ret)|
+  for ( C <- ret) {
+    match {[*deployerId, lockerTag]} {
+      {*lockerPart} => {
+        for(@boxStuff <<- lockerPart) {
+          C!("new", name, boxStuff.get("inbox"), *ret)|
+          for (caps <- ret) {
+            if (*caps != Nil) {
+              @{boxStuff.get("inbox")}!(["Community", name, *caps], *deployId)
+            } else {
+              deployId!("newCommunity " ++ name ++ " failed")
+            }
+          }
+        }
+      }
+    }
+  }
+}`,
+  },
+  addMember: {
+    // TODO: fields
+    template: `
+    new deployId(\`rho:rchain:deployId\`), deployerId(\`rho:rchain:deployerId\`), lookup(\`rho:registry:lookup\`),
+       ret, boxCh, ack in {
+      match {[*deployerId, lockerTag]} {
+        {*lockerPart} => {
+          for(@boxStuff <<- lockerPart) {
+            lookup!(themBoxReg, *boxCh) |
+            @{boxStuff.get("peek")}!("Community", community, *ret)|
+            for ( @[{"admin": *admin, "read": *read, "write": *write, "grant": *grant}] <- ret; themBox <- boxCh ) {
+              //stdout!("adding user")|
+              admin!("add user", user, boxStuff.get("inbox"), *ret) |
+              for (selfmod <- ret ) {
+                //stdout!("user added") |
+                themBox!(["member", community, {"read": *read, "selfmod": *selfmod}], *deployId)
+              }
+            }
+          }
+        }
       }
     }`,
   },
