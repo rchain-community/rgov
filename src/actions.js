@@ -9,6 +9,15 @@ const KudosReg = {
   value: 'rho:id:eifmzammsbx8gg5fjghjn34pw6hbi6hqep7gyk4bei96nmra11m4hi',
 };
 
+/** @type { FieldSpec } */
+const rollReg = {
+  type: 'uri',
+  // AGM2020 voter list on mainnet
+  // value: 'rho:id:admzpibb3gxxp18idri7h6eneg4io6myfmcmjhufc6asy73bgrojop',
+  // testnet
+  value: 'rho:id:kiijxigqydnt7ds3w6w3ijdszswfysr3hpspthuyxz4yn3ksn4ckzf',
+};
+
 /**
  * @typedef {{ template: string, fields?: Record<string, FieldSpec> }} ActionSpec
  * @typedef {{ type: 'string' | 'uri' | 'walletRevAddr', value?: string }} FieldSpec
@@ -31,13 +40,7 @@ export const actions = {
   },
   getRoll: {
     fields: {
-      rollReg: {
-        type: 'uri',
-        // AGM2020 voter list on mainnet
-        // value: 'rho:id:admzpibb3gxxp18idri7h6eneg4io6myfmcmjhufc6asy73bgrojop',
-        // testnet
-        value: 'rho:id:kiijxigqydnt7ds3w6w3ijdszswfysr3hpspthuyxz4yn3ksn4ckzf',
-      },
+      rollReg,
     },
     template: `
     new ret, ch, lookup(\`rho:registry:lookup\`) in {
@@ -127,17 +130,14 @@ export const actions = {
   checkRegistration: {
     fields: {
       myGovRevAddr: { type: 'walletRevAddr' },
-      votersUri: {
-        value: 'rho:id:admzpibb3gxxp18idri7h6eneg4io6myfmcmjhufc6asy73bgrojop',
-        type: 'uri',
-      },
+      rollReg,
     },
     template: `
     new return,
       lookup(\`rho:registry:lookup\`),
       ch in
     {
-      lookup!(votersUri, *ch) |
+      lookup!(rollReg, *ch) |
       for (@addrSet <- ch) {
         return!(["#define", "$agm2020voter", addrSet.contains(myGovRevAddr)])
       }
