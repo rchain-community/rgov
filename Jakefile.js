@@ -34,7 +34,8 @@ const SRCS = [
   'inbox.rho',
   'Issue.rho',
   'directory.rho',
-  'Community.rho',
+  'memberIdGovRev.rho',
+  // 'Community.rho',
 ];
 const TARGETS = Object.fromEntries(
   SRCS.map((src) => [src, rhopm.rhoInfoPath(src)]),
@@ -135,5 +136,6 @@ const contractTask = rhopm.makeContractTask(TARGETS, {
 contractTask('kudos.rho');
 contractTask('inbox.rho');
 contractTask('directory.rho');
+contractTask('memberIdGovRev.rho', ['inbox.rho', 'directory.rho']);
 contractTask('Issue.rho');
-contractTask('Community.rho', ['directory.rho']);
+// contractTask('Community.rho', ['directory.rho']);
