@@ -24,6 +24,37 @@ const rollReg = {
  * @type {Record<string, ActionSpec>}
  */
 export const actions = {
+  newMemberDirectory: {
+    fields: {
+      contractURI: {
+        // testnet
+        value: 'rho:id:mjebrofc8ns955mpdjnpakgpc4nkcqra14wqwtskp7swj46szx5x1i',
+        type: 'uri',
+      },
+      rollReg,
+    },
+    template: `new return(\`rho:rchain:deployId\`), lookup(\`rho:registry:lookup\`), regCh
+    in {
+      lookup!(contractURI, *regCh) | for (MemberDirectory <- regCh) {
+        MemberDirectory!("makeFromURI", rollReg, *return)
+      }
+    }`,
+  },
+  claimWithInbox: {
+    fields: {
+      myGovRevAddr: { type: 'walletRevAddr' },
+      dirURI: {
+        // testnet
+        value: 'rho:id:mjebrofc8ns955mpdjnpakgpc4nkcqra14wqwtskp7swj46szx5x1i',
+        type: 'uri',
+      },
+    },
+    template: `new return, lookup(\`rho:registry:lookup\`), regCh in {
+      lookup!(dirURI, *regCh) | for (memDir <- regCh) {
+        memDir!("setup", myGovRevAddr, *return)
+      }
+    }`,
+  },
   helloWorld: {
     template: `new world in { world!("Hello!") }`,
   },
