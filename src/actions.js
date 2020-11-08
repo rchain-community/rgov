@@ -18,17 +18,10 @@ export const actions = {
   helloWorld: {
     template: `new world in { world!("Hello!") }`,
   },
-  peekInbox: {
-    fields: {
-      lockerTag: { value: 'inbox', type: 'string' },
+   raviWorld: {
+      template: `new ravi in { ravi!("Hello!") }`,
     },
-    template: `new deployId(\`rho:rchain:deployId\`), deployerId(\`rho:rchain:deployerId\`), ch
-    in {
-      for(@stuff <<- @[*deployerId, lockerTag]) {
-        @{stuff.get("peek")}!(*deployId)
-      }
-    }`,
-  },
+
   getRoll: {
     fields: {
       rollReg: {
@@ -124,6 +117,17 @@ export const actions = {
       }
     }`,
   },
+  peekInbox: {
+      fields: {
+        lockerTag: { value: 'inbox', type: 'string' },
+      },
+      template: `new deployId(\`rho:rchain:deployId\`), deployerId(\`rho:rchain:deployerId\`), ch
+      in {
+        for(@stuff <<- @[*deployerId, lockerTag]) {
+          @{stuff.get("peek")}!(*deployId)
+        }
+      }`,
+    },
   checkRegistration: {
     fields: {
       myGovRevAddr: { type: 'walletRevAddr' },
