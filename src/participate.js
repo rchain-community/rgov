@@ -19,6 +19,10 @@ const maxFee = { phloPrice: 1, phloLimit: 0.05 * 100000000 };
 
 // TODO: ISSUE: are networks really const? i.e. design-time data?
 const NETWORKS = {
+  localhost: {
+	  observerBase: 'http://localhost:400403',
+    validatorBase: 'http://localhost:400403',
+  },
   testnet: {
     observerBase: 'https://observer.testnet.rchain.coop',
     // TODO: rotate validators
@@ -172,7 +176,7 @@ function buildUI({
   let fieldValues = {};
   /** @type {RhoExpr[]} */
   let results = [];
-  const bindings = { mainnet: {}, testnet: { $roll: ROLL } };
+  const bindings = { mainnet: {}, localhost: {}, testnet: { $roll: ROLL } };
 
   const state = {
     get shard() {
@@ -538,6 +542,7 @@ function networkControl(state, { html }) {
         >
           <option name="network" value="mainnet">mainnet</option>
           <option name="network" value="testnet" selected>testnet</option>
+          <option name="network" value="localhost" selected>localhost</option>
         </select>
       </div>`;
     },
