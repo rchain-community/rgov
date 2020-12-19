@@ -118,15 +118,15 @@ export const actions = {
     }`,
   },
   sendMail:{
-   fields: {
+    fields: {
           lockerTag: { value: 'inbox', type: 'string' },
           toInboxURI : {value: '' , type: 'uri'},
           from: { value: '', type: 'string'},
           to: { value: '', type: 'string'},
           sub: { value: 'hello', type: 'string'},
           body: { value: 'hello from ravi for hackathon 2020', type: 'string'},
-        },
-        template:
+      },
+    template:
         `new deployId(\`rho:rchain:deployId\`), deployerId(\`rho:rchain:deployerId\`),
 
         lookup(\`rho:registry:lookup\`), inboxCh
@@ -135,8 +135,8 @@ export const actions = {
             for (toinbox <- inboxCh) {
                 toinbox!({"from": from, "to": to, "sub": sub, "body": body}, *deployId)
             }
-      }`
-  },
+      }`,
+   },
   peekInbox: {
       fields: {
         lockerTag: { value: 'inbox', type: 'string' },

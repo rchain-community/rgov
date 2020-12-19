@@ -20,8 +20,8 @@ const maxFee = { phloPrice: 1, phloLimit: 0.05 * 100000000 };
 // TODO: ISSUE: are networks really const? i.e. design-time data?
 const NETWORKS = {
   localhost: {
-	  observerBase: 'http://localhost:400403',
-    validatorBase: 'http://localhost:400403',
+	  observerBase: 'http://localhost:40403',
+    validatorBase: 'http://localhost:40403',
   },
   testnet: {
     observerBase: 'https://observer.testnet.rchain.coop',
@@ -168,7 +168,7 @@ function buildUI({
 }) {
   const rnode = RNode(fetch);
   let action = 'helloWorld';
-  let network = 'testnet';
+  let network = 'localhost';
   /** @type {{ observer: Observer, validator: Validator}} shard */
   let shard;
   let term = ''; //@@DEBUG
@@ -176,7 +176,7 @@ function buildUI({
   let fieldValues = {};
   /** @type {RhoExpr[]} */
   let results = [];
-  const bindings = { mainnet: {}, localhost: {}, testnet: { $roll: ROLL } };
+  const bindings = { mainnet: {}, localhost: { $roll: ROLL}, testnet: { } };
 
   const state = {
     get shard() {
@@ -255,7 +255,7 @@ function buildUI({
     problem: undefined,
   };
   state.action = action; // compute initial term
-  state.network = 'testnet'; // initialize shard
+  state.network = 'localhost'; // initialize shard
 
   mount('#actionControl', actionControl(state, { html, getEthProvider }));
   mount('#groupControl', groupControl(state, { html }));
@@ -541,7 +541,7 @@ function networkControl(state, { html }) {
           onchange=${(event) => (state.network = ckControl(event.target).value)}
         >
           <option name="network" value="mainnet">mainnet</option>
-          <option name="network" value="testnet" selected>testnet</option>
+          <option name="network" value="testnet">testnet</option>
           <option name="network" value="localhost" selected>localhost</option>
         </select>
       </div>`;
