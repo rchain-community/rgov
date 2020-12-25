@@ -65,9 +65,6 @@ function unwrap(x) {
   return x;
 }
 
-const optionSelected = (/** @type { boolean } */ bool) =>
-  bool ? { selected: 'selected' } : {};
-
 document.addEventListener('DOMContentLoaded', () => {
   /** @type {(selector: string) => HTMLElement} */
   const $ = (selector) => unwrap(document.querySelector(selector));
@@ -115,13 +112,12 @@ function makeBusy($) {
 
     try {
       const result = await p;
-      m.redraw();
       return result;
     } finally {
       button.disabled = false;
       $('form').style.cursor = 'inherit';
       button.style.cursor = 'inherit';
-      m.redraw();
+      m.redraw(); // FIXME ambient
     }
   }
   return busy;
@@ -202,7 +198,7 @@ function buildUI({
     set action(value) {
       if (typeof value !== 'string') return;
       action = value;
-      const fields = actions[state.action].fields || {};
+      const fields = actions[action].fields || {};
       const init = Object.fromEntries(
         entries(fields).map(([name, { value }]) => [name, value || '']),
       );
@@ -212,10 +208,11 @@ function buildUI({
       return fieldValues;
     },
     set fields(/** @type {Record<String, string>} */ value) {
-      fieldValues = value;
-      const fields = actions[state.action].fields;
-      const template = actions[state.action].template;
+      const { fields, template } = actions[state.action];
       if (fields) {
+        fieldValues = Object.fromEntries(
+          keys(fields).map((k) => [k, value[k]]),
+        );
         const exprs = entries(fieldValues).map(([name, value]) =>
           fields[name].type === 'uri' ? `\`${value}\`` : JSON.stringify(value),
         );
@@ -225,6 +222,7 @@ function buildUI({
           }
         }`;
       } else {
+        fieldValues = {};
         state.term = template;
       }
     },
@@ -232,7 +230,7 @@ function buildUI({
       return term;
     },
     set term(value) {
-      term = value;
+      term = fixIndent(value);
       state.results = [];
       state.problem = undefined;
     },
@@ -258,7 +256,6 @@ function buildUI({
   state.network = 'localhost'; // initialize shard
 
   mount('#actionControl', actionControl(state, { html, getEthProvider }));
-  mount('#groupControl', groupControl(state, { html }));
   mount('#netControl', networkControl(state, { html }));
   mount(
     '#runControl',
@@ -271,6 +268,7 @@ function buildUI({
       setTimeout,
     }),
   );
+  mount('#groupControl', groupControl(state, { html }));
 }
 
 /**
@@ -287,6 +285,23 @@ function ckControl(ctrl) {
   return ctrl;
 }
 
+function fixIndent(code) {
+  const lines = code.split('\n').map((l) => l.trim());
+  let level = 0;
+  for (let ix = 0; ix < lines.length; ix += 1) {
+    if (lines[ix].startsWith('}')) {
+      level -= 1;
+    }
+    if (level > 0) {
+      lines[ix] = '  '.repeat(level) + lines[ix];
+    }
+    if (lines[ix].endsWith('{')) {
+      level += 1;
+    }
+  }
+  return lines.join('\n');
+}
+
 /**
  * @param {{
  *   action: string,
@@ -299,7 +314,7 @@ function actionControl(state, { html, getEthProvider }) {
   const options = (/** @type {string[]}*/ ids) =>
     ids.map(
       (id) =>
-        html`<option value=${id} ...${optionSelected(id === state.action)}>
+        html`<option value=${id} ...${{ selected: id === state.action }}>
           ${id}
         </option>`,
     );
@@ -314,46 +329,48 @@ function actionControl(state, { html, getEthProvider }) {
     return f[name].type;
   };
 
-  const fields = (
+  const connectButton = (name) => html`<button
+    onclick=${(/** @type {Event} */ event) => {
+      metaMaskP.then((mm) =>
+        mm.ethereumAddress().then((ethAddr) => {
+          const revAddr = getAddrFromEth(ethAddr);
+          if (!revAddr) throw new Error('bad ethAddr???');
+          const current = { [name]: revAddr };
+          const old = state.fields;
+          state.fields = { ...old, ...current };
+          m.redraw(); // FIXME ambient?
+        }),
+      );
+      return false;
+    }}
+  >
+    Connect Wallet
+  </button>`;
+
+  const fieldControls = (
     /** @type {string} */ action,
     /** @type {Record<string, string>} */ fields,
-  ) =>
-    entries(fields).map(
+  ) => {
+    const fragment = entries(fields).map(
       ([name, value]) =>
-        html`<br /><label
+        html`<div id=${`${action}.${name}`}>
+          <label
             >${name}:
             <input
               name=${name}
               value=${value}
               onchange=${(/** @type {Event} */ event) => {
-                state.fields = {
-                  ...state.fields,
-                  ...{ [name]: ckControl(event.target).value },
-                };
+                const current = { [name]: ckControl(event.target).value };
+                const old = state.fields;
+                state.fields = { ...old, ...current };
+                return false;
               }}
           /></label>
-          ${fty(action, name) === 'walletRevAddr'
-            ? html`<button
-                onclick=${(/** @type {Event} */ event) => {
-                  event.preventDefault();
-                  metaMaskP.then((mm) =>
-                    mm.ethereumAddress().then((ethAddr) => {
-                      console.log('@@@', { ethAddr });
-                      const revAddr = getAddrFromEth(ethAddr);
-                      if (!revAddr) throw new Error('bad ethAddr???');
-                      state.fields = {
-                        ...state.fields,
-                        ...{ [name]: revAddr },
-                      };
-                      m.redraw();
-                    }),
-                  );
-                }}
-              >
-                Connect Wallet
-              </button>`
-            : []}`,
+          ${fty(action, name) === 'walletRevAddr' ? connectButton(name) : ''}
+        </div>`,
     );
+    return fragment;
+  };
 
   return freeze({
     view() {
@@ -362,21 +379,20 @@ function actionControl(state, { html, getEthProvider }) {
           >Action:
           <select
             name="action"
-            onchange=${(/** @type {Event} */ event) =>
-              (state.action = ckControl(event.target).value)}
+            onchange=${(/** @type {Event} */ event) => {
+              state.action = ckControl(event.target).value;
+              return false;
+            }}
           >
             ${options(keys(actions))}
           </select>
         </label>
-        ${fields(state.action, state.fields)}
-        <br />
+        <div class="fields">${fieldControls(state.action, state.fields)}</div>
         <textarea
           cols="80"
           rows="16"
           onchange=${(event) => {
-            console.log('@@term textarea before', { term: state.term });
             state.term = ckControl(event.target).value;
-            console.log('@@term textarea after', { term: state.term });
           }}
         >
 ${state.term}</textarea
@@ -515,24 +531,6 @@ ${state.results ? pprint(state.results.map(RhoExpr.parse)) : ''}</pre
   });
 }
 
-/**
- * @param {Observer} observer
- * @param {string} uri
- */
-async function lookupSet(observer, uri) {
-  const term = `
-    new ret, ch, lookup(\`rho:registry:lookup\`) in {
-      lookup!(\`${uri}\`, *ch) |
-      for (@set <- ch) { ret!(set.toList())}
-    }`;
-  console.log('lookupSet', { uri });
-  const {
-    expr: [items],
-  } = await observer.exploratoryDeploy(term);
-  console.log('lookupSet done.');
-  return RhoExpr.parse(items);
-}
-
 function networkControl(state, { html }) {
   return freeze({
     view() {
@@ -588,9 +586,9 @@ function groupControl(state, { html }) {
                       state.fields = { ...state.fields, them: revAddr };
                     }}
                   >
-                    ❤️
+                    ❤️ ${score(revAddr) || ''}
                   </button>
-                  <sup class="likes">${score(revAddr) || ''}</sup><br />
+                  <br />
                   <strong class="name">${nick(revAddr)}</strong>
                 </div>
               `,
