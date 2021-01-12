@@ -20,10 +20,39 @@ const rollReg = {
 
 /**
  * @typedef {{ template: string, fields?: Record<string, FieldSpec> }} ActionSpec
- * @typedef {{ type: 'string' | 'uri' | 'walletRevAddr', value?: string }} FieldSpec
+ * @typedef {{ type: 'string' | 'set' | 'uri' | 'walletRevAddr', value?: string }} FieldSpec
  * @type {Record<string, ActionSpec>}
  */
 export const actions = {
+  newIssue: {
+    fields: {
+      lockerTag: { value: 'inbox', type: 'string' },
+      name: { type: 'string', value: '' },
+      //choice, choice, choice, ...
+      proposals: {
+        type: 'set',
+        value: ""
+      },
+      issueURI: {
+        type: 'uri',
+        value: 'rho:id:wqcedk93naqxunhmhjdmk9qgg88o9d1aak8kpy4mqe618ow6bgxpg5'
+      },
+    },
+    template:
+      `
+    new lookupCh, bCh, lookup(\`rho:registry:lookup\`), 
+    stdout(\`rho:rchain:deployId\`),
+    deployerId(\`rho:rchain:deployerId\`) in { 
+      lookup!(issueURI, *lookupCh) | 
+      for(Issue <- lookupCh) { 
+        Issue!(proposals, *bCh) | 
+        for (admin, tally <- bCh) { 
+          @[*deployerId, lockerTag]!(["issue", name, {"admin": *admin, "tally": *tally}], *stdout)
+        } 
+      } 
+    }
+    `,
+  },
   newMemberDirectory: {
     fields: {
       contractURI: {
@@ -58,9 +87,9 @@ export const actions = {
   helloWorld: {
     template: `new world in { world!("Hello!") }`,
   },
-   raviWorld: {
-      template: `new ravi in { ravi!("Hello!") }`,
-    },
+  raviWorld: {
+    template: `new ravi in { ravi!("Hello!") }`,
+  },
   getRoll: {
     fields: {
       rollReg,
@@ -151,17 +180,17 @@ export const actions = {
       }
     }`,
   },
-  sendMail:{
+  sendMail: {
     fields: {
-          lockerTag: { value: 'inbox', type: 'string' },
-          toInboxURI : {value: '' , type: 'uri'},
-          from: { value: '', type: 'string'},
-          to: { value: '', type: 'string'},
-          sub: { value: 'hello', type: 'string'},
-          body: { value: 'hello from ravi for hackathon 2020', type: 'string'},
-      },
+      lockerTag: { value: 'inbox', type: 'string' },
+      toInboxURI: { value: '', type: 'uri' },
+      from: { value: '', type: 'string' },
+      to: { value: '', type: 'string' },
+      sub: { value: 'hello', type: 'string' },
+      body: { value: 'hello from ravi for hackathon 2020', type: 'string' },
+    },
     template:
-        `new deployId(\`rho:rchain:deployId\`), deployerId(\`rho:rchain:deployerId\`),
+      `new deployId(\`rho:rchain:deployId\`), deployerId(\`rho:rchain:deployerId\`),
 
         lookup(\`rho:registry:lookup\`), inboxCh
         in {
@@ -170,18 +199,18 @@ export const actions = {
                 toinbox!({"from": from, "to": to, "sub": sub, "body": body}, *deployId)
             }
       }`,
-   },
+  },
   peekInbox: {
-      fields: {
-        lockerTag: { value: 'inbox', type: 'string' },
-      },
-      template: `new deployId(\`rho:rchain:deployId\`), deployerId(\`rho:rchain:deployerId\`), ch
+    fields: {
+      lockerTag: { value: 'inbox', type: 'string' },
+    },
+    template: `new deployId(\`rho:rchain:deployId\`), deployerId(\`rho:rchain:deployerId\`), ch
       in {
         for(@{"peek": *peek, ..._} <<- @[*deployerId, lockerTag]) {
           peek!(*deployId)
         }
       }`,
-    },
+  },
   checkRegistration: {
     fields: {
       myGovRevAddr: { type: 'walletRevAddr' },

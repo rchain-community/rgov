@@ -20,7 +20,7 @@ in {
     new admin, tally, voterCh in {
       stdout!("creating ballot") |
       return!(bundle+{*admin}, bundle+{*tally}) |
-       voterCh!({}) |
+      voterCh!({}) |
 
       contract admin(@"giveRightToVote", @name, return) = {
         // voter names must be unique, a public key is suggested.
