@@ -31,7 +31,7 @@ export const actions = {
       //choice, choice, choice, ...
       proposals: {
         type: 'set',
-        value: ""
+        value: "",
       },
       issueURI: {
         type: 'uri',
@@ -39,7 +39,7 @@ export const actions = {
       },
     },
     template:
-      `
+    `
     new lookupCh, bCh, lookup(\`rho:registry:lookup\`), 
     stdout(\`rho:rchain:deployId\`),
     deployerId(\`rho:rchain:deployerId\`) in { 

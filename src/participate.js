@@ -396,6 +396,7 @@ function actionControl(state, { html, getEthProvider }) {
             name="action"
             onchange=${(/** @type {Event} */ event) => {
               state.action = ckControl(event.target).value;
+              deployId = "";
               return false;
             }}
           >
