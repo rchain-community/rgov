@@ -41,15 +41,17 @@ export const actions = {
     template:
     `
     new lookupCh, bCh, lookup(\`rho:registry:lookup\`), 
-    stdout(\`rho:rchain:deployId\`),
+    return(\`rho:rchain:deployId\`),
     deployerId(\`rho:rchain:deployerId\`) in { 
       lookup!(issueURI, *lookupCh) | 
       for(Issue <- lookupCh) { 
         Issue!(proposals, *bCh) | 
-        for (admin, tally <- bCh) { 
-          @[*deployerId, lockerTag]!(["issue", name, {"admin": *admin, "tally": *tally}], *stdout)
-        } 
-      } 
+        for(admin, tally <- bCh) {
+	  for (@{"inbox": *inbox, ..._} <<- @[*deployerId, lockerTag]) {
+             inbox!(["issue", name, {"admin": *admin, "tally": *tally}], *return)
+          }
+        }
+      }
     }
     `,
   },
