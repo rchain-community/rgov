@@ -1,6 +1,5 @@
-// @ts-check
-import htm from 'htm';
-import m from 'mithril';
+import htm from "htm";
+import m from "mithril";
 import {
   RNode,
   RhoExpr,
@@ -9,9 +8,10 @@ import {
   getAddrFromEth,
   signMetaMask,
   startTerm,
-  listenAtDeployId,
-} from 'rchain-api';
-import { actions } from './actions.js';
+  listenAtDeployId
+} from "rchain-client-api";
+import { actions } from "../rholang/rho";
+
 const { freeze, keys, entries } = Object;
 
 // TODO: UI for phloLimit
@@ -20,18 +20,18 @@ const maxFee = { phloPrice: 1, phloLimit: 0.05 * 100000000 };
 // TODO: ISSUE: are networks really const? i.e. design-time data?
 const NETWORKS = {
   localhost: {
-	  observerBase: 'http://localhost:40403',
-    validatorBase: 'http://localhost:40403',
+    observerBase: "http://localhost:40403",
+    validatorBase: "http://localhost:40403"
   },
   testnet: {
-    observerBase: 'https://observer.testnet.rchain.coop',
+    observerBase: "https://observer.testnet.rchain.coop",
     // TODO: rotate validators
-    validatorBase: 'https://node2.testnet.rchain-dev.tk',
+    validatorBase: "https://node2.testnet.rchain-dev.tk"
   },
   mainnet: {
-    observerBase: 'https://observer.services.mainnet.rchain.coop',
-    validatorBase: 'https://node12.root-shard.mainnet.rchain.coop',
-  },
+    observerBase: "https://observer.services.mainnet.rchain.coop",
+    validatorBase: "https://node12.root-shard.mainnet.rchain.coop"
+  }
 };
 
 // rnode.js:63 POST https://observer.services.mainnet.rchain.coop/api/explore-deploy 400 (Bad Request)
@@ -52,21 +52,14 @@ const ROLL = `11112fZEixuoKqrGH6BxAPayFD8LWq9KRVFwcLvA5gg6GAaNEZvcKL
 11112AQiVPXmASU2SGnS2qCQN5p3QyEcp2mZTYn5KmNwEKEswfuRp2
 `
   .trim()
-  .split('\n');
+  .split("\n");
 
-/**
- * TODO: expect rather than unwrap (better diagnostics)
- * @param {T?} x
- * @returns {T}
- * @template T
- */
 function unwrap(x) {
-  if (!x) throw new TypeError('unexpected null / undefined');
+  if (!x) throw new TypeError("unexpected null / undefined");
   return x;
 }
 
-document.addEventListener('DOMContentLoaded', () => {
-  /** @type {(selector: string) => HTMLElement} */
+export default () => {
   const $ = (selector) => unwrap(document.querySelector(selector));
 
   const html = htm.bind(m);
@@ -80,9 +73,9 @@ document.addEventListener('DOMContentLoaded', () => {
     clock: () => Promise.resolve(Date.now()),
     getEthProvider: () => getEthProvider({ window }),
     mount: (selector, control) => m.mount($(selector), control),
-    redraw: () => m.redraw(),
+    redraw: () => m.redraw()
   });
-});
+};
 
 /**
  * @typedef {{
@@ -104,10 +97,10 @@ function makeBusy($) {
    * @template T
    */
   async function busy(selector, p) {
-    $('form').style.cursor = 'wait';
+    $("form").style.cursor = "wait";
     const button = $(selector);
     if (!(button instanceof HTMLButtonElement)) throw TypeError(String(button));
-    button.style.cursor = 'wait';
+    button.style.cursor = "wait";
     button.disabled = true;
 
     try {
@@ -115,8 +108,8 @@ function makeBusy($) {
       return result;
     } finally {
       button.disabled = false;
-      $('form').style.cursor = 'inherit';
-      button.style.cursor = 'inherit';
+      $("form").style.cursor = "inherit";
+      button.style.cursor = "inherit";
       m.redraw(); // FIXME ambient
     }
   }
@@ -160,19 +153,19 @@ function buildUI({
   getEthProvider,
   mount,
   redraw,
-  fetch,
+  fetch
 }) {
   const rnode = RNode(fetch);
-  let action = 'helloWorld';
-  let network = 'localhost';
+  let action = "helloWorld";
+  let network = "testnet";
   /** @type {{ observer: Observer, validator: Validator}} shard */
   let shard;
-  let term = ''; //@@DEBUG
+  let term = ""; //@@DEBUG
   /** @type {Record<string, string>} */
   let fieldValues = {};
   /** @type {RhoExpr[]} */
   let results = [];
-  const bindings = { mainnet: {}, localhost: { $roll: ROLL}, testnet: { } };
+  const bindings = { mainnet: {}, localhost: { $roll: ROLL }, testnet: {} };
 
   const state = {
     get shard() {
@@ -185,24 +178,26 @@ function buildUI({
       const net = NETWORKS[value];
       if (!net) return;
       network = value;
-      console.log({ network, net });
+
       shard = {
         observer: rnode.observer(net.observerBase),
-        validator: rnode.validator(net.validatorBase),
+        validator: rnode.validator(net.validatorBase)
       };
       state.bindings = bindings[network];
+      m.redraw();
     },
     get action() {
       return action;
     },
     set action(value) {
-      if (typeof value !== 'string') return;
+      if (typeof value !== "string") return;
       action = value;
       const fields = actions[action].fields || {};
       const init = Object.fromEntries(
-        entries(fields).map(([name, { value }]) => [name, value || '']),
+        entries(fields).map(([name, { value }]) => [name, value || ""])
       );
       state.fields = init;
+      m.redraw();
     },
     get fields() {
       return fieldValues;
@@ -211,20 +206,21 @@ function buildUI({
       const { fields, template } = actions[state.action];
       if (fields) {
         fieldValues = Object.fromEntries(
-          keys(fields).map((k) => [k, value[k]]),
+          keys(fields).map((k) => [k, value[k]])
         );
         const exprs = entries(fieldValues).map(([name, value]) =>
-          fields[name].type === 'uri' ? `\`${value}\`` : JSON.stringify(value),
+          fields[name].type === "uri" ? `\`${value}\`` : JSON.stringify(value)
         );
-        state.term = `match [${exprs.join(', ')}] {
-          [${keys(fieldValues).join(', ')}] => {
-            ${template}
-          }
-        }`;
+        state.term = `match [${exprs.join(", ")}] {
+           [${keys(fieldValues).join(", ")}] => {
+             ${template}
+           }
+         }`;
       } else {
         fieldValues = {};
         state.term = template;
       }
+      m.redraw();
     },
     get term() {
       return term;
@@ -233,6 +229,7 @@ function buildUI({
       term = fixIndent(value);
       state.results = [];
       state.problem = undefined;
+      m.redraw();
     },
     bindings: bindings[network],
     get results() {
@@ -244,31 +241,34 @@ function buildUI({
         const decl = RhoExpr.parse(expr);
         if (Array.isArray(decl)) {
           const [kw, name, rhs] = decl;
-          if (kw !== '#define') return;
-          if (typeof name !== 'string') return;
+          if (kw !== "#define") return;
+          if (typeof name !== "string") return;
           state.bindings[name] = rhs;
         }
       });
+      m.redraw();
     },
-    problem: undefined,
+    problem: undefined
   };
-  state.action = action; // compute initial term
-  state.network = 'localhost'; // initialize shard
 
-  mount('#actionControl', actionControl(state, { html, getEthProvider }));
-  mount('#netControl', networkControl(state, { html }));
+  //initioalization of state vars
+  state.action = action; // compute initial term
+  state.network = "testnet"; // initialize shard
+
+  mount("#actionControl", actionControl(state, { html, getEthProvider }));
+  mount("#netControl", networkControl(state, { html }));
   mount(
-    '#runControl',
+    "#runControl",
     runControl(state, {
       html,
       formValue,
       busy,
       clock,
       getEthProvider,
-      setTimeout,
-    }),
+      setTimeout
+    })
   );
-  mount('#groupControl', groupControl(state, { html }));
+  mount("#groupControl", groupControl(state, { html }));
 }
 
 /**
@@ -286,20 +286,20 @@ function ckControl(ctrl) {
 }
 
 function fixIndent(code) {
-  const lines = code.split('\n').map((l) => l.trim());
+  const lines = code.split("\n").map((l) => l.trim());
   let level = 0;
   for (let ix = 0; ix < lines.length; ix += 1) {
-    if (lines[ix].startsWith('}')) {
+    if (lines[ix].startsWith("}")) {
       level -= 1;
     }
     if (level > 0) {
-      lines[ix] = '  '.repeat(level) + lines[ix];
+      lines[ix] = "  ".repeat(level) + lines[ix];
     }
-    if (lines[ix].endsWith('{')) {
+    if (lines[ix].endsWith("{")) {
       level += 1;
     }
   }
-  return lines.join('\n');
+  return lines.join("\n");
 }
 
 /**
@@ -316,16 +316,16 @@ function actionControl(state, { html, getEthProvider }) {
       (id) =>
         html`<option value=${id} ...${{ selected: id === state.action }}>
           ${id}
-        </option>`,
+        </option>`
     );
 
   const metaMaskP = getEthProvider().then((ethereum) =>
-    MetaMaskAccount(ethereum),
+    MetaMaskAccount(ethereum)
   );
 
   const fty = (action, name) => {
     const f = actions[action].fields;
-    if (!f) return 'string';
+    if (!f) return "string";
     return f[name].type;
   };
 
@@ -334,12 +334,12 @@ function actionControl(state, { html, getEthProvider }) {
       metaMaskP.then((mm) =>
         mm.ethereumAddress().then((ethAddr) => {
           const revAddr = getAddrFromEth(ethAddr);
-          if (!revAddr) throw new Error('bad ethAddr???');
+          if (!revAddr) throw new Error("bad ethAddr???");
           const current = { [name]: revAddr };
           const old = state.fields;
           state.fields = { ...old, ...current };
           m.redraw(); // FIXME ambient?
-        }),
+        })
       );
       return false;
     }}
@@ -349,7 +349,7 @@ function actionControl(state, { html, getEthProvider }) {
 
   const fieldControls = (
     /** @type {string} */ action,
-    /** @type {Record<string, string>} */ fields,
+    /** @type {Record<string, string>} */ fields
   ) => {
     const fragment = entries(fields).map(
       ([name, value]) =>
@@ -366,8 +366,8 @@ function actionControl(state, { html, getEthProvider }) {
                 return false;
               }}
           /></label>
-          ${fty(action, name) === 'walletRevAddr' ? connectButton(name) : ''}
-        </div>`,
+          ${fty(action, name) === "walletRevAddr" ? connectButton(name) : ""}
+        </div>`
     );
     return fragment;
   };
@@ -388,6 +388,7 @@ function actionControl(state, { html, getEthProvider }) {
           </select>
         </label>
         <div class="fields">${fieldControls(state.action, state.fields)}</div>
+
         <textarea
           cols="80"
           rows="16"
@@ -395,10 +396,10 @@ function actionControl(state, { html, getEthProvider }) {
             state.term = ckControl(event.target).value;
           }}
         >
-${state.term}</textarea
+ ${state.term}</textarea
         >
       `;
-    },
+    }
   });
 }
 
@@ -419,10 +420,10 @@ ${state.term}</textarea
 function runControl(
   state,
   { html, busy, getEthProvider, clock },
-  period = 5 * 1000,
+  period = 5 * 1000
 ) {
   const hide = (/** @type { boolean } */ flag) =>
-    flag ? { style: 'display: none' } : {};
+    flag ? { style: "display: none" } : {};
 
   const pprint = (obj) => JSON.stringify(obj, null, 2);
 
@@ -430,14 +431,13 @@ function runControl(
     const obs = state.shard.observer;
     state.problem = undefined;
     state.results = [];
+
     try {
-      console.log('explore...');
-      const { expr, block } = await busy(
-        '#explore',
-        obs.exploratoryDeploy(term),
-      );
-      console.log('... explore done.');
+      console.log("explore...");
+      const { expr } = await busy("#explore", obs.exploratoryDeploy(term));
+      console.log("... explore done.");
       state.results = expr;
+
       // TODO? $('#blockInfo').textContent = pprint(block);
     } catch (err) {
       state.problem = err.message;
@@ -459,7 +459,7 @@ function runControl(
       async sign(/** @type { string } */ term) {
         const [timestamp, [recent]] = await Promise.all([
           clock(),
-          obs.getBlocks(1),
+          obs.getBlocks(1)
         ]);
         const ethereum = await getEthProvider();
         return signMetaMask(
@@ -467,23 +467,23 @@ function runControl(
             term,
             ...maxFee,
             timestamp,
-            validAfterBlockNumber: recent.blockNumber,
+            validAfterBlockNumber: recent.blockNumber
           },
-          ethereum,
+          ethereum
         );
-      },
+      }
     });
 
     try {
       await busy(
-        '#deploy',
+        "#deploy",
         (async () => {
           const deploy = await startTerm(term, val, obs, account);
-          console.log('@@DEBUG', state.action, { deploy });
+          console.log("@@DEBUG", state.action, { deploy });
           const { expr } = await listenAtDeployId(obs, deploy);
-          console.log('@@DEBUG', state.action, { expr });
+          console.log("@@DEBUG", state.action, { expr });
           state.results = [expr];
-        })(),
+        })()
       );
       // TODO? $('#blockInfo').textContent = pprint(block);
     } catch (err) {
@@ -514,20 +514,22 @@ function runControl(
         <section id="resultSection" ...${hide(!state.results)}>
           <h2>Result</h2>
           <pre id="result">
-${state.results ? pprint(state.results.map(RhoExpr.parse)) : ''}</pre
+              ${state.results
+              ? pprint(state.results.map(RhoExpr.parse))
+              : ""}</pre
           >
           <!-- TODO
-          <h2>Block Info</h2>
-          <small>
-            <pre id="blockInfo"></pre>
-          </small>
-          -->
+           <h2>Block Info</h2>
+           <small>
+             <pre id="blockInfo"></pre>
+           </small>
+           -->
         </section>
         <section id="problemSection" ...${hide(!state.problem)}>
           <h3>Problem</h3>
-          <pre id="problem">${state.problem ? state.problem : ''}</pre>
+          <pre id="problem">${state.problem ? state.problem : ""}</pre>
         </section>`;
-    },
+    }
   });
 }
 
@@ -536,14 +538,16 @@ function networkControl(state, { html }) {
     view() {
       return html`<div id="netControl">
         <select
-          onchange=${(event) => (state.network = ckControl(event.target).value)}
+          defaultValue="testnet"
+          onchange="${(event) =>
+            (state.network = ckControl(event.target).value)}"
         >
           <option name="network" value="mainnet">mainnet</option>
-          <option name="network" value="testnet">testnet</option>
-          <option name="network" value="localhost" selected>localhost</option>
+          <option name="network" value="testnet" selected>testnet</option>
+          <option name="network" value="localhost">localhost</option>
         </select>
       </div>`;
-    },
+    }
   });
 }
 
@@ -554,10 +558,10 @@ function networkControl(state, { html }) {
  */
 function groupControl(state, { html }) {
   const score = (/** @type { string } */ revAddr) => {
-    const kudos = state.bindings['$kudos'];
-    if (typeof kudos !== 'object' || !kudos) return 0;
+    const kudos = state.bindings["$kudos"];
+    if (typeof kudos !== "object" || !kudos) return 0;
     const score = kudos[revAddr];
-    if (typeof score !== 'number') return 0;
+    if (typeof score !== "number") return 0;
     return score;
   };
   const nick = (/** @type { string } */ revAddr) => revAddr.slice(5, 15);
@@ -566,7 +570,7 @@ function groupControl(state, { html }) {
 
   return freeze({
     view() {
-      const roll = state.bindings['$roll'];
+      const roll = state.bindings["$roll"];
       if (!Array.isArray(roll)) return;
       return html` <h3>Members</h3>
         <div>
@@ -582,18 +586,18 @@ function groupControl(state, { html }) {
                   <button
                     class="like"
                     onclick=${() => {
-                      state.action = 'awardKudos';
+                      state.action = "awardKudos";
                       state.fields = { ...state.fields, them: revAddr };
                     }}
                   >
-                    ❤️ ${score(revAddr) || ''}
+                    ❤️ ${score(revAddr) || ""}
                   </button>
                   <br />
                   <strong class="name">${nick(revAddr)}</strong>
                 </div>
-              `,
+              `
           )}
         </div>`;
-    },
+    }
   });
 }

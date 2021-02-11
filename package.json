@@ -1,79 +1,39 @@
 {
-  "name": "liquid-democracy-rchain",
-  "version": "0.0.1",
-  "description": "",
-  "main": "Jakefile.js",
-  "scripts": {
-    "lint-fix": "eslint --fix '**/*.{js,jsx}'",
-    "lint-check": "eslint '**/*.{js,jsx}'",
-    "lint:types": "tsc -p jsconfig.json",
-    "start": "webpack-dev-server --open",
-    "build": "webpack"
-  },
-  "contributors": [
-    "Jim Whitescarver",
-    "Dan Connolly"
-  ],
-  "license": "Apache-2.0",
-  "devDependencies": {
-    "eslint": "^7.9.0",
-    "eslint-config-airbnb": "^18.2.0",
-    "eslint-config-airbnb-base": "^14.2.0",
-    "eslint-config-prettier": "^6.11.0",
-    "eslint-plugin-import": "^2.22.0",
-    "eslint-plugin-prettier": "^3.1.4",
-    "html-webpack-plugin": "^4.5.0",
-    "prettier": "^2.1.1",
-    "typescript": "^4.0.2",
-    "webpack": "^4.44.2",
-    "webpack-cli": "^3.3.12",
-    "webpack-dev-server": "^3.11.0"
-  },
-  "eslint": {
-    "extends": [
-      "airbnb-base",
-      "plugin:prettier/recommended"
-    ],
-    "env": {
-      "es6": true
-    },
-    "globals": {
-      "globalThis": "writeable"
-    },
-    "rules": {
-      "implicit-arrow-linebreak": "off",
-      "function-paren-newline": "off",
-      "arrow-parens": "off",
-      "strict": "off",
-      "prefer-destructuring": "off",
-      "no-else-return": "off",
-      "no-console": "off",
-      "no-unused-vars": [
-        "error",
-        {
-          "argsIgnorePattern": "^_"
-        }
-      ],
-      "no-return-assign": "off",
-      "no-param-reassign": "off",
-      "no-restricted-syntax": [
-        "off",
-        "ForOfStatement"
-      ],
-      "no-unused-expressions": "off",
-      "no-loop-func": "off",
-      "import/prefer-default-export": "off"
-    }
-  },
-  "prettier": {
-    "trailingComma": "all",
-    "singleQuote": true
-  },
+  "name": "rholang-template",
+  "version": "1.0.0",
+  "description": "A template for building your dApp. Execute rholang code on the rchain network in real time.",
+  "keywords": [],
+  "main": "src/index.js",
   "dependencies": {
+    "@emotion/core": "10.0.22",
+    "@emotion/styled": "10.0.23",
+    "@material-ui/core": "latest",
+    "clsx": "latest",
+    "emotion": "10.0.23",
     "esm": "^3.2.25",
     "htm": "^3.0.4",
     "jake": "^10.8.2",
-    "mithril": "^2.0.4",
-    "rchain-api": "github:rchain-community/rchain-api#http-client"
-  }
+    "mithril": "0.2.4",
+    "rchain-client-api": "0.10.0",
+    "react": "latest",
+    "react-dom": "latest",
+    "react-scripts": "3.0.1",
+    "reshadow": "0.0.1-alpha.72",
+    "util": "0.11.1"
+  },
+  "devDependencies": {
+    "acorn": "^8.0.5"
+  },
+  "scripts": {
+    "start": "react-scripts start",
+    "build": "react-scripts build",
+    "test": "react-scripts test --env=jsdom",
+    "eject": "react-scripts eject"
+  },
+  "browserslist": [
+    ">0.2%",
+    "not dead",
+    "not ie <= 11",
+    "not op_mini all"
+  ]
 }
