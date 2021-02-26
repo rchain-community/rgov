@@ -7,21 +7,23 @@
   "dependencies": {
     "@emotion/core": "10.0.22",
     "@emotion/styled": "10.0.23",
-    "emotion": "10.0.23",
-    "mithril": "0.2.4",
     "@material-ui/core": "latest",
     "clsx": "latest",
-    "react": "latest",
-    "react-dom": "latest",
-    "react-scripts": "3.0.1",
+    "emotion": "10.0.23",
     "esm": "^3.2.25",
     "htm": "^3.0.4",
     "jake": "^10.8.2",
+    "mithril": "0.2.4",
     "rchain-client-api": "0.10.0",
+    "react": "latest",
+    "react-dom": "latest",
+    "react-scripts": "3.0.1",
     "reshadow": "0.0.1-alpha.72",
     "util": "0.11.1"
   },
-  "devDependencies": {},
+  "devDependencies": {
+    "acorn": "^8.0.5"
+  },
   "scripts": {
     "start": "react-scripts start",
     "build": "react-scripts build",
