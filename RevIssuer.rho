@@ -50,8 +50,8 @@ in {
                   for (@result <- resultCh) {
                     log!(("Finished transfer of ", 100, "REV to", to, "result was:", result)) |
                     new kCh, iCh in {
-                      insertArbitrary!(*RevIssuerKit, *kCh) |
-                      insertArbitrary!(*issuer, *iCh) |
+                      insertArbitrary!(bundle+{*RevIssuerKit}, *kCh) |
+                      insertArbitrary!(bundle+{*issuer}, *iCh) |
                       for (@kUri <- kCh; @iUri <- iCh) {
                         log!(["tests passed; inserted RevIssuerKit at", kUri, "REV issuer at", iUri])
                       }
