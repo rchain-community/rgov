@@ -1,7 +1,9 @@
-new log(`rho:rchain:deployId`), RevIssuerKit,
+new log(`rho:rchain:deployId`),
+RevIssuerKit,
+insertArbitrary(`rho:registry:insertArbitrary`),
 lookup(`rho:registry:lookup`), vCh,
 REVAddress(`rho:rev:address`)
- in {
+in {
   lookup!(`rho:rchain:revVault`, *vCh) | for (@(_, *RevVault) <- vCh) {
     // Testing
     new kitCh, pCh,
@@ -17,7 +19,7 @@ REVAddress(`rho:rev:address`)
           DeployerIdOps!("pubKeyBytes", *deployerId, *pubKeyCh) |
           for (@deployerPubKey <- pubKeyCh) {
             log!(["got deployer public key", deployerPubKey]) |
-            REVAddress!("fromUnforgeable", *purse, *toCh) |
+            purse!("getAddress", *toCh) |
             REVAddress!("fromPublicKey", deployerPubKey, *fromCh) |
             for (@from <- fromCh; @to <- toCh) {
               log!(["got from", from, "to", to]) |
@@ -31,7 +33,14 @@ REVAddress(`rho:rev:address`)
                 new resultCh in {
                   @vault!("transfer", to, 100 /*amount*/, *key, *resultCh) |
                   for (@result <- resultCh) {
-                    log!(("Finished transfer of ", 100, "REV to", to, "result was:", result))
+                    log!(("Finished transfer of ", 100, "REV to", to, "result was:", result)) |
+                    new kCh, iCh in {
+                      insertArbitrary!(*RevIssuerKit, *kCh) |
+                      insertArbitrary!(*issuer, *iCh) |
+                      for (@kUri <- kCh; @iUri <- iCh) {
+                        log!(["tests passed; inserted RevIssuerKit at", kUri, "REV issuer at", iUri])
+                      }
+                    }
                   }
                 }
               }
@@ -42,35 +51,50 @@ REVAddress(`rho:rev:address`)
     } |
 
     contract RevIssuerKit(ret) = {
-      new mint, issuer /* TODO: amountMath, brand */ in {
+      new issuer, makePurseKit /* TODO: amountMath, brand */ in {
 
-        ret!({"mint": *mint, "issuer": *issuer}) |
+        // The corresponding mint is the REV mint; clearly we don't have that to give out.
+        ret!({"mint": Nil, "issuer": bundle+{*issuer}}) |
 
         contract issuer(@"makeEmptyPurse", ret) = {
           new kitCh in {
-            issuer!("makeVaultPurseKit", *kitCh) | for (@{"purse": purse, ..._} <- kitCh) {
-              ret!(purse)
+            makePurseKit!(*kitCh) | for (@{"purse": *purse, ..._} <- kitCh) {
+              ret!(bundle+{*purse}) // already bundled, but... it's a good habit.
             }
           }
         }
         |
-        contract issuer(@"makeVaultPurseKit", kitRet) = {
-          new purse, addrCh, balCh, vaultCh in {
+        contract makePurseKit(kitRet) = {
+          new purse, un, addrCh, balCh, vaultCh in {
             balCh!(0) |
-            REVAddress!("fromUnforgeable", *purse, *addrCh) | for (@purseAddr <- addrCh) {
+            REVAddress!("fromUnforgeable", *un, *addrCh) | for (@purseAddr <- addrCh) {
               RevVault!("findOrCreate", purseAddr, *vaultCh) | for (vault <- vaultCh) {
-                kitRet!({"purse": *purse, "address": purseAddr, "vault": *vault}) |
+                kitRet!({"purse": bundle+{*purse}, "address": purseAddr}) |
 
+                contract purse(@"getAddress", ret) = { ret!(purseAddr) } |
                 contract purse(@"getBalance", ret) = { for (@balance <<- balCh) { ret!(balance) } } |
+                contract purse(@"getKey", @sealedDispatch, ret) = {
+                  if (sealedDispatch == {bundle0{(*makePurseKit, *ret)}}) {
+                    new keyCh in {
+                      RevVault!("unforgeableAuthKey", *un, *keyCh) |
+                      for (@balance <<- balCh) {
+                        for (@key <- keyCh) {
+                          ret!((true, {"key": key, "seal": bundle0{(*makePurseKit, key)},
+                          "vault": *vault, "address": purseAddr, "balance": balance }))
+                        }
+                      }
+                    }
+                  } else {
+                    ret!((false, "bad sealedDispatch"))
+                  }
+                } |
 
                 contract purse(@"deposit", allegedPayment, ret) = {
                   new keyCh, amtCh, pAddrCh, pvCh, txCh in {
-                    RevVault!("unforgeableAuthKey", *allegedPayment, *keyCh) |
-                    REVAddress!("fromUnforgeable", *allegedPayment, *pAddrCh) |
-                    allegedPayment!("getBalance", *amtCh) |
-                    for (@pmtAuthKey <- keyCh; @pmtAddr <- pAddrCh; @amount <- amtCh) {
-                      RevVault!("findOrCreate", pmtAddr, *pvCh) |
-                      for (@(true, *pmtVault) <- pvCh) {
+                    allegedPayment!("getKey", bundle0{(*makePurseKit, *keyCh)}, *keyCh) |
+                    for (@(true, {"key": pmtAuthKey, "seal": seal,
+                    "vault": *pmtVault, "address": pmtAddr, "balance": amount }) <- keyCh) {
+                      if (seal == {bundle0{(*makePurseKit, pmtAuthKey)}}) {
                         pmtVault!("transfer", purseAddr, amount, pmtAuthKey, *txCh) |
                         for (@(ok, x) <- txCh; @balance <- balCh) {
                           ret!((ok, x)) |
@@ -79,6 +103,8 @@ REVAddress(`rho:rev:address`)
                             false => balCh!(balance)
                           }
                         }
+                      } else {
+                        ret!((false, "bad seal"))
                       }
                     }
                   }
@@ -86,15 +112,20 @@ REVAddress(`rho:rev:address`)
                 |
                 contract purse(@"withdraw", @amount, ret) = {
                   new pCh, keyCh, txCh in {
-                    issuer!("makeVaultPurseKit", *pCh) |
-                    for (@{"purse": *withdrawal, "address": wAddr, "vault": *wVault} <- pCh) {
-                      RevVault!("unforgeableAuthKey", *withdrawal, *keyCh) | for (authKey <- keyCh) {
-                        vault!("transfer", purseAddr, amount, *authKey, *txCh) |
+                    makePurseKit!(*pCh) |
+                    for (@{"purse": *withdrawal, "address": wAddr, ..._} <- pCh) {
+                      RevVault!("unforgeableAuthKey", *un, *keyCh) | for (authKey <- keyCh) {
+                        vault!("transfer", wAddr, amount, *authKey, *txCh) |
                         for (@(ok, x) <- txCh; @balance <- balCh) {
-                          ret!((ok, x)) |
                           match ok {
-                            true => balCh!(balance - amount)
-                            false => balCh!(balance)
+                            true => {
+                              balCh!(balance - amount) |
+                              ret!((true, *withdrawal))
+                            }
+                            false => {
+                              ret!((ok, x)) |
+                              balCh!(balance)
+                            }
                           }
                         }
                       }
@@ -109,4 +140,3 @@ REVAddress(`rho:rev:address`)
     }
   }
 }
-
