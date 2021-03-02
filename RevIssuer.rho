@@ -49,11 +49,17 @@ in {
                   @vault!("transfer", to, 100 /*amount*/, *key, *resultCh) |
                   for (@result <- resultCh) {
                     log!(("Finished transfer of ", 100, "REV to", to, "result was:", result)) |
-                    new kCh, iCh in {
-                      insertArbitrary!(bundle+{*RevIssuerKit}, *kCh) |
-                      insertArbitrary!(bundle+{*issuer}, *iCh) |
-                      for (@kUri <- kCh; @iUri <- iCh) {
-                        log!(["tests passed; inserted RevIssuerKit at", kUri, "REV issuer at", iUri])
+                    purse!("withdraw", 50, *resultCh) | for (@(ok, *p2) <- resultCh) {
+                      log!(["withdraw ok?", ok]) |
+                      purse!("deposit", *p2, *resultCh) | for (@(ok, x) <- resultCh) {
+                        log!(["deposit ok?", (ok, x)]) |
+                        new kCh, iCh in {
+                          insertArbitrary!(bundle+{*RevIssuerKit}, *kCh) |
+                          insertArbitrary!(bundle+{*issuer}, *iCh) |
+                          for (@kUri <- kCh; @iUri <- iCh) {
+                            log!(["tests passed; inserted RevIssuerKit at", kUri, "REV issuer at", iUri])
+                          }
+                        }
                       }
                     }
                   }
