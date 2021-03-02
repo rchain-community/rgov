@@ -109,7 +109,8 @@ in {
               purse, addrCh, balCh, vaultCh in {
             balCh!(0) |
             REVAddress!("fromUnforgeable", *un, *addrCh) | for (@purseAddr <- addrCh) {
-              RevVault!("findOrCreate", purseAddr, *vaultCh) | for (vault <- vaultCh) {
+              RevVault!("findOrCreate", purseAddr, *vaultCh) | for (@(true, *vault) <- vaultCh) {
+                // log!(["new purse addr", purseAddr]) |
                 // Return purse and address in one round trip.
                 kitRet!({"purse": bundle+{*purse}, "address": purseAddr}) |
 
@@ -136,11 +137,13 @@ in {
                  *          as well as this purse's vault, address, and balance.
                  */
                 contract purse(@"getKey", @sealedDispatch, ret) = {
+                  // log!(["getKey seal", sealedDispatch.toByteArray(), {bundle0{(*makePurseKit, *ret)}}.toByteArray()]) |
                   if (sealedDispatch == {bundle0{(*makePurseKit, *ret)}}) {
                     new keyCh in {
                       RevVault!("unforgeableAuthKey", *un, *keyCh) |
                       for (@balance <<- balCh) {
                         for (@key <- keyCh) {
+                          // log!(["unforgeableAuthKey", key, "balance", balance]) |
                           ret!((true, {"key": key, "seal": bundle0{(*makePurseKit, key)},
                                        "vault": *vault,
                                        "address": purseAddr, "balance": balance }))
@@ -154,16 +157,20 @@ in {
 
                 // TODO: optAmount
                 contract purse(@"deposit", allegedPayment, ret) = {
+                  log!("deposit...") |
                   new keyCh, amtCh, pAddrCh, pvCh, txCh in {
                     // Ask alleged payment for a key using sealed dispatch (see above).
                     allegedPayment!("getKey", bundle0{(*makePurseKit, *keyCh)}, *keyCh) |
                     for (@(true, {"key": pmtAuthKey, "seal": seal,
                                   "vault": *pmtVault,
                                   "address": pmtAddr, "balance": amount }) <- keyCh) {
+                      log!(["got key for add", pmtAddr,
+                           "seal", seal.toByteArray(), {bundle0{(*makePurseKit, pmtAuthKey)}}.toByteArray()]) |
                       // Check the seal before trusting the alleged payment vault's transfer method.
                       if (seal == {bundle0{(*makePurseKit, pmtAuthKey)}}) {
                         pmtVault!("transfer", purseAddr, amount, pmtAuthKey, *txCh) |
                         for (@(ok, x) <- txCh; @balance <- balCh) {
+                          log!(["deposit transfer result", (ok, x)]) |
                           ret!((ok, x)) |
                           match ok {
                             // RevVault transfer already checked for overflow
@@ -184,7 +191,7 @@ in {
                 contract purse(@"getDepositFacet", ret) = {
                   new depositFacet in {
                     ret!(*depositFacet) |
-                    contract depositFacet(@"receive", allegedPayment) = {
+                    contract depositFacet(@"receive", allegedPayment, ret) = {
                       purse!("deposit", *allegedPayment, *ret)
                     }
                   }
@@ -196,12 +203,16 @@ in {
                  * TODO: distinguish purses from payments to avoid hazzards.
                  */
                 contract purse(@"withdraw", @amount, ret) = {
+                  // log!(["withdraw", amount, "from", purseAddr]) |
                   new pCh, keyCh, txCh in {
                     makePurseKit!(*pCh) |
                     for (@{"purse": *withdrawal, "address": wAddr, ..._} <- pCh) {
+                      // log!(["withrawal purse addr", wAddr]) |
                       RevVault!("unforgeableAuthKey", *un, *keyCh) | for (authKey <- keyCh) {
+                        // log!(["withrawal authKey", *authKey]) |
                         vault!("transfer", wAddr, amount, *authKey, *txCh) |
                         for (@(ok, x) <- txCh; @balance <- balCh) {
+                          // log!(["withrawal transfer", (ok, x), balance]) |
                           match ok {
                             true => {
                               // RevVault transfer already checked for underflow
