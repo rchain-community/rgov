@@ -6,7 +6,7 @@ blockData(`rho:block:data`),
 loCh, riCh
 in {
   lookup!(`rho:lang:listOps`, *loCh) |
-  lookup!(`rho:id:j38i5p3f64fcda75gh1sx43friatxzn9td6sdh1jajomg97k7wbhj3`, *riCh) |
+  lookup!(`rho:id:961h8n36ikxz4yxxfye898wh7or3d37fbp1yddmsei1rw64hcyzjmf`, *riCh) |
   for (@(_, *ListOps) <- loCh; revIssuer <- riCh) {
     log!(["lookup:", { "ListOps": *ListOps.toByteArray(), "revIssuer": *revIssuer.toByteArray(), "Nil": Nil.toByteArray() }]) |
 
@@ -22,7 +22,7 @@ in {
      */
     contract CrowdFund(@target, @deadline, ret) = {
       new beneficiarySeat, publicFacet, pledgesCh, checkPledgeTarget, checkDeadline, ContributorSeat in {
-        ret!({ "beneficiarySeat": *beneficiarySeat, "publicFacet": *publicFacet }) |
+        ret!({ "beneficiarySeat": bundle+{*beneficiarySeat}, "publicFacet": bundle+{*publicFacet} }) |
 
         /**
          * @typedef {{balance: NatT, pledges: Purse[]}} Holdings
@@ -91,7 +91,7 @@ in {
                 }
               }
             } |
-            ret!(*self)
+            ret!(bundle+{*self})
           }
         } |
 
