@@ -11,16 +11,18 @@ in {
     log!(["lookup:", { "ListOps": *ListOps.toByteArray(), "revIssuer": *revIssuer.toByteArray(), "Nil": Nil.toByteArray() }]) |
 
     /**
-     * @param {NatT} target pledge target in 10^-8 REV
-     * @param {Timestamp} deadline compared to block timestamp
-     * // TODO: how reliable is block timestamp?
+     * @typedef {(true, T) | (false, unknown)} Result<T>
      *
      * TODO: parameterize issuer, esp for testing.
      * TODO: add minimum pledge threshold to guard against
      *       having to spend more to withdraw pledges
      *       than they are worth. (CRITICAL SECURITY ISSUE)
      */
-    contract CrowdFund(@target, @deadline, ret) = {
+    contract CrowdFund(
+      @{ target /\ Int }, // target pledge target in 10^-8 REV
+      @{ deadline /\ Int }, // deadline compared to block timestamp
+      ret, // @returns {{ "beneficiarySeat": BeneficiarySeat, "publicFacet": PublicFacet }}
+    ) = {
       new beneficiarySeat, publicFacet, pledgesCh, checkPledgeTarget, checkDeadline, ContributorSeat in {
         ret!({ "beneficiarySeat": bundle+{*beneficiarySeat}, "publicFacet": bundle+{*publicFacet} }) |
 
@@ -30,12 +32,11 @@ in {
         /** @type { ChannelT<Holdings>} */
         pledgesCh!({ "balance": 0, "pledges": [] }) |
 
-        /**
-         * @param {boolean} met sense of the test
-         * @param {string} message in case of failure
-         * @returns {Result<<NatT>>} current pledges
-         */
-        contract checkPledgeTarget(@met, @message, ret) = {
+        contract checkPledgeTarget(
+          @{ met /\ Bool }, // sense of the test
+          @{ message /\ String}, // in case of failure
+          ret, // Int current pledge total
+        ) = {
           for (@{ "balance": pledges, ..._ } <<- pledgesCh) {
             if ((pledges >= target) == met) {
               ret!((true, pledges))
@@ -45,12 +46,11 @@ in {
           }
         } |
           
-        /**
-         * @param {boolean} met sense of the test
-         * @param {string} message
-         * @returns {Result<Timestamp>} current time
-         */
-        contract checkDeadline(@met, @message, ret) = {
+        contract checkDeadline(
+          @{ met /\ Bool }, // sense of the test
+          @{ message /\ String}, // in case of failure
+          ret, // Int current block time
+        ) = {
           new bCh in {
             blockData!(*bCh) | for(_, @now, _ <- bCh) {
               if ((now >= deadline) == met) {
@@ -63,16 +63,12 @@ in {
         } |
 
         /**
-        * @param {Purse} pledge
-        * @returns { ContributorSeatT }
-        *
-        * @typedef {{
-        *   withdraw: () => Result<Purse>
-        * }} ContributorSeatT
-        */
+         * @param {Purse} pledge - verified by caller, publicFacet
+         */
         contract ContributorSeat(pledge, ret) = {
           log!(["ContributorSeat", *pledge.toByteArray()]) |
           new self in {
+            ret!(bundle+{*self}) |
             /**
              * @return {Result<Purse>}
              */
@@ -90,13 +86,12 @@ in {
                   }
                 }
               }
-            } |
-            ret!(bundle+{*self})
+            }
           }
         } |
 
         /**
-         * @returns { Promise<Result<{ benefit: Purse, problems: Problem[] }>> }
+         * @returns { Result<{ benefit: Purse, problems: Problem[] }> }
          */
         contract beneficiarySeat(@"claim", ret) = {
           new tCh in {
@@ -146,6 +141,10 @@ in {
         /**
          * @param {unknown} allegedPayment
          * @returns {Result<ContributorSeatT>}
+         *
+         * @typedef {{
+         *   withdraw: () => Result<Purse>
+         * }} ContributorSeatT
          */
         contract publicFacet(@"contribute", allegedPayment, ret) = {
           log!("@@contribute") |
