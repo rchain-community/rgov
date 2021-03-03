@@ -157,20 +157,20 @@ in {
 
                 // TODO: optAmount
                 contract purse(@"deposit", allegedPayment, ret) = {
-                  log!("deposit...") |
+                  // log!("deposit...") |
                   new keyCh, amtCh, pAddrCh, pvCh, txCh in {
                     // Ask alleged payment for a key using sealed dispatch (see above).
                     allegedPayment!("getKey", bundle0{(*makePurseKit, *keyCh)}, *keyCh) |
                     for (@(true, {"key": pmtAuthKey, "seal": seal,
                                   "vault": *pmtVault,
                                   "address": pmtAddr, "balance": amount }) <- keyCh) {
-                      log!(["got key for add", pmtAddr,
-                           "seal", seal.toByteArray(), {bundle0{(*makePurseKit, pmtAuthKey)}}.toByteArray()]) |
+                      // log!(["got key for add", pmtAddr,
+                      //      "seal", seal.toByteArray(), {bundle0{(*makePurseKit, pmtAuthKey)}}.toByteArray()]) |
                       // Check the seal before trusting the alleged payment vault's transfer method.
                       if (seal == {bundle0{(*makePurseKit, pmtAuthKey)}}) {
                         pmtVault!("transfer", purseAddr, amount, pmtAuthKey, *txCh) |
                         for (@(ok, x) <- txCh; @balance <- balCh) {
-                          log!(["deposit transfer result", (ok, x)]) |
+                          // log!(["deposit transfer result", (ok, x)]) |
                           ret!((ok, x)) |
                           match ok {
                             // RevVault transfer already checked for overflow
@@ -233,7 +233,7 @@ in {
                 /**
                 * Withdraw to REVAddress
                 */
-                contract purse(@"withdrawTo", @amount, @destRevAddr, ret) = {
+                contract purse(@"withdrawTo", @{ amount /\ Int }, @{ destRevAddr /\ String }, ret) = {
                   new keyCh, txCh in {
                     RevVault!("unforgeableAuthKey", *un, *keyCh) | for (authKey <- keyCh) {
                       vault!("transfer", destRevAddr, amount, *authKey, *txCh) |
