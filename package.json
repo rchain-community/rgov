@@ -2,10 +2,13 @@
   "name": "liquid-democracy-rchain",
   "version": "0.0.1",
   "description": "",
-  "main": "locker.rho",
+  "main": "Jakefile.js",
   "scripts": {
     "lint-fix": "eslint --fix '**/*.{js,jsx}'",
-    "lint-check": "eslint '**/*.{js,jsx}'"
+    "lint-check": "eslint '**/*.{js,jsx}'",
+    "lint:types": "tsc -p jsconfig.json",
+    "start": "webpack-dev-server --open",
+    "build": "webpack"
   },
   "contributors": [
     "Jim Whitescarver",
@@ -19,8 +22,12 @@
     "eslint-config-prettier": "^6.11.0",
     "eslint-plugin-import": "^2.22.0",
     "eslint-plugin-prettier": "^3.1.4",
+    "html-webpack-plugin": "^4.5.0",
     "prettier": "^2.1.1",
-    "typescript": "^4.0.2"
+    "typescript": "^4.0.2",
+    "webpack": "^4.44.2",
+    "webpack-cli": "^3.3.12",
+    "webpack-dev-server": "^3.11.0"
   },
   "eslint": {
     "extends": [
@@ -31,7 +38,6 @@
       "es6": true
     },
     "globals": {
-      "harden": "readonly",
       "globalThis": "writeable"
     },
     "rules": {
@@ -65,7 +71,9 @@
   },
   "dependencies": {
     "esm": "^3.2.25",
+    "htm": "^3.0.4",
     "jake": "^10.8.2",
+    "mithril": "^2.0.4",
     "rchain-api": "github:rchain-community/rchain-api#http-client"
   }
 }
