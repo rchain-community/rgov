@@ -54,6 +54,8 @@ const ROLL = `11112fZEixuoKqrGH6BxAPayFD8LWq9KRVFwcLvA5gg6GAaNEZvcKL
   .trim()
   .split('\n');
 
+var deployId = "";
+
 /**
  * TODO: expect rather than unwrap (better diagnostics)
  * @param {T?} x
@@ -213,9 +215,22 @@ function buildUI({
         fieldValues = Object.fromEntries(
           keys(fields).map((k) => [k, value[k]]),
         );
-        const exprs = entries(fieldValues).map(([name, value]) =>
-          fields[name].type === 'uri' ? `\`${value}\`` : JSON.stringify(value),
-        );
+        const exprs = entries(fieldValues).map(([name, value]) => {
+          if(fields[name].type === 'uri')
+          {
+            return `\`${value}\``
+          }
+          else if(fields[name].type === 'set')
+          {
+            return `Set(${value})`
+          }
+          else
+          {
+            return JSON.stringify(value)
+          }
+          //fields[name].type === 'uri' ? `\`${value}\`` : JSON.stringify(value),
+
+        });
         state.term = `match [${exprs.join(', ')}] {
           [${keys(fieldValues).join(', ')}] => {
             ${template}
@@ -381,6 +396,7 @@ function actionControl(state, { html, getEthProvider }) {
             name="action"
             onchange=${(/** @type {Event} */ event) => {
               state.action = ckControl(event.target).value;
+              deployId = "";
               return false;
             }}
           >
@@ -449,7 +465,6 @@ function runControl(
     const val = state.shard.validator;
     state.problem = undefined;
     state.results = [];
-
     const account = freeze({
       polling: () =>
         // TODO: UI to cancel
@@ -480,6 +495,7 @@ function runControl(
         (async () => {
           const deploy = await startTerm(term, val, obs, account);
           console.log('@@DEBUG', state.action, { deploy });
+          deployId = deploy.sig
           const { expr } = await listenAtDeployId(obs, deploy);
           console.log('@@DEBUG', state.action, { expr });
           state.results = [expr];
@@ -513,6 +529,7 @@ function runControl(
         </button>
         <section id="resultSection" ...${hide(!state.results)}>
           <h2>Result</h2>
+          <pre id="deployId"> ${deployId} </pre>
           <pre id="result">
 ${state.results ? pprint(state.results.map(RhoExpr.parse)) : ''}</pre
           >
