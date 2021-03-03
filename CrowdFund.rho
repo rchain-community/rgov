@@ -1,4 +1,4 @@
-new log, //@@(`rho:rchain:deployId`),
+new log(`rho:rchain:deployId`),
 CrowdFund,
 lookup(`rho:registry:lookup`),
 insertArbitrary(`rho:registry:insertArbitrary`),
@@ -71,7 +71,7 @@ in {
         * }} ContributorSeatT
         */
         contract ContributorSeat(pledge, ret) = {
-          log!(["ContributorSeat", *pledge]) |
+          log!(["ContributorSeat", *pledge.toByteArray()]) |
           new self in {
             /**
              * @return {Result<Purse>}
@@ -85,8 +85,8 @@ in {
                   log!(["@@withdraw checks", t, d]) |
                   match (t, d) {
                     ((true, _), (true, _)) => ret!((true, *pledge))
-                    ((false, problem), _) => ret!(false, problem)
-                    (_, (false, problem)) => ret!(false, problem)
+                    ((false, problem), _) => ret!((false, problem))
+                    (_, (false, problem)) => ret!((false, problem))
                   }
                 }
               }
@@ -185,7 +185,7 @@ in {
 
             CrowdFund!(100, t0 + 10, *cfCh) |
             for (@{ "beneficiarySeat": *beneficiarySeat, "publicFacet": *publicFacet } <- cfCh) {
-              log!(["fund:", { "beneficiarySeat": *beneficiarySeat, "publicFacet": *publicFacet }]) |
+              log!(["fund:", { "beneficiarySeat": *beneficiarySeat.toByteArray(), "publicFacet": *publicFacet.toByteArray() }]) |
 
               new tCh in {
                 beneficiarySeat!("claim", *tCh) | for (@result <- tCh) { log!(["claim:", result]) }
@@ -194,13 +194,13 @@ in {
               new tCh, apCh, asCh, wdCh in {
                 revIssuer!("makeEmptyPurse", *apCh) | for (alicePurse <- apCh) {
                   log!("made purse for alice") |
-                  publicFacet!("contribute", *alicePurse, *asCh) | for (aliceSeat <- asCh) {
-                    log!("alice contributed 0 TODO: non-zero") |
+                  publicFacet!("contribute", *alicePurse, *asCh) | for (@(ok, *aliceSeat) <- asCh) {
+                    log!(["alice contributed 0 TODO: non-zero", ok]) |
                     new tCh in {
-                      beneficiarySeat!("claim", *tCh) | for (@result <- tCh) { log!(result) }
+                      beneficiarySeat!("claim", *tCh) | for (@result <- tCh) { log!(["@@claim after alice:", result]) }
                     } |
                     aliceSeat!("withdraw", *wdCh) | for (@result <- wdCh) {
-                      log!(result) |
+                      log!(["@@withdraw got", result]) |
                       new iCh in {
                         insertArbitrary!(bundle+{*CrowdFund}, *iCh) |
                         for (@cfUri <- iCh) {
