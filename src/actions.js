@@ -40,12 +40,12 @@ export const actions = {
     },
     template:
     `
-    new lookupCh, bCh, lookup(\`rho:registry:lookup\`), 
+    new lookupCh, bCh, lookup(\`rho:registry:lookup\`),
     return(\`rho:rchain:deployId\`),
-    deployerId(\`rho:rchain:deployerId\`) in { 
-      lookup!(issueURI, *lookupCh) | 
-      for(Issue <- lookupCh) { 
-        Issue!(proposals, *bCh) | 
+    deployerId(\`rho:rchain:deployerId\`) in {
+      lookup!(issueURI, *lookupCh) |
+      for(Issue <- lookupCh) {
+        Issue!(proposals, *bCh) |
         for(admin, tally <- bCh) {
 	  for (@{"inbox": *inbox, ..._} <<- @[*deployerId, lockerTag]) {
              inbox!(["issue", name, {"admin": *admin, "tally": *tally}], *return)
@@ -181,6 +181,35 @@ export const actions = {
         }
       }
     }`,
+  },
+  addVoterToIssue: {
+    fields: {
+      lockerTag: { value: 'inbox', type: 'string' },
+      toInboxURI: { value: '', type: 'uri' },
+      issue: { value: '', type: 'string'}
+    },
+    template:
+      `new
+        return(\`rho:rchain:deployId\`),
+        deployerId(\`rho:rchain:deployerId\`),
+        inboxLookup(\`rho:registry:lookup\`),
+        ch,
+        inboxCh
+        in {
+          for (@{ "peek": *peek, ..._ } <<- @[*deployerId, lockerTag]) {
+            peek!("issue", issue, *ch) |
+            for (@[{ "admin": *admin, "tally": *tally }] <- ch) {
+              admin!("giveRightToVote", "Me!", *ch) |
+              for (voterCap <- ch) {
+                inboxLookup!(toInboxURI, *inboxCh) |
+                for (inbox <- inboxCh) {
+                  inbox!(["vote", issue, *voterCap], *return)
+                }
+              }
+            }
+          } |
+          return!("DONE: BANG!")
+        }`
   },
   sendMail: {
     fields: {
