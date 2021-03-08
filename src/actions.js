@@ -182,6 +182,55 @@ export const actions = {
       }
     }`,
   },
+  tallyVotes: {
+    fields: {
+      lockerTag: { value: 'inbox', type: 'string' },
+      issue: { value: '', type: 'string' }
+    },
+    template:
+    `
+    new
+      return(\`rho: rchain: deployId\`),
+      deployerId(\`rho: rchain: deployerId\`),
+      ch
+    in {
+      for (@{ "peek": *peek, ..._ } <<- @[*deployerId, lockerTag]) {
+        peek!("issue", issue, *ch) |
+        for (@[{"tally": *tally, ...restOfStuff }] <- ch) {
+          return!({"rest of stuff": restOfStuff.keys().toList()}) |
+          tally!(*return) |
+          return!(issue)
+        }
+      } |
+      return!("DONE: BANG!")
+    }
+    `,
+  },
+  castVote: {
+    fields: {
+      lockerTag: { value: 'inbox', type: 'string' },
+      issue: { value: '', type: 'string' },
+      theVote: { value: '', type: 'string' }
+    },
+    template:
+    `
+    new
+      ackCh,
+      return(rho: rchain: deployId),
+      deployerId(rho: rchain: deployerId),
+      ch
+    in {
+      for(@{"peek": *peek, ..._} <<- @[*deployerId, lockerTag]) {
+        peek!("vote", issue, *ch) |
+        for (@[voter] <- ch) {
+          return!(["Astringhere", voter]) |
+          @voter!("vote", value, *return, *ackCh)
+        } |
+        return!(*ackCh)
+      }
+    }
+    `,
+  },
   addVoterToIssue: {
     fields: {
       lockerTag: { value: 'inbox', type: 'string' },
@@ -198,12 +247,12 @@ export const actions = {
         in {
           for (@{ "peek": *peek, ..._ } <<- @[*deployerId, lockerTag]) {
             peek!("issue", issue, *ch) |
-            for (@[{ "admin": *admin, "tally": *tally }] <- ch) {
-              admin!("giveRightToVote", "Me!", *ch) |
+            for (@[{ ""admin": *admin, ... }] <- ch) {
+              admin!("giveRightToVote", *return, *ch) |
               for (voterCap <- ch) {
                 inboxLookup!(toInboxURI, *inboxCh) |
                 for (inbox <- inboxCh) {
-                  inbox!(["vote", issue, *voterCap], *return)
+                  inbox!(["vote", issue, {"voterCap": *voterCap}], *return)
                 }
               }
             }

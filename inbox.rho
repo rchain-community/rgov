@@ -8,7 +8,7 @@ contract Inbox(capabilities) = {
     box!(Nil) |
 
     contract read(ret) = {
-      for (items <<- box) {
+      for (items <- box) {
         ret!(*items)
       }
     } |
@@ -65,7 +65,7 @@ contract Inbox(capabilities) = {
         match (*items) {
           {[=*type, =*subtype, ...item] | rest} => {
             //stdout!(item) |
-            ret!(item) 
+            ret!(item)
           }
           _ => {
            ret!(Nil) | stdout!([*type, *subtype, "not found"])
