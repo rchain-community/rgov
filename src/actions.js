@@ -190,19 +190,16 @@ export const actions = {
     template:
     `
     new
-      return(\`rho: rchain: deployId\`),
-      deployerId(\`rho: rchain: deployerId\`),
+      return(\`rho:rchain:deployId\`),
+      deployerId(\`rho:rchain:deployerId\`),
       ch
     in {
       for (@{ "peek": *peek, ..._ } <<- @[*deployerId, lockerTag]) {
         peek!("issue", issue, *ch) |
         for (@[{"tally": *tally, ...restOfStuff }] <- ch) {
-          return!({"rest of stuff": restOfStuff.keys().toList()}) |
-          tally!(*return) |
-          return!(issue)
+          tally!(*return)
         }
-      } |
-      return!("DONE: BANG!")
+      }
     }
     `,
   },
@@ -216,17 +213,15 @@ export const actions = {
     `
     new
       ackCh,
-      return(rho: rchain: deployId),
-      deployerId(rho: rchain: deployerId),
+      return(\`rho:rchain:deployId\`),
+      deployerId(\`rho:rchain:deployerId\`),
       ch
     in {
       for(@{"peek": *peek, ..._} <<- @[*deployerId, lockerTag]) {
         peek!("vote", issue, *ch) |
-        for (@[voter] <- ch) {
-          return!(["Astringhere", voter]) |
-          @voter!("vote", value, *return, *ackCh)
-        } |
-        return!(*ackCh)
+        for (@[{"voterCap": voterCapability}] <- ch) {
+          @voterCapability!("vote", theVote, *return, *return)
+        }
       }
     }
     `,
@@ -256,8 +251,7 @@ export const actions = {
                 }
               }
             }
-          } |
-          return!("DONE: BANG!")
+          }
         }`
   },
   sendMail: {
