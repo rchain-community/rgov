@@ -22,15 +22,18 @@ const NETWORKS = {
   localhost: {
 	  observerBase: 'http://localhost:40403',
     validatorBase: 'http://localhost:40403',
+    adminBase: 'http://localhost:40405',
   },
   testnet: {
     observerBase: 'https://observer.testnet.rchain.coop',
     // TODO: rotate validators
-    validatorBase: 'https://node2.testnet.rchain-dev.tk',
+    validatorBase: 'https://node1.testnet.rchain-dev.tk',
+    adminBase: '',
   },
   mainnet: {
     observerBase: 'https://observer.services.mainnet.rchain.coop',
     validatorBase: 'https://node12.root-shard.mainnet.rchain.coop',
+    adminBase: '',
   },
 };
 
@@ -167,7 +170,7 @@ function buildUI({
   const rnode = RNode(fetch);
   let action = 'helloWorld';
   let network = 'localhost';
-  /** @type {{ observer: Observer, validator: Validator}} shard */
+  /** @type {{ observer: Observer, validator: Validator, admin: import('rchain-api/src/rnode').RNodeAdmin }} shard */
   let shard;
   let term = ''; //@@DEBUG
   /** @type {Record<string, string>} */
@@ -191,6 +194,7 @@ function buildUI({
       shard = {
         observer: rnode.observer(net.observerBase),
         validator: rnode.validator(net.validatorBase),
+        admin: rnode.admin(net.adminBase),
       };
       state.bindings = bindings[network];
     },
@@ -420,7 +424,7 @@ ${state.term}</textarea
 
 /**
  * @param {{
- *   shard: { observer: Observer, validator: Validator },
+ *   shard: { observer: Observer, validator: Validator, admin: import('rchain-api/src/rnode').RNodeAdmin },
  *   term: string,
  *   results: RhoExpr[],
  *   problem?: string,
@@ -460,6 +464,11 @@ function runControl(
     }
   }
 
+  async function propose() {
+    const adm = state.shard.admin;
+    adm.propose();
+  }
+
   async function deploy(/** @type {string} */ term) {
     const obs = state.shard.observer;
     const val = state.shard.validator;
@@ -493,9 +502,12 @@ function runControl(
       await busy(
         '#deploy',
         (async () => {
+          console.log('@@DEBUG', state.action, { "log message": "string" });
+          setTimeout(propose, 10000);
+          console.log('@@DEBUG', state.action, { "log message": "propose" });
           const deploy = await startTerm(term, val, obs, account);
           console.log('@@DEBUG', state.action, { deploy });
-          deployId = deploy.sig
+          deployId = deploy.sig;
           const { expr } = await listenAtDeployId(obs, deploy);
           console.log('@@DEBUG', state.action, { expr });
           state.results = [expr];
