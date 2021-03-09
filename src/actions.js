@@ -242,7 +242,7 @@ export const actions = {
         in {
           for (@{ "peek": *peek, ..._ } <<- @[*deployerId, lockerTag]) {
             peek!("issue", issue, *ch) |
-            for (@[{ ""admin": *admin, ... }] <- ch) {
+            for (@[{ "admin": *admin, ..._ }] <- ch) {
               admin!("giveRightToVote", *return, *ch) |
               for (voterCap <- ch) {
                 inboxLookup!(toInboxURI, *inboxCh) |
