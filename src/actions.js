@@ -2,21 +2,29 @@
 
 // TODO: rholang goes in .rho files
 
-// TODO: expression macros, blockly UX
-/** @type { FieldSpec } */
-const KudosReg = {
-  type: 'uri',
-  value: 'rho:id:eifmzammsbx8gg5fjghjn34pw6hbi6hqep7gyk4bei96nmra11m4hi',
-};
+import {
+  MakeMintReg,
+  DirectoryReg,
+  CommunityReg,
+  KudosReg,
+  RollReg,
+  IssueReg,
+  InboxReg,
+  LogReg
+} from '../rhoid.js';
 
-/** @type { FieldSpec } */
-const rollReg = {
-  type: 'uri',
-  // AGM2020 voter list on mainnet
-  // value: 'rho:id:admzpibb3gxxp18idri7h6eneg4io6myfmcmjhufc6asy73bgrojop',
-  // testnet
-  value: 'rho:id:kiijxigqydnt7ds3w6w3ijdszswfysr3hpspthuyxz4yn3ksn4ckzf',
-};
+// const fs = require('fs');
+
+// function rhofile(file) {
+//   try {
+//     const data = fs.readFileSync(file);
+//     console.log(data);
+//     return data;
+//   } catch (err) {
+//     console.error(err);
+//     return err;
+//   }
+// }
 
 /**
  * @typedef {{ template: string, fields?: Record<string, FieldSpec> }} ActionSpec
@@ -33,10 +41,7 @@ export const actions = {
         type: 'set',
         value: "",
       },
-      issueURI: {
-        type: 'uri',
-        value: 'rho:id:wqcedk93naqxunhmhjdmk9qgg88o9d1aak8kpy4mqe618ow6bgxpg5'
-      },
+      issueURI: IssueReg
     },
     template:
     `
@@ -57,12 +62,8 @@ export const actions = {
   },
   newMemberDirectory: {
     fields: {
-      contractURI: {
-        // testnet
-        value: 'rho:id:mjebrofc8ns955mpdjnpakgpc4nkcqra14wqwtskp7swj46szx5x1i',
-        type: 'uri',
-      },
-      rollReg,
+      contractURI: DirectoryReg,
+      rollReg: RollReg,
     },
     template: `new return(\`rho:rchain:deployId\`), lookup(\`rho:registry:lookup\`), regCh
     in {
@@ -74,11 +75,7 @@ export const actions = {
   claimWithInbox: {
     fields: {
       myGovRevAddr: { type: 'walletRevAddr' },
-      dirURI: {
-        // testnet
-        value: 'rho:id:mjebrofc8ns955mpdjnpakgpc4nkcqra14wqwtskp7swj46szx5x1i',
-        type: 'uri',
-      },
+      dirURI: DirectoryReg,
     },
     template: `new return, lookup(\`rho:registry:lookup\`), regCh in {
       lookup!(dirURI, *regCh) | for (memDir <- regCh) {
@@ -94,7 +91,7 @@ export const actions = {
   },
   getRoll: {
     fields: {
-      rollReg,
+      rollReg: RollReg,
     },
     template: `
     new ret, ch, lookup(\`rho:registry:lookup\`) in {
@@ -106,7 +103,7 @@ export const actions = {
   },
   peekKudos: {
     fields: {
-      KudosReg,
+      KudosReg: KudosReg,
     },
     template: `
     new return,
@@ -123,7 +120,7 @@ export const actions = {
   awardKudos: {
     fields: {
       them: { type: 'string', value: '' },
-      KudosReg,
+      KudosReg: KudosReg,
     },
     template: `
     new deployId(\`rho:rchain:deployId\`),
@@ -159,10 +156,7 @@ export const actions = {
     fields: {
       lockerTag: { value: 'inbox', type: 'string' },
       // TODO: get contract URIs from rhopm / rho_modules
-      InboxURI: {
-        value: 'rho:id:ohyqkr5jmritq8chnwijpufbx3tan6d1hffiksg9qiz9rmuy97a51t',
-        type: 'uri',
-      },
+      InboxURI: InboxReg,
     },
     template: `
     new deployId(\`rho:rchain:deployId\`), deployerId(\`rho:rchain:deployerId\`),
@@ -288,7 +282,7 @@ export const actions = {
   checkRegistration: {
     fields: {
       myGovRevAddr: { type: 'walletRevAddr' },
-      rollReg,
+      rollReg: RollReg,
     },
     template: `
     new return,
@@ -305,10 +299,7 @@ export const actions = {
     fields: {
       name: { value: '', type: 'string' },
       lockerTag: { value: 'inbox', type: 'string' },
-      CommunityReg: {
-        value: 'rho:id:ojkxxx95izqftspy5515fj58z58qrcc3ii9gktjcdo8d9hcqqnsuc9',
-        type: 'uri',
-      },
+      CommunityReg: CommunityReg,
     },
     template: `
     new out, deployId(\`rho:rchain:deployId\`), deployerId(\`rho:rchain:deployerId\`),
@@ -357,11 +348,7 @@ in {
     fields: {
       name: { value: 'myTokenMint', type: 'string' },
       lockerTag: { value: 'inbox', type: 'string' },
-      MakeMintReg: {
-        type: 'uri',
-        // genesis contract
-        value: 'rho:id:asysrwfgzf8bf7sxkiowp4b3tcsy4f8ombi3w96ysox4u3qdmn1wbc',
-      },
+      MakeMintReg: MakeMintReg,
     },
     template: `
     new return, lookup(\`rho:registry:lookup\`),
