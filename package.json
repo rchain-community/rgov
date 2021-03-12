@@ -8,11 +8,16 @@
     "lint-check": "eslint '**/*.{js,jsx}'",
     "lint:types": "tsc -p jsconfig.json",
     "start": "webpack-dev-server --open",
-    "build": "webpack"
+    "config-local": "cp bootstrap/rhoid.bootstrap.js ./rhoid.js",
+    "config-testnet": "cp rhoid.testnet.js ./rhoid.js",
+    "config-mainnet": "cp rhoid.mainnet.js ./rhoid.js",
+    "build": "webpack",
+    "fresh-local": "bash bootstrap/bootstrap.sh"
   },
   "contributors": [
     "Jim Whitescarver",
-    "Dan Connolly"
+    "Dan Connolly",
+    "Bill Keuntje"
   ],
   "license": "Apache-2.0",
   "devDependencies": {
@@ -71,6 +76,8 @@
   },
   "dependencies": {
     "esm": "^3.2.25",
+    "file-system": "^2.2.2",
+    "fs": "0.0.1-security",
     "htm": "^3.0.4",
     "jake": "^10.8.2",
     "mithril": "^2.0.4",
