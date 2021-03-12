@@ -3,7 +3,7 @@
 new Issue,
 deployId(`rho:rchain:deployId`),
 trace(`rho:rchain:deployId`),
-stdout(`rho:rchain:deployId`)
+stdout(`rho:io:stdout`)
 in {
   new insertArbitrary(`rho:registry:insertArbitrary`), uriCh in {
     insertArbitrary!(bundle+{*Issue}, *uriCh) | for(@uri <- uriCh) {
@@ -18,7 +18,7 @@ in {
   //contract Issue(@{proposalNames /\ Set(hd, ...tail)}, return) = {
   contract Issue(@proposalNames , return) = {
     new admin, tally, voterCh in {
-      stdout!("creating ballot") |
+      trace!("creating ballot") |
       return!(bundle+{*admin}, bundle+{*tally}) |
       voterCh!({}) |
 
@@ -34,42 +34,45 @@ in {
             voterCh!(voters.union({name: *voter}))
           } |
           return!(bundle+{*voter}) |
-          contract voter(@"vote", @proposal, eject, ack) = {
-             trace!({ "for": proposal}) |
-            if(proposalNames.contains(proposal) == false) { 
-              eject!({"unknown proposal": proposal}) |
-              ack!(Nil)
-            }
-            else {
-              trace!("valid proposal") |
+          contract voter(@"vote", @proposal, log, ack) = {
+             log!({ "for": proposal}) |
+             log!(proposalNames.contains(proposal)) |
+            if(proposalNames.contains(proposal) == true)
+            {
+              log!("valid proposal") |
               for ( @oldvote <- voteCh ) {
-               trace!(["vote was",oldvote]) |
+               log!(["oldvote was",oldvote]) |
+               log!(["newvote is",proposal]) |
                ack!(Nil) |
                voteCh!(proposal)
               }
+            } else
+            {
+              log!({"unknown proposal": proposal}) |
+              ack!(Nil)
             }
           } |
-          contract voter(@"choice", @priorDelegates, return) = {
-            trace!(name) |
-            for ( @vote <- voteCh ) {
-              voteCh!(vote) | 
-              if ( vote == Nil ) {
-                for ( @delegate <- delegateCh; @voters <- voterCh ) {
-                  delegateCh!(delegate) |
-                  voterCh!(voters) |
-                  //trace!(voters) |
-                  if (delegate == Nil or priorDelegates.contains(delegate) or voters.get(delegate) == Nil ) {
-                   return!(Nil)
-                  } else {
-                    trace!([name ++ " -> " ++ delegate, voters.get(delegate)]) |
-                    @{voters.get(delegate)}!("choice", priorDelegates.add(delegate), *return) 
-                  }
-                } 
-              } else {
-                trace!(name ++ " " ++ vote) |
-                return!(vote)
-              }
-            }
+          contract voter(@"choice", @priorDelegates, return, log) = {
+            log!(name) //|
+            // for ( @vote <<- voteCh ) {
+            //   if ( vote == Nil ) {
+            //     for ( @delegate <- delegateCh; @voters <- voterCh ) {
+            //       delegateCh!(delegate) |
+            //       voterCh!(voters) |
+            //       //trace!(voters) |
+            //       if (delegate == Nil or priorDelegates.contains(delegate) or voters.get(delegate) == Nil ) {
+            //        return!(Nil)
+            //       } else {
+            //         log!([name ++ " -> " ++ delegate, voters.get(delegate)]) |
+            //         @{voters.get(delegate)}!("choice", priorDelegates.add(delegate), *return)
+            //       }
+            //     }
+            //   } else
+              // {
+              //   log!(name ++ " " ++ vote) |
+              //   return!(vote)
+              // }
+            // }
           } |
           contract voter(@"delegate", @delegate, ack) = {
           // name s.b. unique, public key suggested.
@@ -88,16 +91,16 @@ in {
               trace!(voters) |
              voterCh!(voters) |
              loop!(voters, *return) |
-              
-            contract loop(@rest, ack) = { 
+
+            contract loop(@rest, ack) = {
              new ret in {
               //trace!("loop") |
               match rest {
-                {} => { 
+                {} => {
                   //trace!("end") |
                   for ( counts <- countCh ) {
                     trace!(*counts)  |
-                    return!(*counts) 
+                    return!(*counts)
                   }
                 }
                 {name: *voter, ...tail} => {
