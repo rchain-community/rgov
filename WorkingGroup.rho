@@ -1,0 +1,93 @@
+new trace, rl(`rho:registry:lookup`),
+WorkingGroup,
+ch, ex, dcCh, gcCh, jwCh, toJim, toDan in {
+  rl!(`rho:id:b9s6j3xeobgset4ndn64hje64grfcj7a43eekb3fh43yso5ujiecfn`, *ch)
+  |
+  for (@(_, *MultiSigRevVault) <- ch) {
+    trace!("got MultiSigRevVault") |
+    MultiSigRevVault!("makeSealerUnsealer", *dcCh) |
+    for (@(*dcSealer, *dcUnsealer) <- dcCh) {
+      trace!("got dc brand") |
+      toJim!(*dcUnsealer) |
+      for(wg <- toDan) {
+        wg!("agree", *ex, "DC", "un-signed/sealed proposal", *ch) |
+        for (@problem <- ex) {
+          trace!(problem)
+        }
+        |
+        new sealCh, pEx, pOk in {
+          dcSealer!(trace!("spend 100 REV on stuff."), *sealCh) | for (@sealedProposal <- sealCh) {
+            wg!("agree", *pEx, "DC", sealedProposal, *pOk) |
+            for (@result <- pOk) {
+              trace!(result)
+            }
+          }
+        }
+      }
+    }
+    |
+    MultiSigRevVault!("makeSealerUnsealer", *jwCh) |
+    for (@(*jwSealer, *jwUnsealer) <- jwCh; dcUnsealer <- toJim) {
+      trace!("got jw brand") |
+      WorkingGroup!({"DC": *dcUnsealer, "JW": *jwUnsealer}, 2, *ch) | for (wg <- ch) {
+        toDan!(*wg) |
+        new sealCh, pEx, pOk in {
+          jwSealer!(trace!("spend 100 REV on stuff."), *sealCh) | for (@sealedProposal <- sealCh) {
+            wg!("agree", *pEx, "JW", sealedProposal, *pOk) |
+            for (@result <- pOk) {
+              trace!(result)
+            }
+          }
+        }
+      }
+    }
+    |
+    contract WorkingGroup(@unsealers, @quorum, ret) = {
+      trace!(["WorkingGroup", unsealers.size(), quorum]) |
+      new pendingCh, self, unsCh in {
+        pendingCh!({}) |
+        ret!(*self) |
+        contract self(@"agree", ej, @by, @sealedProposal, ret) = {
+          trace!(["agree", by]) |
+          match unsealers.get(by) {
+            Nil => ej!({"message": "by ${by} not known" %% {"by": by}})
+            whoseUnsealer => {
+              trace!(["found unsealer...", by]) |
+              @whoseUnsealer!(sealedProposal, *unsCh) |
+              for (@(ok, what) <- unsCh) {
+                match ok {
+                  false => ej!({"message": what})
+                  true => {
+                    for(@pending <- pendingCh) {
+                      match (pending.get(what)) {
+                        Nil => {
+                          trace!(["new proposal by", by]) |
+                          pendingCh!(pending.set(what, Set(by))) |
+                          ret!(quorum - 1)
+                        }
+                        supporters => {
+                          trace!(["adding", by, supporters.size()]) |
+                          match (supporters.size() + 1 >= quorum) {
+                            false => {
+                              pendingCh!(pending.set(what, supporters.union(Set(by)))) |
+                              ret!(quorum - (supporters.size() + 1))
+                            }
+                            true => {
+                              pendingCh!(pending.delete(what)) |
+                              what |
+                              ret!(0)
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
