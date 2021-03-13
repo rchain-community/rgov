@@ -1,58 +1,90 @@
 new trace, rl(`rho:registry:lookup`),
-WorkingGroup,
-ch, ex, dcCh, gcCh, jwCh, toJim, toDan in {
-  rl!(`rho:id:b9s6j3xeobgset4ndn64hje64grfcj7a43eekb3fh43yso5ujiecfn`, *ch)
+insertArbitrary(`rho:registry:insertArbitrary`),
+WorkingGroup, TestFundWG,
+rCh, toJim, toDan, testsPass in {
+  /**
+   * Test Scenario: Dan and Jim are starting a working group
+   * to control, for example, a fund. Note that neither Dan
+   * nor Jim has the fund in scope; they can only invoke it
+   * (to pay someone) by mutual action.
+   */
+  contract TestFundWG(@unsealers /\ Map, @quorum /\ Int, ret) = {
+    new fund in {
+      WorkingGroup!(unsealers, quorum, *fund, *ret) |
+      contract fund(@"pay", whom, @amt, ret) = {
+        // manipulate amt just to show we did some computation here
+        ret!(amt - 1)
+      }
+    }
+  }
   |
-  for (@(_, *MultiSigRevVault) <- ch) {
+  // Sealer / Unsealer pairs (aka brands) are available from the MultiSigRevVault contract.
+  rl!(`rho:id:b9s6j3xeobgset4ndn64hje64grfcj7a43eekb3fh43yso5ujiecfn`, *rCh) |
+  for (@(_, *MultiSigRevVault) <- rCh) {
     trace!("got MultiSigRevVault") |
-    MultiSigRevVault!("makeSealerUnsealer", *dcCh) |
-    for (@(*dcSealer, *dcUnsealer) <- dcCh) {
-      trace!("got dc brand") |
-      toJim!(*dcUnsealer) |
-      for(wg <- toDan) {
-        wg!("agree", *ex, "DC", "un-signed/sealed proposal", *ch) |
-        for (@problem <- ex) {
-          trace!(problem)
-        }
-        |
-        new sealCh, pEx, pOk in {
-          dcSealer!(trace!("spend 100 REV on stuff."), *sealCh) | for (@sealedProposal <- sealCh) {
+
+    // Dan makes a brand, sends the unsealer on toJim,
+    // and uses the sealer on his agreement to pay Bob 100
+    // once he gets the wg from Jim on toDan.
+    new ch, ex, dcCh, sealCh, pEx, pOk in {
+      MultiSigRevVault!("makeSealerUnsealer", *dcCh) |
+      for (@(*dcSealer, *dcUnsealer) <- dcCh) {
+        trace!("got dc brand") |
+        toJim!(*dcUnsealer) |
+        for(wg <- toDan) {
+          wg!("agree", *ex, "DC", "un-signed/sealed proposal", *ch) |
+          for (@problem <- ex) {
+            trace!(problem)
+          }
+          |
+          dcSealer!(("pay", "Bob", 100), *sealCh) | for (@sealedProposal <- sealCh) {
             wg!("agree", *pEx, "DC", sealedProposal, *pOk) |
-            for (@result <- pOk) {
-              trace!(result)
-            }
+            // Either Dan or Jim may be the deciding vote.
+            for (@(true, result) <- pOk) { testsPass!(result) }
           }
         }
       }
     }
     |
-    MultiSigRevVault!("makeSealerUnsealer", *jwCh) |
-    for (@(*jwSealer, *jwUnsealer) <- jwCh; dcUnsealer <- toJim) {
-      trace!("got jw brand") |
-      WorkingGroup!({"DC": *dcUnsealer, "JW": *jwUnsealer}, 2, *ch) | for (wg <- ch) {
-        toDan!(*wg) |
-        new sealCh, pEx, pOk in {
-          jwSealer!(trace!("spend 100 REV on stuff."), *sealCh) | for (@sealedProposal <- sealCh) {
+
+    // Jim makes a brand and uses his and Dan's unsealers
+    // to make a FundWG, which he sends on toDan.
+    // Jim uses his sealer on his agreement to pay Bob 100.
+    new ch, ex, jwCh, sealCh, pEx, pOk in {
+      MultiSigRevVault!("makeSealerUnsealer", *jwCh) |
+      for (@(*jwSealer, *jwUnsealer) <- jwCh; dcUnsealer <- toJim) {
+        trace!("got jw brand") |
+        TestFundWG!({"DC": *dcUnsealer, "JW": *jwUnsealer}, 2, *ch) | for (wg <- ch) {
+          toDan!(*wg) |
+          jwSealer!(("pay", "Bob", 100), *sealCh) | for (@sealedProposal <- sealCh) {
             wg!("agree", *pEx, "JW", sealedProposal, *pOk) |
-            for (@result <- pOk) {
-              trace!(result)
-            }
+            // Either Dan or Jim may be the deciding vote.
+            for (@(true, result) <- pOk) { testsPass!(result) }
           }
         }
       }
     }
     |
-    contract WorkingGroup(@unsealers, @quorum, ret) = {
-      trace!(["WorkingGroup", unsealers.size(), quorum]) |
+    contract testsPass(@result) = {
+      trace!(["fund.pay result", result]) |
+      new uriCh in {
+        insertArbitrary!(*WorkingGroup, *uriCh) | for (@uri <- uriCh) {
+          trace!(["WorkingGroup registered at", uri])
+        }
+      }
+    }
+    |
+    contract WorkingGroup(@unsealers, @quorum, sharedPower, ret) = {
+      // trace!(["WorkingGroup", unsealers.size(), quorum]) |
       new pendingCh, self, unsCh in {
         pendingCh!({}) |
         ret!(*self) |
         contract self(@"agree", ej, @by, @sealedProposal, ret) = {
-          trace!(["agree", by]) |
+          // trace!(["agree", by]) |
           match unsealers.get(by) {
             Nil => ej!({"message": "by ${by} not known" %% {"by": by}})
             whoseUnsealer => {
-              trace!(["found unsealer...", by]) |
+              // trace!(["found unsealer...", by]) |
               @whoseUnsealer!(sealedProposal, *unsCh) |
               for (@(ok, what) <- unsCh) {
                 match ok {
@@ -61,21 +93,36 @@ ch, ex, dcCh, gcCh, jwCh, toJim, toDan in {
                     for(@pending <- pendingCh) {
                       match (pending.get(what)) {
                         Nil => {
-                          trace!(["new proposal by", by]) |
+                          // trace!(["new proposal by", by]) |
                           pendingCh!(pending.set(what, Set(by))) |
-                          ret!(quorum - 1)
+                          ret!((false, quorum - 1))
                         }
                         supporters => {
-                          trace!(["adding", by, supporters.size()]) |
+                          // trace!(["adding", by, supporters.size()]) |
                           match (supporters.size() + 1 >= quorum) {
                             false => {
                               pendingCh!(pending.set(what, supporters.union(Set(by)))) |
-                              ret!(quorum - (supporters.size() + 1))
+                              ret!((false, quorum - (supporters.size() + 1)))
                             }
                             true => {
+                              // trace!(["proposal carries", what]) |
                               pendingCh!(pending.delete(what)) |
-                              what |
-                              ret!(0)
+                              new rCh in {
+                                match what {
+                                  // We want to send an arbitrary number of processes
+                                  // (...args) => sharedPower!(...args)
+                                  // but I don't see how, so...
+                                  (m, a1) => sharedPower!(m, a1, *rCh)
+                                  (m, a1, a2) => sharedPower!(m, a1, a2, *rCh)
+                                  (m, a1, a2, a3) => sharedPower!(m, a1, a2, a3, *rCh)
+                                  (m, a1, a2, a3, a4) => sharedPower!(m, a1, a2, a3, a4, *rCh)
+                                  (m, a1, a2, a3, a4, a5) => sharedPower!(m, a1, a2, a3, a4, a5, *rCh)
+                                  x => sharedPower!(x, *rCh)
+                                } |
+                                for (@result <- rCh) {
+                                  ret!((true, result))
+                                }
+                              }
                             }
                           }
                         }
