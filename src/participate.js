@@ -81,6 +81,7 @@ document.addEventListener('DOMContentLoaded', () => {
     getEthProvider: () => getEthProvider({ window }),
     mount: (selector, control) => m.mount($(selector), control),
     redraw: () => m.redraw(),
+    localStorage,
   });
 });
 
@@ -124,13 +125,18 @@ function makeBusy($) {
 }
 
 /**
- * @param { HTMLBuilder & EthSignAccess & MithrilMount & WebAccess & FormAccess<any> & ScheduleAccess } io
+ * @param { HTMLBuilder & EthSignAccess & MithrilMount &
+ *          WebAccess & FormAccess<any> & ScheduleAccess &
+ *          LocalStorageAccess } io
  * @typedef {import('./actions').FieldSpec} FieldSpec
  *
  * @typedef {{
  *   fetch: typeof fetch
  * }} WebAccess
  *
+ * @typedef {{
+ *   localStorage: typeof localStorage,
+ * }} LocalStorageAccess
  *
  * @typedef {{
  *   html: any, // TODO: htm(m) type
@@ -172,9 +178,34 @@ function buildUI({
   let fieldValues = {};
   /** @type {RhoExpr[]} */
   let results = [];
-  const bindings = { mainnet: {}, localhost: { $roll: ROLL}, testnet: { } };
+  /** @type {RevAddress | void} */
+  let revAddr;
+
+  const { stringify: quote, parse } = JSON;
+
+  // Keep bindings in localStorage under network, revAddr
+  const setBindings = () => {
+    if (!revAddr) return;
+    const key = k => quote([network, revAddr, k]);
+    state.bindings = new Proxy({}, {
+      get: (_target, prop) => parse(localStorage.getItem(key(prop)) || 'null'),
+      set(_target, prop, val) {
+        localStorage.setItem(key(prop), quote(val));
+        return true;
+      }
+    })
+  };
 
   const state = {
+    get revAddr() {
+      return revAddr;
+    },
+    set revAddr(value) {
+      revAddr = value;
+      setBindings();
+    },
+    deployTime: null,
+    currentTime: null,
     get shard() {
       return shard;
     },
@@ -190,7 +221,7 @@ function buildUI({
         observer: rnode.observer(net.observerBase),
         validator: rnode.validator(net.validatorBase),
       };
-      state.bindings = bindings[network];
+      setBindings();
     },
     get action() {
       return action;
@@ -234,7 +265,8 @@ function buildUI({
       state.results = [];
       state.problem = undefined;
     },
-    bindings: bindings[network],
+    /** @type {Record<string, unknown>} */
+    bindings: { $roll: ROLL },
     get results() {
       return results;
     },
@@ -307,6 +339,7 @@ function fixIndent(code) {
  *   action: string,
  *   fields: Record<string, string>,
  *   term: string,
+ *   revAddr: RevAddress | void,
  * }} state
  * @param {HTMLBuilder & EthSignAccess} io
  */
@@ -335,6 +368,7 @@ function actionControl(state, { html, getEthProvider }) {
         mm.ethereumAddress().then((ethAddr) => {
           const revAddr = getAddrFromEth(ethAddr);
           if (!revAddr) throw new Error('bad ethAddr???');
+          state.revAddr = revAddr;
           const current = { [name]: revAddr };
           const old = state.fields;
           state.fields = { ...old, ...current };
@@ -404,8 +438,11 @@ ${state.term}</textarea
 
 /**
  * @param {{
+ *   action: string,
  *   shard: { observer: Observer, validator: Validator },
  *   term: string,
+ *   deployTime: number | null,
+ *   currentTime: number | null,
  *   results: RhoExpr[],
  *   problem?: string,
  * }} state
@@ -418,7 +455,7 @@ ${state.term}</textarea
  */
 function runControl(
   state,
-  { html, busy, getEthProvider, clock },
+  { html, busy, getEthProvider, clock, setTimeout },
   period = 5 * 1000,
 ) {
   const hide = (/** @type { boolean } */ flag) =>
@@ -431,12 +468,14 @@ function runControl(
     state.problem = undefined;
     state.results = [];
     try {
-      console.log('explore...');
+      state.deployTime = state.currentTime = await clock();
+      console.log('explore...', new Date(state.deployTime));
       const { expr, block } = await busy(
         '#explore',
         obs.exploratoryDeploy(term),
       );
-      console.log('... explore done.');
+      state.currentTime = await clock();
+      console.log('... explore done.', new Date(state.currentTime));
       state.results = expr;
       // TODO? $('#blockInfo').textContent = pprint(block);
     } catch (err) {
@@ -454,13 +493,19 @@ function runControl(
       polling: () =>
         // TODO: UI to cancel
         new Promise((resolve) => {
-          setTimeout(resolve, period);
+          setTimeout(async () => {
+            resolve(null);
+            state.currentTime = await clock();
+            m.redraw(); // ISSUE: ambient
+          }, period);
         }),
       async sign(/** @type { string } */ term) {
         const [timestamp, [recent]] = await Promise.all([
           clock(),
           obs.getBlocks(1),
         ]);
+        state.deployTime = timestamp;
+        state.currentTime = timestamp;
         const ethereum = await getEthProvider();
         return signMetaMask(
           {
@@ -483,6 +528,7 @@ function runControl(
           const { expr } = await listenAtDeployId(obs, deploy);
           console.log('@@DEBUG', state.action, { expr });
           state.results = [expr];
+          state.currentTime = await clock();
         })(),
       );
       // TODO? $('#blockInfo').textContent = pprint(block);
@@ -493,6 +539,12 @@ function runControl(
 
   return freeze({
     view() {
+      const show = (ms, o=0) => html`${new Date(ms).toISOString().slice(o)}<br />`;
+      const times = state.deployTime && state.currentTime ? {
+        start: show(state.deployTime),
+        current: show(state.currentTime),
+        elapsed: show(state.currentTime - state.deployTime, '1970-01-01T'.length)
+      } : { start: "", current: "", elapsed: "" };
       return html`<button
           id="explore"
           onclick=${async (/** @type {Event} */ event) => {
@@ -511,6 +563,11 @@ function runControl(
         >
           Deploy
         </button>
+        <div>
+          ${times.start}
+          ${times.current}
+          ${times.elapsed}
+        </div>
         <section id="resultSection" ...${hide(!state.results)}>
           <h2>Result</h2>
           <pre id="result">
