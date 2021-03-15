@@ -12,7 +12,7 @@ in {
          for (voterCap <- ch) {
             inboxLookup!(toInboxURI, *inboxCh) |
             for (inbox <- inboxCh) {
-               inbox!(["vote", issue, {"voterCap": *voterCap}], *return)
+               inbox!(["vote", issue, {"voterCap": *voterCap}], *return, *return)
             }
          }
       }

@@ -6,7 +6,7 @@ in {
    for (@{ "peek": *peek, ..._ } <<- @[*deployerId, lockerTag]) {
       peek!("issue", issue, *ch) |
       for (@[{"tally": *tally, ...restOfStuff }] <- ch) {
-         tally!(*return)
+         tally!(*return, *return)
       }
    }
 }

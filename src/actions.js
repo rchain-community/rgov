@@ -102,6 +102,13 @@ export const actions = {
     },
     filename: 'actions/castVote.rho',
   },
+  choiceVote: {
+    fields: {
+      lockerTag: { value: 'inbox', type: 'string' },
+      issue: { value: '', type: 'string' },
+    },
+    filename: 'actions/choiceVote.rho',
+  },
   addVoterToIssue: {
     fields: {
       lockerTag: { value: 'inbox', type: 'string' },

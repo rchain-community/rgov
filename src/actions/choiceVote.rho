@@ -6,7 +6,7 @@ in {
    for(@{"peek": *peek, ..._} <<- @[*deployerId, lockerTag]) {
       peek!("vote", issue, *ch) |
       for (@[{"voterCap": voterCapability}] <- ch) {
-         @voterCapability!("vote", theVote, *return, *return)
+         @voterCapability!("choice", Set(), *return, *return)
       }
    }
 }

@@ -1,5 +1,3 @@
-
-
 new
    trace,
    lookupCh,
@@ -13,7 +11,7 @@ in {
       MCA("Issue", lookupCh)
    } |
    for(Issue <- lookupCh) {
-      Issue!(proposals, *bCh) |
+      Issue!(proposals, *bCh, *return) |
       for(admin, tally <- bCh) {
          for (@{"inbox": *inbox, ..._} <<- @[*deployerId, lockerTag]) {
             inbox!(["issue", name, {"admin": *admin, "tally": *tally}], *return)
