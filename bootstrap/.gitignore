@@ -1,6 +1,7 @@
 rhoid.bootstrap.js
 rhoid.bootstrap.json
-deploy.log
-bootstrap.log
+*.log
 rchain/
 rnode.data.dir_IS_UNDEFINED/
+checkpoint/
+generated.*
