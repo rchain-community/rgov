@@ -1,0 +1,23 @@
+
+
+new
+   trace,
+   lookupCh,
+   bCh,
+   lookup(`rho:registry:lookup`),
+   return(`rho:rchain:deployId`),
+   deployerId(`rho:rchain:deployerId`)
+in {
+   for (@{"read": *MCA, ..._} <<- @[*deployerId, "MasterContractAdmin"]) {
+      trace!({"MCA": MCA}) |
+      MCA("Issue", lookupCh)
+   } |
+   for(Issue <- lookupCh) {
+      Issue!(proposals, *bCh) |
+      for(admin, tally <- bCh) {
+         for (@{"inbox": *inbox, ..._} <<- @[*deployerId, lockerTag]) {
+            inbox!(["issue", name, {"admin": *admin, "tally": *tally}], *return)
+         }
+      }
+   }
+}

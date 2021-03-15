@@ -13,21 +13,8 @@ import {
   LogReg
 } from '../rhoid.js';
 
-// const fs = require('fs');
-
-// function rhofile(file) {
-//   try {
-//     const data = fs.readFileSync(file);
-//     console.log(data);
-//     return data;
-//   } catch (err) {
-//     console.error(err);
-//     return err;
-//   }
-// }
-
 /**
- * @typedef {{ template: string, fields?: Record<string, FieldSpec> }} ActionSpec
+ * @typedef {{ filename: string, fields?: Record<string, FieldSpec> }} ActionSpec
  * @typedef {{ type: 'string' | 'set' | 'uri' | 'walletRevAddr', value?: string }} FieldSpec
  * @type {Record<string, ActionSpec>}
  */
@@ -43,114 +30,54 @@ export const actions = {
       },
       issueURI: IssueReg
     },
-    template:
-    `
-    new lookupCh, bCh, lookup(\`rho:registry:lookup\`),
-    return(\`rho:rchain:deployId\`),
-    deployerId(\`rho:rchain:deployerId\`) in {
-      lookup!(issueURI, *lookupCh) |
-      for(Issue <- lookupCh) {
-        Issue!(proposals, *bCh) |
-        for(admin, tally <- bCh) {
-	  for (@{"inbox": *inbox, ..._} <<- @[*deployerId, lockerTag]) {
-             inbox!(["issue", name, {"admin": *admin, "tally": *tally}], *return)
-          }
-        }
-      }
-    }
-    `,
+    filename: 'actions/newIssue.rho',
   },
   newMemberDirectory: {
     fields: {
       contractURI: DirectoryReg,
       rollReg: RollReg,
     },
-    template: `new return(\`rho:rchain:deployId\`), lookup(\`rho:registry:lookup\`), regCh
-    in {
-      lookup!(contractURI, *regCh) | for (MemberDirectory <- regCh) {
-        MemberDirectory!("makeFromURI", rollReg, *return)
-      }
-    }`,
+    filename: 'actions/newMemberDirectory.rho',
   },
   claimWithInbox: {
     fields: {
       myGovRevAddr: { type: 'walletRevAddr' },
       dirURI: DirectoryReg,
     },
-    template: `new return, lookup(\`rho:registry:lookup\`), regCh in {
-      lookup!(dirURI, *regCh) | for (memDir <- regCh) {
-        memDir!("setup", myGovRevAddr, *return)
-      }
-    }`,
+    filename: 'actions/claimWithInbox.rho',
   },
   helloWorld: {
-    template: `new world in { world!("Hello!") }`,
+    fields: {},
+    filename: 'actions/helloWorld.rho',
   },
   raviWorld: {
-    template: `new ravi in { ravi!("Hello!") }`,
+    fields:{},
+    filename: 'actions/raviWorld.rho',
   },
   getRoll: {
     fields: {
       rollReg: RollReg,
     },
-    template: `
-    new ret, ch, lookup(\`rho:registry:lookup\`) in {
-      lookup!(rollReg, *ch) |
-      for (@set <- ch) {
-        ret!(["#define", "$roll", set.toList()])
-      }
-    }`,
+    filename: 'actions/getRoll.rho',
   },
   peekKudos: {
     fields: {
       KudosReg: KudosReg,
     },
-    template: `
-    new return,
-      lookup(\`rho:registry:lookup\`), ch
-    in {
-      lookup!(KudosReg, *ch) | for (Kudos <- ch) {
-        Kudos!("peek", *ch) | for (@current <-ch ) {
-          return!(["#define", "$kudos", current])
-        }
-      }
-    }
-    `,
+    filename: 'actions/peekKudos.rho',
   },
   awardKudos: {
     fields: {
       them: { type: 'string', value: '' },
       KudosReg: KudosReg,
     },
-    template: `
-    new deployId(\`rho:rchain:deployId\`),
-      lookup(\`rho:registry:lookup\`), ch
-    in {
-      lookup!(KudosReg, *ch) | for (Kudos <- ch) {
-        Kudos!("award", them, *ch) | for (@current <- ch) {
-          deployId!(["#define", "$kudos", current])
-        }
-      }
-    }
-    `,
+    filename: 'actions/awardKudos.rho',
   },
   checkBalance: {
     fields: {
       myGovRevAddr: { type: 'walletRevAddr' },
     },
-    template: `new return, lookup(\`rho:registry:lookup\`), RevVaultCh, vaultCh, balanceCh
-    in {
-      lookup!(\`rho:rchain:revVault\`, *RevVaultCh) |
-      for (@(_, RevVault) <- RevVaultCh) {
-        @RevVault!("findOrCreate", myGovRevAddr, *vaultCh) |
-        for (@(true, vault) <- vaultCh) {
-          @vault!("balance", *balanceCh) |
-          for (@balance <- balanceCh) {
-            return!(["#define", "$myBalance", balance])
-          }
-        }
-      }
-    }`,
+    filename: 'actions/checkBalance.rho',
   },
   newinbox: {
     fields: {
@@ -158,44 +85,14 @@ export const actions = {
       // TODO: get contract URIs from rhopm / rho_modules
       InboxURI: InboxReg,
     },
-    template: `
-    new deployId(\`rho:rchain:deployId\`), deployerId(\`rho:rchain:deployerId\`),
-      lookup(\`rho:registry:lookup\`), insertArbitrary(\`rho:registry:insertArbitrary\`),
-      inboxCh, capabilities, ret
-    in {
-      lookup!(InboxURI, *inboxCh) |
-      for (Inbox <- inboxCh) {
-        Inbox!(*capabilities) |
-        for (receive, send, peek <- capabilities) {
-          insertArbitrary!(*send, *ret)|
-          for (@uri <- ret) {
-            @[*deployerId, lockerTag]!({"inbox": *send, "receive": *receive, "peek": *peek, "URI": uri}) |
-            deployId!(["#define", "$" ++ lockerTag, uri])
-          }
-        }
-      }
-    }`,
+    filename: 'actions/newinbox.rho',
   },
   tallyVotes: {
     fields: {
       lockerTag: { value: 'inbox', type: 'string' },
       issue: { value: '', type: 'string' }
     },
-    template:
-    `
-    new
-      return(\`rho:rchain:deployId\`),
-      deployerId(\`rho:rchain:deployerId\`),
-      ch
-    in {
-      for (@{ "peek": *peek, ..._ } <<- @[*deployerId, lockerTag]) {
-        peek!("issue", issue, *ch) |
-        for (@[{"tally": *tally, ...restOfStuff }] <- ch) {
-          tally!(*return)
-        }
-      }
-    }
-    `,
+    filename: 'actions/tallyVotes.rho',
   },
   castVote: {
     fields: {
@@ -203,22 +100,7 @@ export const actions = {
       issue: { value: '', type: 'string' },
       theVote: { value: '', type: 'string' }
     },
-    template:
-    `
-    new
-      ackCh,
-      return(\`rho:rchain:deployId\`),
-      deployerId(\`rho:rchain:deployerId\`),
-      ch
-    in {
-      for(@{"peek": *peek, ..._} <<- @[*deployerId, lockerTag]) {
-        peek!("vote", issue, *ch) |
-        for (@[{"voterCap": voterCapability}] <- ch) {
-          @voterCapability!("vote", theVote, *return, *return)
-        }
-      }
-    }
-    `,
+    filename: 'actions/castVote.rho',
   },
   addVoterToIssue: {
     fields: {
@@ -226,27 +108,7 @@ export const actions = {
       toInboxURI: { value: '', type: 'uri' },
       issue: { value: '', type: 'string'}
     },
-    template:
-      `new
-        return(\`rho:rchain:deployId\`),
-        deployerId(\`rho:rchain:deployerId\`),
-        inboxLookup(\`rho:registry:lookup\`),
-        ch,
-        inboxCh
-        in {
-          for (@{ "peek": *peek, ..._ } <<- @[*deployerId, lockerTag]) {
-            peek!("issue", issue, *ch) |
-            for (@[{ "admin": *admin, ..._ }] <- ch) {
-              admin!("giveRightToVote", *return, *ch) |
-              for (voterCap <- ch) {
-                inboxLookup!(toInboxURI, *inboxCh) |
-                for (inbox <- inboxCh) {
-                  inbox!(["vote", issue, {"voterCap": *voterCap}], *return)
-                }
-              }
-            }
-          }
-        }`
+    filename: 'actions/addVoterToIssue.rho',
   },
   sendMail: {
     fields: {
@@ -257,43 +119,20 @@ export const actions = {
       sub: { value: 'hello', type: 'string' },
       body: { value: 'hello from ravi for hackathon 2020', type: 'string' },
     },
-    template:
-      `new deployId(\`rho:rchain:deployId\`), deployerId(\`rho:rchain:deployerId\`),
-
-        lookup(\`rho:registry:lookup\`), inboxCh
-        in {
-            lookup!(toInboxURI, *inboxCh) |
-            for (toinbox <- inboxCh) {
-                toinbox!({"from": from, "to": to, "sub": sub, "body": body}, *deployId)
-            }
-      }`,
+    filename: 'actions/sendMail.rho',
   },
   peekInbox: {
     fields: {
       lockerTag: { value: 'inbox', type: 'string' },
     },
-    template: `new deployId(\`rho:rchain:deployId\`), deployerId(\`rho:rchain:deployerId\`), ch
-      in {
-        for(@{"peek": *peek, ..._} <<- @[*deployerId, lockerTag]) {
-          peek!(*deployId)
-        }
-      }`,
+    filename: 'actions/peekInbox.rho',
   },
   checkRegistration: {
     fields: {
       myGovRevAddr: { type: 'walletRevAddr' },
       rollReg: RollReg,
     },
-    template: `
-    new return,
-      lookup(\`rho:registry:lookup\`),
-      ch in
-    {
-      lookup!(rollReg, *ch) |
-      for (@addrSet <- ch) {
-        return!(["#define", "$agm2020voter", addrSet.contains(myGovRevAddr)])
-      }
-    }`,
+    filename: 'actions/checkRegistration.rho',
   },
   newCommunity: {
     fields: {
@@ -301,24 +140,7 @@ export const actions = {
       lockerTag: { value: 'inbox', type: 'string' },
       CommunityReg: CommunityReg,
     },
-    template: `
-    new out, deployId(\`rho:rchain:deployId\`), deployerId(\`rho:rchain:deployerId\`),
-  lookup(\`rho:registry:lookup\`), ret, ret2
-in {
-  lookup!(CommunityReg, *ret)|
-  for ( C <- ret) {
-        for(@{"inbox": *inbox, ..._} <<- @{[*deployerId, lockerTag]}) {
-          C!("new", name, *inbox, *ret)|
-          for (caps <- ret) {
-            if (*caps != Nil) {
-              inbox!(["Community", name, *caps], *deployId)
-            } else {
-              deployId!("newCommunity " ++ name ++ " failed")
-            }
-          }
-        }
-  }
-}`,
+    filename: 'actions/newCommunity.rho',
   },
   addMember: {
     fields: {
@@ -327,22 +149,7 @@ in {
       community: { type: 'string', value: '?' },
       lockerTag: { value: 'inbox', type: 'string' },
     },
-    template: `
-    new deployId(\`rho:rchain:deployId\`), deployerId(\`rho:rchain:deployerId\`), lookup(\`rho:registry:lookup\`),
-    ret, boxCh, ack in {
-      for(@{"peek": *peek, "inbox": *inbox, ..._} <<- @{[*deployerId, lockerTag]}) {
-        lookup!(themBoxReg, *boxCh) |
-        peek!("Community", community, *ret)|
-        for ( @[{"admin": *admin, "read": *read, "write": *write, "grant": *grant}] <- ret; themBox <- boxCh ) {
-          //stdout!("adding user")|
-          admin!("add user", name, *inbox, *ret) |
-          for (selfmod <- ret) {
-            //stdout!("user added") |
-            themBox!(["member", community, {"read": *read, "selfmod": *selfmod}], *deployId)
-          }
-        }
-      }
-    }`,
+    filename: 'actions/addMember.rho',
   },
   makeMint: {
     fields: {
@@ -350,22 +157,6 @@ in {
       lockerTag: { value: 'inbox', type: 'string' },
       MakeMintReg: MakeMintReg,
     },
-    template: `
-    new return, lookup(\`rho:registry:lookup\`),
-  deployerId(\`rho:rchain:deployerId\`),
-  deployId(\`rho:rchain:deployId\`),
-  ch in {
-  lookup!(MakeMintReg, *ch)
-  |
-  for (@(nonce, *MakeMint) <- ch) {
-    MakeMint!(*ch) |
-    for (aMint <- ch) {
-      for (@{"inbox": *inbox, ..._} <<- @{[*deployerId, lockerTag]}) {
-        // send the mint to my inbox for safe keeping.
-        inbox!(["Mint", name, *aMint], *deployId)
-      }
-    }
-  }
-}`,
+    filename: 'actions/makeMint.rho',
   },
 };

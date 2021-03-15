@@ -8,11 +8,7 @@
     "lint-check": "eslint '**/*.{js,jsx}'",
     "lint:types": "tsc -p jsconfig.json",
     "start": "webpack-dev-server --open",
-    "config-local": "cp bootstrap/rhoid.bootstrap.js ./rhoid.js",
-    "config-testnet": "cp rhoid.testnet.js ./rhoid.js",
-    "config-mainnet": "cp rhoid.mainnet.js ./rhoid.js",
-    "build": "webpack",
-    "fresh-local": "bash bootstrap/bootstrap.sh"
+    "build": "webpack"
   },
   "contributors": [
     "Jim Whitescarver",

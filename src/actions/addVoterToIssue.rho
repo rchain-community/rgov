@@ -1,0 +1,20 @@
+new
+   return(`rho:rchain:deployId`),
+   deployerId(`rho:rchain:deployerId`),
+   inboxLookup(`rho:registry:lookup`),
+   ch,
+   inboxCh
+in {
+   for (@{ "peek": *peek, ..._ } <<- @[*deployerId, lockerTag]) {
+      peek!("issue", issue, *ch) |
+      for (@[{ "admin": *admin, ..._ }] <- ch) {
+         admin!("giveRightToVote", *return, *ch) |
+         for (voterCap <- ch) {
+            inboxLookup!(toInboxURI, *inboxCh) |
+            for (inbox <- inboxCh) {
+               inbox!(["vote", issue, {"voterCap": *voterCap}], *return)
+            }
+         }
+      }
+   }
+}

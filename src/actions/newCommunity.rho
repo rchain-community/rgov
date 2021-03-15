@@ -1,0 +1,25 @@
+new
+   out,
+   deployId(`rho:rchain:deployId`),
+   deployerId(`rho:rchain:deployerId`),
+   lookup(`rho:registry:lookup`),
+   ret,
+   ret2
+in {
+   for (@{"read": *MCA, ..._} <<- @[*deployerId, "MasterContractAdmin"]) {
+      trace!({"MCA": MCA}) |
+      MCA("Community", ret)
+   } |
+   for ( C <- ret) {
+      for(@{"inbox": *inbox, ..._} <<- @{[*deployerId, lockerTag]}) {
+         C!("new", name, *inbox, *ret)|
+         for (caps <- ret) {
+            if (*caps != Nil) {
+               inbox!(["Community", name, *caps], *deployId)
+            } else {
+               deployId!("newCommunity " ++ name ++ " failed")
+            }
+         }
+      }
+   }
+}

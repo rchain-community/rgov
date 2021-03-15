@@ -208,13 +208,14 @@ function buildUI({
       const init = Object.fromEntries(
         entries(fields).map(([name, { value }]) => [name, value || '']),
       );
-      state.fields = init;
+      state.setFields(init);
     },
     get fields() {
       return fieldValues;
     },
-    set fields(/** @type {Record<String, string>} */ value) {
-      const { fields, template } = actions[state.action];
+    async setFields(/** @type {Record<String, string>} */ value) {
+      const { fields, filename } = actions[state.action];
+      const content = await (await fetch(filename)).text()
       if (fields) {
         fieldValues = Object.fromEntries(
           keys(fields).map((k) => [k, value[k]]),
@@ -237,12 +238,12 @@ function buildUI({
         });
         state.term = `match [${exprs.join(', ')}] {
           [${keys(fieldValues).join(', ')}] => {
-            ${template}
+            ${content}
           }
         }`;
       } else {
         fieldValues = {};
-        state.term = template;
+        state.term = content;
       }
     },
     get term() {
@@ -325,6 +326,7 @@ function fixIndent(code) {
  * @param {{
  *   action: string,
  *   fields: Record<string, string>,
+ *   setFields: (r:Record<string, string>) => Promise<void>,
  *   term: string,
  * }} state
  * @param {HTMLBuilder & EthSignAccess} io
@@ -356,7 +358,8 @@ function actionControl(state, { html, getEthProvider }) {
           if (!revAddr) throw new Error('bad ethAddr???');
           const current = { [name]: revAddr };
           const old = state.fields;
-          state.fields = { ...old, ...current };
+          state.setFields({ ...old, ...current });
+          // state.fields = ;
           m.redraw(); // FIXME ambient?
         }),
       );

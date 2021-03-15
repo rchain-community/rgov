@@ -1,0 +1,1 @@
+new world(`rho:rchain:deployId`) in { world!("Hello!") }

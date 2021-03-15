@@ -1,0 +1,11 @@
+
+new
+   return,
+   lookup(`rho:registry:lookup`), ch
+in {
+   lookup!(KudosReg, *ch) | for (Kudos <- ch) {
+      Kudos!("peek", *ch) | for (@current <-ch ) {
+         return!(["#define", "$kudos", current])
+      }
+   }
+}
