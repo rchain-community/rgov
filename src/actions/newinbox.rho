@@ -1,26 +1,26 @@
-match ["Inbox"] {
-  [ classname/\String ] => {
-    new
-    stdout(`rho:io:stdout`),
-    deployId(`rho:rchain:deployId`),
-    deployerId(`rho:rchain:deployerId`),
-    insertArbitrary(`rho:registry:insertArbitrary`),
-    ch,
-    caps,
-    ret
-    in {
-      for(@{"read": *read, ..._} <<- @[*deployerId, "MasterContractAdmin"]) {
-        read!(classname, *ch) |
-        for (C <-ch) {
-          C!(*caps)|
-          for (receive, send, peek <- caps) {
-            insertArbitrary!(*send, *ret)|
-            for (@uri <- ret) {
-              @[*deployerId, "inbox"]!({"inbox": *send, "receive": *receive, "peek": *peek, "URI": uri}) |
-              deployId!(["#define", "$inbox", uri])
-            }
-          }
-        }
+new
+  stdout(`rho:io:stdout`),
+  deployId(`rho:rchain:deployId`),
+  deployerId(`rho:rchain:deployerId`),
+  insertArbitrary(`rho:registry:insertArbitrary`),
+  ch,
+  caps,
+  ret
+in {
+  for(@{"read": *read, ..._} <<- @[*deployerId, "MasterContractAdmin"]) {
+    stdout!(["read", *read]) |
+    read!("Inbox", *ch)
+  } |
+  for (C <-ch) {
+    stdout!(["Inbox", *C]) |
+    C!(*caps)|
+    for (receive, send, peek <- caps) {
+      stdout!(["caps", *receive, *send, *peek])|
+      insertArbitrary!(*send, *ret)|
+      for (@uri <- ret) {
+        stdout!(["#define", "$inbox", uri]) |
+        deployId!(["#define", "$inbox", uri]) |
+        @[*deployerId, "inbox"]!({"inbox": *send, "receive": *receive, "peek": *peek, "URI": uri})
       }
     }
   }

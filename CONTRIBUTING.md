@@ -102,6 +102,33 @@ Starting 'default'...
 Finished 'default' after 0 ms
 ```
 
+## localhost deployment and development
+To create an rchain node locally, deploy liquid-democracy and rchain dependencies, use the following commands. These commands will:
+  1) Create several log files, which can be largely ignored.
+  2) clone the rchain repo
+  3) deploy the rholang files from rchain and liquid-democracy
+  4) Generate javascript, json, and rholang files containing the URI values for contracts that emit a '#define' line - generated files have a filename that starts with 'generated'
+  5) Create a 'checkpoint' containing the resulting rnode database that can be restored with restore-checkpoint.sh
+  6) Place the running rnode log file in 'bootstrap/run-rnode.log'
+
+```
+cd bootstrap
+./bootstrap.sh
+./redeploy.sh
+./run-rnode.sh
+cd ..
+```
+
+## checkpointing
+bootstrap/create-checkpoint.sh
+Save a copy of the localhost rnode that can be restored at a later date
+
+bootstrap/list-checkpoints.sh
+List checkpoints available for restore
+
+bootstrap/restore-checkpoint.sh
+Restore a checkpoint previously created with bootstrap/create-checkpoint.sh
+After initial bootstrap.sh and redeploy.sh, there will be two checkpoints available: 'bootstrap' and 'liquid-democracy-base'
 
 ## Misc: dependencies
 
