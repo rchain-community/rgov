@@ -2,17 +2,6 @@
 
 // TODO: rholang goes in .rho files
 
-import {
-  MakeMintReg,
-  DirectoryReg,
-  CommunityReg,
-  KudosReg,
-  RollReg,
-  IssueReg,
-  InboxReg,
-  LogReg
-} from '../rhoid.js';
-
 /**
  * @typedef {{ filename: string, fields?: Record<string, FieldSpec> }} ActionSpec
  * @typedef {{ type: 'string' | 'set' | 'uri' | 'walletRevAddr', value?: string }} FieldSpec
@@ -27,22 +16,17 @@ export const actions = {
       proposals: {
         type: 'set',
         value: "",
-      },
-      issueURI: IssueReg
+      }
     },
     filename: 'actions/newIssue.rho',
   },
   newMemberDirectory: {
-    fields: {
-      contractURI: DirectoryReg,
-      rollReg: RollReg,
-    },
+    fields: {},
     filename: 'actions/newMemberDirectory.rho',
   },
   claimWithInbox: {
     fields: {
-      myGovRevAddr: { type: 'walletRevAddr' },
-      dirURI: DirectoryReg,
+      myGovRevAddr: { type: 'walletRevAddr' }
     },
     filename: 'actions/claimWithInbox.rho',
   },
@@ -55,21 +39,16 @@ export const actions = {
     filename: 'actions/raviWorld.rho',
   },
   getRoll: {
-    fields: {
-      rollReg: RollReg,
-    },
+    fields: {},
     filename: 'actions/getRoll.rho',
   },
   peekKudos: {
-    fields: {
-      KudosReg: KudosReg,
-    },
+    fields: {},
     filename: 'actions/peekKudos.rho',
   },
   awardKudos: {
     fields: {
-      them: { type: 'string', value: '' },
-      KudosReg: KudosReg,
+      them: { type: 'string', value: '' }
     },
     filename: 'actions/awardKudos.rho',
   },
@@ -80,11 +59,7 @@ export const actions = {
     filename: 'actions/checkBalance.rho',
   },
   newinbox: {
-    fields: {
-      lockerTag: { value: 'inbox', type: 'string' },
-      // TODO: get contract URIs from rhopm / rho_modules
-      InboxURI: InboxReg,
-    },
+    fields: {},
     filename: 'actions/newinbox.rho',
   },
   tallyVotes: {
@@ -136,16 +111,14 @@ export const actions = {
   },
   checkRegistration: {
     fields: {
-      myGovRevAddr: { type: 'walletRevAddr' },
-      rollReg: RollReg,
+      myGovRevAddr: { type: 'walletRevAddr' }
     },
     filename: 'actions/checkRegistration.rho',
   },
   newCommunity: {
     fields: {
       name: { value: '', type: 'string' },
-      lockerTag: { value: 'inbox', type: 'string' },
-      CommunityReg: CommunityReg,
+      lockerTag: { value: 'inbox', type: 'string' }
     },
     filename: 'actions/newCommunity.rho',
   },
@@ -161,8 +134,7 @@ export const actions = {
   makeMint: {
     fields: {
       name: { value: 'myTokenMint', type: 'string' },
-      lockerTag: { value: 'inbox', type: 'string' },
-      MakeMintReg: MakeMintReg,
+      lockerTag: { value: 'inbox', type: 'string' }
     },
     filename: 'actions/makeMint.rho',
   },
