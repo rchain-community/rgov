@@ -13,7 +13,7 @@ in {
     }
   }
   |
-  
+
   // See example / demo below.
   //contract Issue(@{proposalNames /\ Set(hd, ...tail)}, return) = {
     contract Issue(@proposalNames , return, log) = {
@@ -21,7 +21,7 @@ in {
         log!("creating ballot") |
         return!(bundle+{*admin}, bundle+{*tally}) |
         voterCh!({}) |
-        
+
         contract admin(@"giveRightToVote", @name, return, log) = {
           // voter names must be unique, a public key is suggested.
           new voter, voteCh, delegateCh in {
@@ -91,7 +91,7 @@ in {
           for ( @voters <<- voterCh ) {
             log!(voters) |
             loop!(voters, *return) |
-            
+
             contract loop(@rest, ack) = {
               new ret in {
                 log!("loop") |

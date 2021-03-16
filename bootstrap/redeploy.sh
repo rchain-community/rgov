@@ -23,10 +23,12 @@ Use 'bootstrap' to fix.
 
 cd `dirname $0`
 
-./list-checkpoints.sh|grep "liquid-democracy-base" && echo "checkpoint liquid-democracy-base already exists." && while read -p "Redploy and Replace [y]? " response;do
-   if [ "$response" != 'y' ] && [ -n "$response" ];then
-      echo "Aborted." && exit 0
+./list-checkpoints.sh|grep "liquid-democracy-base" && echo "checkpoint liquid-democracy-base already exists." && while read -p "Use it instead of re-running deploy [y]? " response;do
+   if [ "$response" == 'y' ] || [ -z "$response" ];then
+      ./restore-checkpoint.sh "liquid-democracy-base"
+      exit 0
    else
+      echo "Re-running deploy"
       break
    fi
 done
