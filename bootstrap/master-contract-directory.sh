@@ -3,9 +3,9 @@
 gen_dir_entry() {
 cat - << EOF
          // insert the $1 class
-         | lookup!(UID_$1, *lookCh)
-         | for (C <- lookCh) {
-            stdout!(["writing class to dictionary: $1 ", UID_$1, *C])
+         | lookup!(URI_$1, *$1_lookCh)
+         | for (C <- $1_lookCh) {
+            stdout!(["writing class to dictionary: $1 ", URI_$1, *C])
             | @write!("$1", *C, *stdout)
          }
 EOF
@@ -19,15 +19,22 @@ new
    stdout(\`rho:io:stdout\`),
    lookCh,
    caps
+EOF
+
+   echo "$1"|while read name id;do
+      echo "   ,$name""_lookCh"
+   done
+
+   cat - << EOF2
 in {
-   lookup!(UID_Directory, *lookCh)
+   lookup!(URI_Directory, *lookCh)
    | for (Dir <- lookCh) {
       Dir!(*caps)
       | for (@{"read": read, "write": write, "grant": grant} <- caps) {
 
          // Create a global reference to the master contract directory
          @[*deployerId, "MasterContractAdmin"]!({"read": read, "write": write, "grant": grant})
-EOF
+EOF2
 
    echo "$1"|while read name id;do
       gen_dir_entry $name
@@ -59,7 +66,7 @@ gen_vars() {
    tmp="false"
    echo "$1" | while read name id;do
       if [ -z "$tmp" ];then echo -n ",";else unset tmp;fi
-      echo "UID_$name"
+      echo "URI_$name"
    done
 }
 
