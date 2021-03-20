@@ -13,6 +13,22 @@ import {
 } from 'rchain-api';
 import { actions } from './actions.js';
 const { freeze, keys, entries } = Object;
+var startTime, endTime, seconds;
+
+function starttimer() {
+  startTime = new Date().getTime();
+};
+
+function endtimer() {
+  endTime = new Date().getTime();
+  var timeDiff = endTime - startTime; //in ms
+  // strip the ms
+  timeDiff /= 1000;
+
+  // get seconds 
+  seconds = Math.round(timeDiff);
+  console.log(seconds + " seconds");
+}
 
 // TODO: UI for phloLimit
 const maxFee = { phloPrice: 1, phloLimit: 0.05 * 100000000 };
@@ -112,6 +128,7 @@ function makeBusy($) {
 
     try {
       const result = await p;
+      endtimer();
       return result;
     } finally {
       button.disabled = false;
@@ -430,6 +447,7 @@ function runControl(
     const obs = state.shard.observer;
     state.problem = undefined;
     state.results = [];
+    starttimer();
     try {
       console.log('explore...');
       const { expr, block } = await busy(
@@ -471,6 +489,7 @@ function runControl(
           },
           ethereum,
         );
+        starttimer();
       },
     });
 
@@ -481,6 +500,7 @@ function runControl(
           const deploy = await startTerm(term, val, obs, account);
           console.log('@@DEBUG', state.action, { deploy });
           const { expr } = await listenAtDeployId(obs, deploy);
+          endtimer();
           console.log('@@DEBUG', state.action, { expr });
           state.results = [expr];
         })(),
@@ -488,6 +508,7 @@ function runControl(
       // TODO? $('#blockInfo').textContent = pprint(block);
     } catch (err) {
       state.problem = err.message;
+      endtimer();
     }
   }
 
@@ -516,6 +537,7 @@ function runControl(
           <pre id="result">
 ${state.results ? pprint(state.results.map(RhoExpr.parse)) : ''}</pre
           >
+          ${state.results ? pprint('Duration: '+seconds+' seconds') : ''}
           <!-- TODO
           <h2>Block Info</h2>
           <small>
