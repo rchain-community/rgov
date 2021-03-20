@@ -3,16 +3,17 @@ new
    deployerId(`rho:rchain:deployerId`),
    inboxLookup(`rho:registry:lookup`),
    ch,
+   ch1,
    inboxCh
 in {
    for (@{ "peek": *peek, ..._ } <<- @[*deployerId, lockerTag]) {
       peek!("issue", issue, *ch) |
       for (@[{ "admin": *admin, ..._ }] <- ch) {
-         admin!("giveRightToVote", *return, *ch) |
-         for (voterCap <- ch) {
+         admin!("giveRightToVote", *ch1, *return) |
+         for (voterCap <- ch1) {
             inboxLookup!(toInboxURI, *inboxCh) |
             for (inbox <- inboxCh) {
-               inbox!(["vote", issue, {"voterCap": *voterCap}], *return, *return)
+               inbox!(["vote", issue, {"voterCap": *voterCap}], *return)
             }
          }
       }
