@@ -4,10 +4,18 @@
 
 /**
  * @typedef {{ filename: string, fields?: Record<string, FieldSpec> }} ActionSpec
- * @typedef {{ type: 'string' | 'set' | 'uri' | 'walletRevAddr', value?: string }} FieldSpec
+ * @typedef {{ type: 'number' | 'string' | 'set' | 'uri' | 'walletRevAddr', value?: string }} FieldSpec
  * @type {Record<string, ActionSpec>}
  */
 export const actions = {
+  transfer: {
+    fields: {
+      revAddrFrom: { value: '', type: 'walletRevAddr' },
+      revAddrTo: { value: '', type: 'string'},
+      amount: { value: '1', type: 'number' }
+    },
+    filename: 'actions/transfer.rho',
+  },
   newIssue: {
     fields: {
       lockerTag: { value: 'inbox', type: 'string' },
