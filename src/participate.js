@@ -347,7 +347,7 @@ function actionControl(state, { html, getEthProvider }) {
 
   const fty = (action, name) => {
     const f = actions[action].fields;
-    if (!f) return 'string';
+    if (!f || !f[name]) return 'string';
     return f[name].type;
   };
 
