@@ -1,29 +1,58 @@
-new deployId(`rho:rchain:deployId`), directory in {
+new
+  deployId(`rho:rchain:deployId`),
+  directory
+in {
   contract directory(capabilities) = {
-    new mapCh, read, write, grant in {
-     mapCh!({}) |
-     capabilities!({"read": bundle+{*read},
-       "write": bundle+{*write},
-       "grant": bundle+{*grant}}) |
-     contract grant(@key, ret) = {
-      new writekey in {
-        contract writekey(@value, result) = {
-          write!(key, value, *result)
-        } |
-        ret!(*writekey)
-      }
-     } |
-     contract read(return) = {
-       for ( map <- mapCh ) {
-         mapCh!(*map) |
-         return!(*map)
-       }
+    directory!(Nil, *capabilities)
+  } |
+  contract directory(ParentReadCap, capabilities) = {
+    new
+      mapCh,
+      read,
+      write,
+      grant
+    in {
+      mapCh!({}) |
+      capabilities!({
+        "read": bundle+{*read},
+        "write": bundle+{*write},
+        "grant": bundle+{*grant}
+      }) |
+      contract grant(@key, ret) = {
+        new writekey in {
+          contract writekey(@value, result) = {
+            write!(key, value, *result)
+          } |
+          ret!(*writekey)
+        }
       } |
-     contract read(@key, return) = {
-       for ( map <- mapCh ) {
-         mapCh!(*map) |
-         return!(*map.get(key))
-       }
+      contract read(return) = {
+        for ( map <- mapCh ) {
+          mapCh!(*map) |
+          if (*map == Nil) {
+            if (*ParentReadCap != Nil) {
+              ParentReadCap!(*return)
+            } else {
+              return!(Nil)
+            }
+          } else {
+            return!(*map)
+          }
+        }
+      } |
+      contract read(@key, return) = {
+        for ( map <- mapCh ) {
+          mapCh!(*map) |
+          if (*map == Nil) {
+            if(*ParentReadCap != Nil) {
+              ParentReadCap!(key, *return)
+            } else {
+              return!(Nil)
+            }
+          } else {
+            return!(*map.get(key))
+          }
+        }
       } |
       contract write(@key,@value, ret) = {
         for ( map <- mapCh ) {
@@ -35,8 +64,8 @@ new deployId(`rho:rchain:deployId`), directory in {
             ret!([key,value,"added"])
           }
         }
-     }
-   }
+      }
+    }
   } |
   new stdout(`rho:io:stdout`), lookup(`rho:registry:lookup`), insertArbitrary(`rho:registry:insertArbitrary`),
     uriCh, read, write, ret, ack in {
@@ -45,7 +74,7 @@ new deployId(`rho:rchain:deployId`), directory in {
       stdout!(["#define $Directory", uri]) |
       deployId!(uri)
     } |
-    directory!(*ret) |
+    directory!(Nil, *ret) |
     for ( @{"read": read, "write": write, "grant": grant, ..._ } <- ret ) {
       stdout!("got capabilities.") |
       @write!("hello","world", *ack) |
