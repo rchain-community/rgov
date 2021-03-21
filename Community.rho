@@ -1,5 +1,14 @@
-new Community, commMap, deployId(`rho:rchain:deployId`), stdout(`rho:io:stdout`), lookup(`rho:registry:lookup`),
-insertArbitrary(`rho:registry:insertArbitrary`), uriCh, ret, ack in {
+new
+  Community,
+  commMap,
+  deployId(`rho:rchain:deployId`),
+  stdout(`rho:io:stdout`),
+  lookup(`rho:registry:lookup`),
+  insertArbitrary(`rho:registry:insertArbitrary`),
+  uriCh,
+  ret,
+  ack
+in {
     insertArbitrary!(bundle+{*Community},*uriCh) |
     for ( @uri <- uriCh ) {
        stdout!(["#define $Community", uri]) |
@@ -7,7 +16,14 @@ insertArbitrary(`rho:registry:insertArbitrary`), uriCh, ret, ack in {
     } |
     commMap!({}) |
     contract Community (@"new", @name, inbox, return) = {
-        new admin, methods, userlist, infoCh, ret in {
+        new
+          admin,
+          methods,
+          userlist,
+          infoCh,
+          ret,
+          CapDirectory
+        in {
             userlist!([]) | methods!({}) |
             stdout!("creating community.") |
             for (@comms <- commMap ) {
@@ -16,11 +32,15 @@ insertArbitrary(`rho:registry:insertArbitrary`), uriCh, ret, ack in {
                     commMap!(comms) |
                     return!(Nil)
                 } else {
-                  match ("import", "./directory.rho", `rho:id:...`) {
-                    (_, _, directoryURI) => lookup!(directoryURI, *ret)
+                  for(@{"read": *masterRead, ..._} <<- @[*deployerId, "MasterContractAdmin"]) {
+                    stdout!{["read": *masterRead}) |
+                    masterRead!("Directory", *ret)
                   } |
                   for ( Directory <- ret ) {
                     stdout!(["got directory", *Directory]) |
+                    // Create community capability directory
+                    Directory!(*CapDirectory) |
+                    // Create member directory
                     Directory!(*ret) |
                     for ( @{"read": *read, "write": *write, "grant": *grant, ..._ } <- ret ) {
                       commMap!(comms.union({name: *infoCh})) |
