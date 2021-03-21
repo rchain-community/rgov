@@ -229,6 +229,10 @@ function buildUI({
           {
             return `Set(${value})`
           }
+          else if(fields[name].type === 'number')
+          {
+            return value
+          }
           else
           {
             return JSON.stringify(value)
