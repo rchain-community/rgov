@@ -245,6 +245,7 @@ function buildUI({
         fieldValues = {};
         state.term = content;
       }
+      m.redraw();
     },
     get term() {
       return term;
@@ -384,7 +385,7 @@ function actionControl(state, { html, getEthProvider }) {
               onchange=${(/** @type {Event} */ event) => {
                 const current = { [name]: ckControl(event.target).value };
                 const old = state.fields;
-                state.fields = { ...old, ...current };
+                state.setFields({ ...old, ...current });
                 return false;
               }}
           /></label>
