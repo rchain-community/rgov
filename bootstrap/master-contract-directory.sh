@@ -29,7 +29,7 @@ EOF
 in {
    lookup!(URI_Directory, *lookCh)
    | for (Dir <- lookCh) {
-      Dir!(*caps)
+      Dir!(Nil, *caps)
       | for (@{"read": read, "write": write, "grant": grant} <- caps) {
 
          // Create a global reference to the master contract directory
