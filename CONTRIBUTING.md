@@ -114,7 +114,7 @@ To create an rchain node locally, deploy liquid-democracy and rchain dependencie
 ```
 cd bootstrap
 ./bootstrap.sh
-./redeploy.sh
+./deploy-all.sh
 ./run-rnode.sh
 cd ..
 ```
