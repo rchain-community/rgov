@@ -117,7 +117,7 @@ Finished 'default' after 0 ms
 ```
 
 ## localhost deployment and development
-To create an rchain node locally, deploy liquid-democracy and rchain dependencies, use the following commands. These commands will:
+To create an rchain node locally, deploy rchain dependencies, and deploy liquid-democracy use the following commands. These commands will:
   1) Create several log files, which can be largely ignored.
   2) clone the rchain repo
   3) deploy the rholang files from rchain and liquid-democracy
