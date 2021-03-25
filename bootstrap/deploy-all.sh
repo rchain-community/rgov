@@ -2,7 +2,7 @@
 
 ALREADY=`ps a |grep rnode|grep -v grep |sed 's/[ \t][ \t]*/ /g'|cut -d' ' -f 1`
 [ -n "$ALREADY" ] && echo "
-redeploy: rnode is currently running
+deploy-all: rnode is currently running
 Use 'kill $ALREADY' to fix.
 " && while read -p "Execute 'kill $ALREADY' [n]? " response;do
 	if [ "$response" == "y" ] || [ -z "$response" ];then
@@ -17,7 +17,7 @@ Use 'kill $ALREADY' to fix.
 done
 
 [ ! -d ~/.rnode ] && echo "
-Cannot redeploy: $HOME/.rnode does not exist
+Cannot deploy-all: $HOME/.rnode does not exist
 Use 'bootstrap' to fix.
 " && exit 1
 
@@ -50,14 +50,14 @@ rnode run -s \
    --validator-private-key $private_key \
    --dev-mode \
    -XX:MaxDirectMemorySize=100m -XX:MaxRAMPercentage=25 \
-   > redeploy.log 2>&1 &
+   > deploy-all.log 2>&1 &
 
 set +x
 
 PID=$!
 
 # The previous command doesn't produce output -- but this makes up for that
-tail -f redeploy.log|sed -e '/Making a transition to Running state./q'
+tail -f deploy-all.log|sed -e '/Making a transition to Running state./q'
 
 deploy() {
    while read t;do
@@ -103,7 +103,7 @@ s/\t/  /g
 }
 
 echo "Generating javascript file [$javascript_file]"
-gen_javascript < redeploy.log > $javascript_file
+gen_javascript < deploy-all.log > $javascript_file
 
 # generate json
 gen_json() {
@@ -122,15 +122,15 @@ echo '    "NecessaryInvalidPlaceholder": ""
 }
 
 echo "Generating json file [$json_file]"
-gen_json < redeploy.log > $json_file
+gen_json < deploy-all.log > $json_file
 
 # generate and create the master contract directory
 echo "Generating directory creation rholang"
 ./master-contract-directory.sh > generated.create-master-contract-directory.rho
 
-echo "generated.create-master-contract-directory.rho"| deploy | tee -a redeploy.log
-echo "Proposing master contract directory creation" |tee -a redeploy.log
-rnode --grpc-port 40402 propose 2>&1|tee -a redeploy.log
+echo "generated.create-master-contract-directory.rho"| deploy | tee -a deploy-all.log
+echo "Proposing master contract directory creation" |tee -a deploy-all.log
+rnode --grpc-port 40402 propose 2>&1|tee -a deploy-all.log
 
 echo "Stopping deployment rnode"
 kill $PID
