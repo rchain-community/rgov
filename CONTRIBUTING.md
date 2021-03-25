@@ -134,16 +134,22 @@ cd ..
 ```
 
 ## checkpointing
-bootstrap/create-checkpoint.sh
-Save a copy of the localhost rnode that can be restored at a later date
-
-bootstrap/list-checkpoints.sh
-List checkpoints available for restore
-
-bootstrap/restore-checkpoint.sh
 Restore a checkpoint previously created with bootstrap/create-checkpoint.sh
-After initial bootstrap.sh and redeploy.sh, there will be two checkpoints available: 'bootstrap' and 'liquid-democracy-base'
+```
+bootstrap/restore-checkpoint.sh
+```
+
+After initial bootstrap.sh and deploy-all.sh, there will be two checkpoints available: 'bootstrap' and 'liquid-democracy-base'
+
+List checkpoints available for restore
+```
+bootstrap/list-checkpoints.sh
+```
+
+Save a copy of the localhost rnode that can be restored at a later date
+```
+bootstrap/create-checkpoint.sh
+```
 
 ## Misc: dependencies
-
 We have a dependency on rchain-toolkit. For utils. This can go away soon, right?
