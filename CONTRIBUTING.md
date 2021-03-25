@@ -12,6 +12,8 @@ for bootstrapping, checkpointing and updating a liquid democracy RChain RNode lo
 
 This localhost environment aims to be a complete usable development system, (once testnet works again). While there are pieces elsewhere and this may not be the final resting place, this is not a docker solution and is specific to the capability directory structure of communities/working groups and their communications and their governance. A future aim would be to make this play well with jakefile and docker shard solutions.
 
+Watch video of how to add an rgov action here https://youtu.be/9TIPXXSXwnE
+
 ## To deploy the contracts: (may not be up to date)
 
 ```
