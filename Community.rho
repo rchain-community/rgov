@@ -2,6 +2,7 @@ new
   Community,
   commMap,
   deployId(`rho:rchain:deployId`),
+  deployerId(`rho:rchain:deployerId`),
   stdout(`rho:io:stdout`),
   lookup(`rho:registry:lookup`),
   insertArbitrary(`rho:registry:insertArbitrary`),
@@ -33,7 +34,7 @@ in {
                     return!(Nil)
                 } else {
                   for(@{"read": *masterRead, ..._} <<- @[*deployerId, "MasterContractAdmin"]) {
-                    stdout!{["read": *masterRead}) |
+                    stdout!({"read": *masterRead}) |
                     masterRead!("Directory", *ret)
                   } |
                   for ( Directory <- ret ) {
