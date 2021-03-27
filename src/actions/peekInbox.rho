@@ -1,10 +1,12 @@
+
+
 new
    deployId(`rho:rchain:deployId`),
    deployerId(`rho:rchain:deployerId`),
    ch
 in {
    for(@{"peek": *peek, "URI": uri ..._} <<- @[*deployerId, lockerTag]) {
-      deployId({"URI": uri}) |
+      deployId!({"URI": uri}) |
       peek!(*deployId)
    }
 }
