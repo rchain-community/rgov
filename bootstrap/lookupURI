@@ -1,0 +1,14 @@
+#!/bin/bash
+
+TMPFILE=`mktemp`
+
+cat > $TMPFILE << EOF
+match [\`$1\`] { [URI] => {
+`cat ../src/actions/lookupURI.rho`
+}}
+EOF
+
+./deploy $TMPFILE | grep "DeployId is:"
+./propose | tail -n 0 -f run-rnode.log | sed '/URI/q' | grep URI
+
+rm $TMPFILE
