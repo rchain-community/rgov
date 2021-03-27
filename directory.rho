@@ -27,13 +27,12 @@ in {
         }
       } |
       contract read(return) = {
-        for ( map <- mapCh ) {
-          mapCh!(*map) |
-          if (*map == Nil) {
+        for ( map <<- mapCh ) {
+          if (*map == {} ) {
             if (*ParentReadCap != Nil) {
               ParentReadCap!(*return)
             } else {
-              return!(Nil)
+              return!({})
             }
           } else {
             return!(*map)
