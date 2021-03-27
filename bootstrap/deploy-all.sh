@@ -128,8 +128,8 @@ gen_json < deploy-all.log > $json_file
 echo "Generating directory creation rholang"
 ./master-contract-directory.sh > generated.create-master-contract-directory.rho
 
-echo "generated.create-master-contract-directory.rho"| deploy | tee -a deploy-all.log
-echo "Proposing master contract directory creation" |tee -a deploy-all.log
+echo "generated.create-master-contract-directory.rho"| deploy | tee -a create-master-directory.log
+echo "Proposing master contract directory creation" |tee -a create-master-directory.log
 rnode --grpc-port 40402 propose 2>&1|tee -a deploy-all.log
 
 echo "Stopping deployment rnode"
