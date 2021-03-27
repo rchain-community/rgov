@@ -11,11 +11,11 @@ mkdir -p checkpoint
 TARGET=$PWD/checkpoint/$1.tgz
 
 [ -f $TARGET ] && while read -p "$TARGET already exists. Replace [y]? " response;do
-   if [ "$response" != 'y' ] && [ -n "$response" ]; then
+   if [ "$response" == 'y' ] || [ -z "$response" ]; then
+      break
+   else
       echo "Aborted"
       exit 0
-   else
-      break
    fi
 done
 
