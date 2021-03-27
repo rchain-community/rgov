@@ -8,6 +8,10 @@
  * @type {Record<string, ActionSpec>}
  */
 export const actions = {
+  lookupURI: {
+    fields: { URI: { value: '', type: 'uri'} },
+    filename: 'actions/lookupURI.rho',
+  },
   transfer: {
     fields: {
       revAddrFrom: { value: '', type: 'walletRevAddr' },
@@ -67,7 +71,9 @@ export const actions = {
     filename: 'actions/checkBalance.rho',
   },
   newinbox: {
-    fields: {},
+    fields: {
+      masterDirectoryURI: { value: 'rho:id:1jn9914tteesot7fi797fd451mmattxxzwmnxmaa5excuh57p4z84s', type: 'uri' },
+    },
     filename: 'actions/newinbox.rho',
   },
   tallyVotes: {

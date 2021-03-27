@@ -16,8 +16,11 @@ gen_code() {
 new
    lookup(\`rho:registry:lookup\`),
    deployerId(\`rho:rchain:deployerId\`),
+   deployId(\`rho:rchain:deployId\`),
    stdout(\`rho:io:stdout\`),
+   insertArbitrary(\`rho:registry:insertArbitrary\`),
    lookCh,
+   insertCh,
    caps
 EOF
 
@@ -33,7 +36,12 @@ in {
       | for (@{"read": read, "write": write, "grant": grant} <- caps) {
 
          // Create a global reference to the master contract directory
-         @[*deployerId, "MasterContractAdmin"]!({"read": read, "write": write, "grant": grant})
+         @[*deployerId, "MasterContractAdmin"]!({"read": read, "write": write, "grant": grant}) |
+         insertArbitrary!(bundle+{read}, *insertCh) |
+         for (URI <- insertCh) {
+            stdout!({ "ReadcapURI": *URI}) |
+            deployId!({ "ReadcapURI": *URI })
+         }
 EOF2
 
    echo "$1"|while read name id;do
@@ -48,7 +56,7 @@ EOF2
 }
 
 get_classes() {
-egrep '^\["#define [^"][^"]*", `[^`]*`]|^\["Log contract created at"' redeploy.log | sort -u|sed '
+egrep '^\["#define [^"][^"]*", `[^`]*`]|^\["Log contract created at"' deploy-all.log | sort -u|sed '
    s/\["Log contract created at"/["#define $Log"/
    ' |
    cut -d' ' -f2,3 | sed 's/[$",`\]]*//g'
