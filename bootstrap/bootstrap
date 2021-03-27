@@ -48,6 +48,8 @@ set -x
 
 cd `dirname $0`
 
+LOGFILE="bootstrap.log"
+
 private_key=`cat bootstrap.private-key`
 
 mkdir -p ~/.rnode || exit 3
@@ -57,10 +59,10 @@ rnode run -s \
 	--validator-private-key $private_key \
 	--dev-mode \
 	-XX:MaxDirectMemorySize=100m -XX:MaxRAMPercentage=25 \
-	> bootstrap.log 2>&1 &
+	> $LOGFILE 2>&1 &
 
 # The previous command doesn't produce output -- but this one makes up for that
-tail -f bootstrap.log|sed -e '/Making a transition to Running state./q'
+tail -f $LOGFILE|sed -e '/Making a transition to Running state./q'
 
 echo "Creating bootstrap checkpoint"
 ./create-checkpoint.sh bootstrap
