@@ -9,13 +9,16 @@ new
   inboxCaps,
   ret
 in {
-  lookup!(`rho:id:7dtbfr5ij8ra385uwxeu3qnyz11zcu5s8o55q1uj9m58pmp6jzyyxs`, *masterLookupCh) |
+  lookup!(`rho:id:hxbkg7decdhdr6xrcdzsfpys7aawswwy7b3u3y3kyx4rb63i31jg13`, *masterLookupCh) |
   for (lookup_Master <- masterLookupCh) {
     stdout!({"master-dictionary dictionary unforgeable": *lookup_Master}) |
     lookup_Master!("Inbox", *lookupCh_DirInbox) |
     for (master_Inbox <- lookupCh_DirInbox) {
       stdout!({"master-dictionary Inbox unforgeable": *master_Inbox}) |
       master_Inbox!(*inboxCaps)|
+      for (x <<- inboxCaps) {
+        stdout!(["x", *x])
+      } |
       for (read, write, peek  <- inboxCaps) {
         stdout!(["read", *read, "write", *write, "peek", *peek]) |
         insertArbitrary!(*write, *ret)|
