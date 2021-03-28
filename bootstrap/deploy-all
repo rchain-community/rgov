@@ -130,7 +130,7 @@ gen_json < $LOGFILE > $json_file
 echo "$0: Generating directory creation rholang"
 ./master-contract-directory.sh > generated.create-master-contract-directory.rho
 
-echo "generated.create-master-contract-directory.rho"| deploy | tee -a create-master-directory.log
+echo "generated.create-master-contract-directory.rho"| deployFiles | tee -a create-master-directory.log
 echo "$0: Proposing master contract directory creation" |tee -a create-master-directory.log
 ./propose|tee -a $LOGFILE
 
