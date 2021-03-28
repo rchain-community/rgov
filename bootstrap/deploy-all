@@ -145,3 +145,5 @@ kill $PID
 
 echo "$0: Creating liquid-democracy-base checkpoint"
 ./create-checkpoint.sh rgov
+
+stty echo

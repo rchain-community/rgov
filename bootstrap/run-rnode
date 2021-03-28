@@ -11,3 +11,5 @@ rnode run -s \
    > run-rnode.log 2>&1 &
 
 tail -f run-rnode.log|sed -e '/Making a transition to Running state./q'
+
+stty echo
