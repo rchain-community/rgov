@@ -1,6 +1,6 @@
 match [
-    `rho:id:p45853yeu3stftdoi67zirfa7r1op57j8juigzc88tsjsug94g9e9c`
-    ,`rho:id:1c86eykuqqx4mpxddwiafqrbk953fx6kj7ni7k51pfaahe3a41zisp`
+    `rho:id:jfq5pxddtdye4bq76sxa6cxes7ftcdrpmnptkbukd8sdgbek81ozja`
+    ,`rho:id:mxuj9cjc9oqeqtdc13jihsrntoasbrzb7ai1w4pwcqi45niuwc9max`
 ] {[
     URI_Echo
     ,URI_Master
@@ -11,10 +11,12 @@ match [
    ,ret_more
    ,lookup_ret_raw
    ,lookup_ret_more
+   ,master_ret_raw
+   ,master_ret_more
    ,lookupCaps
    ,uriCh
    ,lookupCh
-   , lookupCh_DirEcho
+   ,lookupCh_DirEcho
    ,master_Echo
    ,masterLookupCh
    ,master_test_caps
@@ -23,26 +25,27 @@ match [
 in
 {  lookup!(URI_Echo, *lookupCh)
 |  for (lookup_Echo <- lookupCh)
-   {  stdout!({"lookup unforgeable": *lookup_Echo})
-   |  lookup_Echo!("lookup", *lookupCaps)
+   {  stdout!({"uri-lookup Echo unforgeable": *lookup_Echo})
+   |  lookup_Echo!("uri-lookup", *lookupCaps)
    |  for (lookup_rawCap, lookup_moreCap <- lookupCaps)
-      {  lookup_rawCap!(*lookup_ret_raw)
-      |  stdout!({"lookup raw cap": *lookup_rawCap, "lookup raw return": *lookup_ret_raw})
+      {  stdout!({"uri-lookup Echo raw-cap": *lookup_rawCap, "uri-lookup Echo more-cap": *lookup_moreCap})
       |  lookup_moreCap!(*lookup_ret_more)
-      |  stdout!({"lookup more cap": *lookup_moreCap, "lookup more return": *lookup_ret_more})
+      |  lookup_rawCap!(*lookup_ret_raw)
+      |  stdout!({"uri-lookup Echo raw-return": *lookup_ret_raw, "uri-lookup Echo more-return": *lookup_ret_more})
       }
    }
 |  lookup!(URI_Master, *masterLookupCh)
 |  for (lookup_Master <- masterLookupCh)
-   {  stdout!({"master unforgeable": *lookup_Master})
+   {  stdout!({"master-dictionary dictionary unforgeable": *lookup_Master})
    |  lookup_Master!("Echo", *lookupCh_DirEcho)
    |  for (master_Echo <- lookupCh_DirEcho)
-      {  stdout!({"master Echo": *master_Echo})
-      |  master_Echo!("master test", *master_test_caps)
+      {  stdout!({"master-dictionary Echo unforgeable": *master_Echo})
+      |  master_Echo!("master-dictionary", *master_test_caps)
       |  for (master_echo_raw, master_echo_more <- master_test_caps)
-         {  stdout!({"master_echo_raw": *master_echo_raw, "master_echo_more": *master_echo_more})
-         |  master_echo_raw!(*stdout)
-         |  master_echo_more!(*stdout)
+         {  stdout!({"master-dictionary Echo raw-cap": *master_echo_raw, "master-dictionary Echo more-cap": *master_echo_more})
+         |  master_echo_raw!(*master_ret_raw)
+         |  master_echo_more!(*master_ret_more)
+         |  stdout!({"master-dictionary Echo raw-return": *master_ret_raw, "master-dictionary Echo more-return": *master_ret_more})
          }
       }
    }

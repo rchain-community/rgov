@@ -62,17 +62,21 @@ PID=$!
 tail -f $LOGFILE|sed -e '/Making a transition to Running state./q'
 
 deployFiles() {
+   WAITPID=""
    while read t;do
-      $DEPLOY $t
+      $DEPLOY $t &
+      WAITPID="$WAITPID $!"
    done |tee -a deployment.log 2>&1
+   wait $WAITPID
 }
 
-# deploy system code
+# deploy rchain code
 find rchain -name "*.rho"|grep -v "test"|grep -v "tests" |grep -v "examples" | deployFiles
 
+
 # deploy rgov
-for i in \
-../Community.rho \
+# ../Community.rho \
+ls -1 \
 ../CrowdFund.rho \
 ../directory.rho \
 ../inbox.rho \
@@ -83,9 +87,7 @@ for i in \
 ../RevIssuer.rho \
 ../echo.rho \
 ./voter-insertion.rho \
-;do
-   echo $i | deployFiles
-done
+| deployFiles
 
 # Finalize the rnode
 echo "$0: Proposing...." | tee -a deployment.log
@@ -135,7 +137,10 @@ echo "generated.create-master-contract-directory.rho"| deployFiles | tee -a crea
 echo "$0: Proposing master contract directory creation" |tee -a create-master-directory.log
 rnode --grpc-port 40402 propose 2>&1 | tee -a deployment.log
 
-echo "$0: Stopping deployment rnode"
+echo "$0: listing master"
+./deploy listMasterURI.rho
+rnode --grpc-port 40402 propose 2>&1 | tee -a deployment.log
+echo "Waiting for rnode to finish (60s)" && sleep 60 && echo "$0: Stopping deployment rnode"
 kill $PID
 
 echo "$0: Creating liquid-democracy-base checkpoint"

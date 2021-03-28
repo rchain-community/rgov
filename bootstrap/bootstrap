@@ -63,5 +63,10 @@ rnode run -s \
 # The previous command doesn't produce output -- but this one makes up for that
 tail -f $LOGFILE|sed -e '/Making a transition to Running state./q'
 
+PID=$!
+
+echo "$0: Stopping $0 rnode process"
+kill $PID && sleep 3
+
 echo "$0: Creating $0 checkpoint"
 ./create-checkpoint.sh $0

@@ -6,7 +6,7 @@ cat - << EOF
          | lookup!(URI_$1, *lookCh_$1)
          | for (C_$1 <- lookCh_$1) {
             stdout!(["writing class to dictionary: $1 ", URI_$1, *C_$1])
-            | @write!("$1", *C_$1, *stdout)
+            | @write!("$1", *C_$1, *ret_$1)
          }
 EOF
 }
@@ -22,17 +22,20 @@ new
    ,lookCh
    ,insertCh
    ,caps
+   ,lastUri
 EOF
 
    echo "$1"|while read name id;do
       echo "   ,lookCh_$name"
+      echo "   ,ret_$name"
+      echo "   ,final_$name"
    done
 
    cat - << EOF2
 in {
    lookup!(URI_Directory, *lookCh)
    | for (Dir <- lookCh) {
-      Dir!(Nil, *caps)
+      Dir!(*caps)
       | for (@{"read": read, "write": write, "grant": grant} <- caps) {
 
          // Create a global reference to the master contract directory
@@ -46,6 +49,19 @@ EOF2
 
    echo "$1"|while read name id;do
       gen_dir_entry $name
+   done
+
+   echo "         }"
+   echo "         |  for ( "
+   echo "$1"|while read name id;do
+      echo "               final_$name <- ret_$name;"
+   done
+   echo "               last <- lastUri"
+   echo "            )"
+   echo "            {  stdout!([\"Finished with ReadcapURI\", *last])"
+
+   echo "$1"|while read name id;do
+       echo "            |  stdout!([\"Finished with $name\", *final_$name])"
    done
 
    cat << EOF2
