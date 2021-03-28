@@ -22,9 +22,9 @@ $0: $HOME/.rnode does not exist. Use 'bootstrap' to fix.
 
 cd `dirname $0`
 
-./list-checkpoints.sh|grep "rgov" && echo "$0: checkpoint liquid-democracy-base already exists." && while read -p "Use it instead of re-running deploy [y]? " response;do
+./list-checkpoints.sh|grep "rgov" && echo "$0: checkpoint rgov already exists." && while read -p "Use it instead of re-running deploy [y]? " response;do
    if [ "$response" == 'y' ] || [ -z "$response" ];then
-      ./restore-checkpoint.sh "liquid-democracy-base"
+      ./restore-checkpoint.sh "rgov"
       exit 0
    else
       echo "$0: Re-running deploy"
