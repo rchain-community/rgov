@@ -1,10 +1,5 @@
 # Development and Design notes for Contributors
 
-## To run interface:
-```
-npm install
-npm start
-```
 ## To run RNode stand alone on localhost:
 for bootstrapping, checkpointing and updating a liquid democracy RChain RNode localhost instance for linux and Window10 WSL2
 
@@ -12,7 +7,7 @@ for bootstrapping, checkpointing and updating a liquid democracy RChain RNode lo
 
 This localhost environment aims to be a complete usable development system, (once testnet works again). While there are pieces elsewhere and this may not be the final resting place, this is not a docker solution and is specific to the capability directory structure of communities/working groups and their communications and their governance. A future aim would be to make this play well with jakefile and docker shard solutions.
 
-Watch video of how to add an rgov action here https://youtu.be/9TIPXXSXwnE
+Watch video of how to run an rnode localhost and add rgov actions here https://youtu.be/9TIPXXSXwnE bootstraping updates https://youtu.be/fuXFDRXJsVM
 
 ## To deploy the contracts: (may not be up to date)
 
