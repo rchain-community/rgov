@@ -41,7 +41,8 @@ in {
       } |
       contract read(@key, return) = {
         for ( map <<- mapCh ) {
-          if (*map == Nil) {
+          mapCh!(*map) |
+          if (*map == {}) {
             if(*ParentReadCap != Nil) {
               ParentReadCap!(key, *return)
             } else {

@@ -1,0 +1,2 @@
+#!/bin/bash
+rnode --grpc-port 40402 propose 2>&1 | tail -n 0 -f run-rnode.log | sed '/Blocks ready to be added/q' | grep -v "node-runner"

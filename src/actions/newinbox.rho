@@ -1,26 +1,29 @@
 new
   stdout(`rho:io:stdout`),
+  lookup(`rho:registry:lookup`),
+  insertArbitrary(`rho:registry:insertArbitrary`),
   deployId(`rho:rchain:deployId`),
   deployerId(`rho:rchain:deployerId`),
-  insertArbitrary(`rho:registry:insertArbitrary`),
-  ch,
-  caps,
+  masterLookupCh,
+  lookupCh_DirInbox,
+  inboxCaps,
   ret
 in {
-  for(@{"read": *read, ..._} <<- @[*deployerId, "MasterContractAdmin"]) {
-    stdout!(["read", *read]) |
-    read!("Inbox", *ch)
-  } |
-  for (C <-ch) {
-    stdout!(["Inbox", *C]) |
-    C!(*caps)|
-    for (receive, send, peek <- caps) {
-      stdout!(["caps", *receive, *send, *peek])|
-      insertArbitrary!(*send, *ret)|
-      for (@uri <- ret) {
-        stdout!(["#define", "$inbox", uri]) |
-        deployId!(["#define", "$inbox", uri]) |
-        @[*deployerId, "inbox"]!({"inbox": *send, "receive": *receive, "peek": *peek, "URI": uri})
+  lookup!(`rho:id:7dtbfr5ij8ra385uwxeu3qnyz11zcu5s8o55q1uj9m58pmp6jzyyxs`, *masterLookupCh) |
+  for (lookup_Master <- masterLookupCh) {
+    stdout!({"master-dictionary dictionary unforgeable": *lookup_Master}) |
+    lookup_Master!("Inbox", *lookupCh_DirInbox) |
+    for (master_Inbox <- lookupCh_DirInbox) {
+      stdout!({"master-dictionary Inbox unforgeable": *master_Inbox}) |
+      master_Inbox!(*inboxCaps)|
+      for (read, write, peek  <- inboxCaps) {
+        stdout!(["read", *read, "write", *write, "peek", *peek]) |
+        insertArbitrary!(*write, *ret)|
+        for (@uri <- ret) {
+          stdout!(["#define", "$inbox", uri]) |
+          deployId!(["#define", "$inbox", uri]) |
+          @[*deployerId, "inbox"]!({"receive": *read, "inbox": *write, "peek": *peek, "URI": uri})
+        }
       }
     }
   }

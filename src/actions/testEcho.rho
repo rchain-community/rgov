@@ -1,0 +1,53 @@
+match [
+    `rho:id:jfq5pxddtdye4bq76sxa6cxes7ftcdrpmnptkbukd8sdgbek81ozja`
+    ,`rho:id:mxuj9cjc9oqeqtdc13jihsrntoasbrzb7ai1w4pwcqi45niuwc9max`
+] {[
+    URI_Echo
+    ,URI_Master
+] => { new
+   stdout(`rho:io:stdout`)
+   ,lookup(`rho:registry:lookup`)
+   ,ret_raw
+   ,ret_more
+   ,lookup_ret_raw
+   ,lookup_ret_more
+   ,master_ret_raw
+   ,master_ret_more
+   ,lookupCaps
+   ,uriCh
+   ,lookupCh
+   ,lookupCh_DirEcho
+   ,master_Echo
+   ,masterLookupCh
+   ,master_test_caps
+   , master_echo_raw, master_echo_more
+
+in
+{  lookup!(URI_Echo, *lookupCh)
+|  for (lookup_Echo <- lookupCh)
+   {  stdout!({"uri-lookup Echo unforgeable": *lookup_Echo})
+   |  lookup_Echo!("uri-lookup", *lookupCaps)
+   |  for (lookup_rawCap, lookup_moreCap <- lookupCaps)
+      {  stdout!({"uri-lookup Echo raw-cap": *lookup_rawCap, "uri-lookup Echo more-cap": *lookup_moreCap})
+      |  lookup_moreCap!(*lookup_ret_more)
+      |  lookup_rawCap!(*lookup_ret_raw)
+      |  stdout!({"uri-lookup Echo raw-return": *lookup_ret_raw, "uri-lookup Echo more-return": *lookup_ret_more})
+      }
+   }
+|  lookup!(URI_Master, *masterLookupCh)
+|  for (lookup_Master <- masterLookupCh)
+   {  stdout!({"master-dictionary dictionary unforgeable": *lookup_Master})
+   |  lookup_Master!("Echo", *lookupCh_DirEcho)
+   |  for (master_Echo <- lookupCh_DirEcho)
+      {  stdout!({"master-dictionary Echo unforgeable": *master_Echo})
+      |  master_Echo!("master-dictionary", *master_test_caps)
+      |  for (master_echo_raw, master_echo_more <- master_test_caps)
+         {  stdout!({"master-dictionary Echo raw-cap": *master_echo_raw, "master-dictionary Echo more-cap": *master_echo_more})
+         |  master_echo_raw!(*master_ret_raw)
+         |  master_echo_more!(*master_ret_more)
+         |  stdout!({"master-dictionary Echo raw-return": *master_ret_raw, "master-dictionary Echo more-return": *master_ret_more})
+         }
+      }
+   }
+}
+}}

@@ -3,7 +3,7 @@
 ALREADY=`ps a |grep -v grep |grep rnode|sed 's/[ \t][ \t]*/ /g'|cut -d' ' -f 2`
 
 [ -n "$ALREADY" ] && echo "
-Cannot bootstrap: rnode is currently running
+$0: rnode is currently running
 Use 'kill $ALREADY' to fix.
 " && while read -p "Execute 'kill $ALREADY' [y]? " response;do
 	if [ "$response" == "y" ] || [ -z "$response" ];then
@@ -12,34 +12,33 @@ Use 'kill $ALREADY' to fix.
       set +x
 		break
 	else
-		echo "Aborting bootstrap"
+		echo "Aborting $0"
 		exit 1
 	fi
 done
 
 [ -d ~/.rnode ] && echo "
-Cannot bootstrap: $HOME/.rnode exists
-Use 'rm -rf $HOME/.rnode' to fix.
-" && while read -p "Execute 'rm -rf $HOME/.rnode' [y]? " response;do
+$0: $HOME/.rnode exists. Use 'rm -rf $HOME/.rnode' to fix.
+" && while read -p "$0: Execute 'rm -rf $HOME/.rnode' [y]? " response;do
 	if [ "$response" == "y" ] || [ -z "$response" ];then
       set -x
 		rm -rf $HOME/.rnode
       set +x
 		break
 	else
-		echo "Aborting bootstrap"
+		echo "$0: Aborting $0"
 		exit 1
 	fi
 done
 
-[ -n "`./list-checkpoints.sh |grep 'bootstrap'`>/dev/null" ] && echo "
-bootstrap checkpoint exists.
-" && while read -p "Use checkpoint instead of re-running bootstrap [y]? " response;do
+[ -n "`./list-checkpoints.sh |grep '$0'`>/dev/null" ] && echo "
+$0 checkpoint exists.
+" && while read -p "Use checkpoint instead of re-running $0 [y]? " response;do
 	if [ "$response" == "y" ] || [ -z "$response" ];then
-		./restore-checkpoint.sh bootstrap
+		./restore-checkpoint.sh $0
 		exit 0
 	else
-		echo "Rerunning bootstrap"
+		echo "Rerunning $0"
 		break
 	fi
 done
@@ -48,7 +47,9 @@ set -x
 
 cd `dirname $0`
 
-private_key=`cat bootstrap.private-key`
+LOGFILE="$0.log"
+
+private_key=`cat $0.private-key`
 
 mkdir -p ~/.rnode || exit 3
 tar cf - genesis|(cd ~/.rnode; tar xvf -) || exit 3
@@ -57,10 +58,15 @@ rnode run -s \
 	--validator-private-key $private_key \
 	--dev-mode \
 	-XX:MaxDirectMemorySize=100m -XX:MaxRAMPercentage=25 \
-	> bootstrap.log 2>&1 &
+	> $LOGFILE 2>&1 &
 
 # The previous command doesn't produce output -- but this one makes up for that
-tail -f bootstrap.log|sed -e '/Making a transition to Running state./q'
+tail -f $LOGFILE|sed -e '/Making a transition to Running state./q'
 
-echo "Creating bootstrap checkpoint"
-./create-checkpoint.sh bootstrap
+PID=$!
+
+echo "$0: Stopping $0 rnode process"
+kill $PID && sleep 3
+
+echo "$0: Creating $0 checkpoint"
+./create-checkpoint.sh $0

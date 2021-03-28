@@ -136,19 +136,29 @@ cd ..
 ## checkpointing
 Restore a checkpoint previously created with bootstrap/create-checkpoint.sh
 ```
-bootstrap/restore-checkpoint.sh
+cd bootstrap && restore-checkpoint.sh
 ```
 
 After initial bootstrap.sh and deploy-all.sh, there will be two checkpoints available: 'bootstrap' and 'liquid-democracy-base'
 
 List checkpoints available for restore
 ```
-bootstrap/list-checkpoints.sh
+cd bootstrap && list-checkpoints.sh
 ```
 
 Save a copy of the localhost rnode that can be restored at a later date
 ```
-bootstrap/create-checkpoint.sh
+cd bootstrap  && create-checkpoint.sh
+```
+
+## Command line deployment of rholang
+Deploy the rholang file "test.rholang"
+```
+cd bootstrap && ./deploy ../test.rholang
+```
+Propose the previously deploy rholang file "test.rholang"
+```
+bootstrap/propose
 ```
 
 ## Misc: dependencies
