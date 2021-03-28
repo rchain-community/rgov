@@ -102,11 +102,11 @@ contract Inbox(capabilities) = {
     }
   }
 } |
-new lookupCh, lookupCaps, capabilities, ack, ack1, ack2, ack3, ack4, ack5, message, uriCh, ret, insertArbitrary(`rho:registry:insertArbitrary`) in {
+new creationCh, lookupCh, lookupCaps, capabilities, ack, ack1, ack2, ack3, ack4, ack5, message, uriCh, ret, insertArbitrary(`rho:registry:insertArbitrary`) in {
   stdout!("hello world") |
   stdout!(["Unforgeable", bundle+{*Inbox}]) |
-  insertArbitrary!(bundle+{*Inbox}, *uriCh)|
-  for (@uri <- uriCh) {
+  insertArbitrary!(bundle+{*Inbox}, *creationCh)|
+  for (@uri <- creationCh) {
     stdout!(["#define $Inbox", uri]) |
     deployId!(uri) |
     lookup!(uri, *lookupCh) |
