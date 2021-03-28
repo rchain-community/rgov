@@ -81,6 +81,7 @@ for i in \
 ../log.rho \
 ../memberIdGovRev.rho \
 ../RevIssuer.rho \
+../echo.rho \
 ./voter-insertion.rho \
 ;do
    echo $i | deployFiles
@@ -132,7 +133,7 @@ echo "$0: Generating directory creation rholang"
 
 echo "generated.create-master-contract-directory.rho"| deployFiles | tee -a create-master-directory.log
 echo "$0: Proposing master contract directory creation" |tee -a create-master-directory.log
-./propose|tee -a $LOGFILE
+rnode --grpc-port 40402 propose 2>&1 | tee -a deployment.log
 
 echo "$0: Stopping deployment rnode"
 kill $PID

@@ -1,0 +1,50 @@
+match [
+    `rho:id:p45853yeu3stftdoi67zirfa7r1op57j8juigzc88tsjsug94g9e9c`
+    ,`rho:id:1c86eykuqqx4mpxddwiafqrbk953fx6kj7ni7k51pfaahe3a41zisp`
+] {[
+    URI_Echo
+    ,URI_Master
+] => { new
+   stdout(`rho:io:stdout`)
+   ,lookup(`rho:registry:lookup`)
+   ,ret_raw
+   ,ret_more
+   ,lookup_ret_raw
+   ,lookup_ret_more
+   ,lookupCaps
+   ,uriCh
+   ,lookupCh
+   , lookupCh_DirEcho
+   ,master_Echo
+   ,masterLookupCh
+   ,master_test_caps
+   , master_echo_raw, master_echo_more
+
+in
+{  lookup!(URI_Echo, *lookupCh)
+|  for (lookup_Echo <- lookupCh)
+   {  stdout!({"lookup unforgeable": *lookup_Echo})
+   |  lookup_Echo!("lookup", *lookupCaps)
+   |  for (lookup_rawCap, lookup_moreCap <- lookupCaps)
+      {  lookup_rawCap!(*lookup_ret_raw)
+      |  stdout!({"lookup raw cap": *lookup_rawCap, "lookup raw return": *lookup_ret_raw})
+      |  lookup_moreCap!(*lookup_ret_more)
+      |  stdout!({"lookup more cap": *lookup_moreCap, "lookup more return": *lookup_ret_more})
+      }
+   }
+|  lookup!(URI_Master, *masterLookupCh)
+|  for (lookup_Master <- masterLookupCh)
+   {  stdout!({"master unforgeable": *lookup_Master})
+   |  lookup_Master!("Echo", *lookupCh_DirEcho)
+   |  for (master_Echo <- lookupCh_DirEcho)
+      {  stdout!({"master Echo": *master_Echo})
+      |  master_Echo!("master test", *master_test_caps)
+      |  for (master_echo_raw, master_echo_more <- master_test_caps)
+         {  stdout!({"master_echo_raw": *master_echo_raw, "master_echo_more": *master_echo_more})
+         |  master_echo_raw!(*stdout)
+         |  master_echo_more!(*stdout)
+         }
+      }
+   }
+}
+}}
