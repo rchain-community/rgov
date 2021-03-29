@@ -6,7 +6,7 @@ new
    return(`rho:rchain:deployId`),
    deployerId(`rho:rchain:deployerId`)
 in {
-   for (@{"read": *MCA, ..._} <<- @[*deployerId, "MasterContractAdmin"]) {
+   for (@{"read": *MCA, ..._} <<- @[*deployerId, "Directory"]) {
       return!(["MCA", *MCA]) |
       MCA!("Issue", *lookupCh)
    } |

@@ -6,10 +6,12 @@ new
   deployerId(`rho:rchain:deployerId`),
   masterLookupCh,
   lookupCh_DirInbox,
+  lookupCh_DirDirectory,
   inboxCaps,
+  directoryCaps,
   ret
 in {
-  lookup!(`rho:id:hxbkg7decdhdr6xrcdzsfpys7aawswwy7b3u3y3kyx4rb63i31jg13`, *masterLookupCh) |
+  lookup!(`rho:id:cy5ipa7n5hxzam7cm6n5p58ppskoajhcxee6wmhehm6f9hta71muew`, *masterLookupCh) |
   for (lookup_Master <- masterLookupCh) {
     stdout!({"master-dictionary dictionary unforgeable": *lookup_Master}) |
     lookup_Master!("Inbox", *lookupCh_DirInbox) |
@@ -25,7 +27,16 @@ in {
         for (@uri <- ret) {
           stdout!(["#define", "$inbox", uri]) |
           deployId!(["#define", "$inbox", uri]) |
-          @[*deployerId, "inbox"]!({"receive": *read, "inbox": *write, "peek": *peek, "URI": uri})
+          @[*deployerId, "inbox"]!({"receive": *read, "inbox": *write, "peek": *peek, "URI": uri}) |
+          lookup_Master!("Directory", *lookupCh_DirDirectory) |
+          for ( Directory <- lookupCh_DirDirectory ) {
+            stdout!("Directory",*Directory) |
+            Directory!(*lookup_Master,*directoryCaps) |
+            for (dircaps <- directoryCaps ) {
+              @[*deployerId, "Directory"]!(*dircaps) |
+              stdout!("added personal directory")
+            }
+          }
         }
       }
     }
