@@ -122,9 +122,9 @@ To create an rchain node locally, deploy rchain dependencies, and deploy liquid-
 
 ```
 cd bootstrap
-./bootstrap.sh
-./deploy-all.sh
-./run-rnode.sh
+./bootstrap
+./deploy-all
+./run-rnode
 cd ..
 ```
 
@@ -134,7 +134,7 @@ Restore a checkpoint previously created with bootstrap/create-checkpoint.sh
 cd bootstrap && restore-checkpoint.sh
 ```
 
-After initial bootstrap.sh and deploy-all.sh, there will be two checkpoints available: 'bootstrap' and 'liquid-democracy-base'
+After initial bootstrap and deploy-all, there will be two checkpoints available: 'bootstrap' and 'rgov'
 
 List checkpoints available for restore
 ```
@@ -147,11 +147,11 @@ cd bootstrap  && create-checkpoint.sh
 ```
 
 ## Command line deployment of rholang
-Deploy the rholang file "test.rholang"
+Deploy the rholang file "test.rho"
 ```
-cd bootstrap && ./deploy ../test.rholang
+cd bootstrap && ./deploy ../test.rho
 ```
-Propose the previously deploy rholang file "test.rholang"
+Propose the previously deployed rholang file "test.rho"
 ```
 bootstrap/propose
 ```
