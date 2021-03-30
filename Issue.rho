@@ -53,14 +53,13 @@ in {
               }
             } |
             contract voter(@"choice", @priorDelegates, return, log) = {
-              log!(name) |
+              log!(["name", name]) |
               for ( @vote <<- voteCh ) {
                 log!(["vote",vote])|
                 if ( vote == Nil ) {
                   for ( @delegate <- delegateCh; @voters <- voterCh ) {
                     delegateCh!(delegate) |
                     voterCh!(voters) |
-                    //trace!(voters) |
                     if (delegate == Nil or priorDelegates.contains(delegate) or voters.get(delegate) == Nil ) {
                       return!(Nil)
                     } else {
@@ -89,7 +88,7 @@ in {
           new countCh, loop in { countCh!({}) |
           log!("tally") |
           for ( @voters <<- voterCh ) {
-            log!(voters) |
+            log!(["voters", voters]) |
             loop!(voters, *return) |
 
             contract loop(@rest, ack) = {
@@ -99,16 +98,17 @@ in {
                   {} => {
                     log!("end") |
                     for ( counts <- countCh ) {
-                      log!(*counts)  |
+                      log!(["counts", *counts])  |
                       return!(*counts)
                     }
                   }
                   {name: *voter, ...tail} => {
-                    log!(name) |
+                    log!(["voter", name]) |
                     voter!("choice", Set(), *ret, *log) |
                     for (@vote <- ret; @counts <- countCh ) {
                       trace!([name,vote]) |
-                      log!(counts) |
+                      log!([name, vote]) |
+                      log!(["counts", counts]) |
                       countCh!(counts.set(vote,counts.getOrElse(vote,0) + 1 ) ) |
                       loop!(tail, *ack)
                     }

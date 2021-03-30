@@ -72,7 +72,7 @@ export const actions = {
   },
   newinbox: {
     fields: {
-      masterDirectoryURI: { value: 'rho:id:1jn9914tteesot7fi797fd451mmattxxzwmnxmaa5excuh57p4z84s', type: 'uri' },
+      // masterDirectoryURI: { value: 'rho:id:1jn9914tteesot7fi797fd451mmattxxzwmnxmaa5excuh57p4z84s', type: 'uri' },
     },
     filename: 'actions/newinbox.rho',
   },

@@ -34,7 +34,7 @@ done
 
 set -x
 
-private_key=`cat bootstrap.private-key`
+private_key=`cat pk.bootstrap`
 
 DEPLOY="./deploy"
 LOGFILE="$0.log"
@@ -141,7 +141,7 @@ echo "$0: listing master"
 ./deploy listMasterURI.rho
 rnode --grpc-port 40402 propose 2>&1 | tee -a deployment.log
 echo "Waiting for rnode to finish (60s)" && sleep 60 && echo "$0: Stopping deployment rnode"
-kill $PID
+kill $PID && sleep 2
 
 echo "$0: Creating liquid-democracy-base checkpoint"
 ./create-checkpoint.sh rgov

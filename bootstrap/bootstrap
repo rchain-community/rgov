@@ -49,7 +49,7 @@ cd `dirname $0`
 
 LOGFILE="$0.log"
 
-private_key=`cat $0.private-key`
+private_key=`cat pk.bootstrap`
 
 mkdir -p ~/.rnode || exit 3
 tar cf - genesis|(cd ~/.rnode; tar xvf -) || exit 3

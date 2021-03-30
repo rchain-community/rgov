@@ -1,6 +1,6 @@
 #!/bin/bash
 
-private_key=`cat bootstrap.private-key`
+private_key=`cat pk.bootstrap`
 
 cd `dirname $0`
 
