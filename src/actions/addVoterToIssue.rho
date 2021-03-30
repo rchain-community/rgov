@@ -12,7 +12,7 @@ in {
       peek!("issue", issue, *ch) |
       for (@[{ "admin": *admin, ..._ }] <- ch) {
          stdout!(["admin", *admin]) |
-         admin!("giveRightToVote", issue, *ch1, *return) |
+         admin!("giveRightToVote", toInboxURI, *ch1, *return) |
          for (voterCap <- ch1) {
             stdout!(["voterCap", *voterCap]) |
             inboxLookup!(toInboxURI, *inboxCh) |
