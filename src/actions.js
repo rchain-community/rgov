@@ -117,6 +117,17 @@ export const actions = {
     },
     filename: 'actions/sendMail.rho',
   },
+  CallForHelp: {
+    fields: {
+      lockerTag: { value: 'inbox', type: 'string' },
+      toInboxURI: { value: '', type: 'uri' },
+      from: { value: '', type: 'string' },
+      tips: { value: '', type: 'string' },
+      revletts: { value: "100000000", type: 'number' },
+      body: { value: 'hello from ravi for hackathon 2020', type: 'string' },
+    },
+    filename: 'actions/CallForHelp.rho',
+  },
   peekInbox: {
     fields: {
       lockerTag: { value: 'inbox', type: 'string' },
