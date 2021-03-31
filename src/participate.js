@@ -436,6 +436,7 @@ ${state.term}</textarea
  *   term: string,
  *   results: RhoExpr[],
  *   problem?: string,
+ *   action: any
  * }} state
  * @param {HTMLBuilder & FormAccess<any> & EthSignAccess & ScheduleAccess} io
  *
