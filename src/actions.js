@@ -1,6 +1,6 @@
 // @ts-check
-const ReadcapURI = require('../ReadcapURI.json') // gives error but works correctly
-console.log(ReadcapURI)
+import uris from '../ReadcapURI.json' // gives error but works correctly
+console.log(uris.ReadcapURI)
 // TODO: rholang goes in .rho files
 
 /**
@@ -73,7 +73,7 @@ export const actions = {
   },
   newinbox: {
     fields: {
-      ReadcapURI: { value: ReadcapURI.ReadcapURI, type: 'uri' },
+      ReadcapURI: { value: uris.ReadcapURI, type: 'uri' },
     },
     filename: 'actions/newinbox.rho',
   },
