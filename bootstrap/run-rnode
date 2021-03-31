@@ -1,4 +1,5 @@
 #!/bin/bash
+./stop-rnode
 
 private_key=`cat pk.bootstrap`
 

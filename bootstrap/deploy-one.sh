@@ -2,7 +2,7 @@
 
 echo "$0 is a work in progress. Exiting." && exit 1
 
-ALREADY=`ps a |grep rnode|grep -v grep |sed 's/[ \t][ \t]*/ /g'|cut -d' ' -f 1`
+ALREADY=`ps -fu |grep "java .*rnode"|grep -v grep |sed 's/[ \t][ \t]*/ /g'|cut -d' ' -f 1`
 [ -n "$ALREADY" ] && echo "
 $0: rnode is currently running
 Use 'kill $ALREADY' to fix.
