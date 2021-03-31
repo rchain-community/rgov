@@ -1,5 +1,5 @@
 // @ts-check
-import uris from '../ReadcapURI.json' // gives error but works correctly
+import uris from '../ReadcapURI.json' // gives error but works correctly. https://mariusschulz.com/blog/importing-json-modules-in-typescript
 console.log(uris.ReadcapURI)
 // TODO: rholang goes in .rho files
 
