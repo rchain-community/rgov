@@ -1,6 +1,6 @@
 #!/bin/bash
 
-ALREADY=`ps a |grep rnode|grep -v grep |sed 's/[ \t][ \t]*/ /g'|cut -d' ' -f 1`
+ALREADY=`ps -fu |grep " java .*rnode"|grep -v grep |sed 's/[ \t][ \t]*/ /g'|cut -d' ' -f 1`
 [ -n "$ALREADY" ] && echo "
 $0: rnode is currently running
 Use 'kill $ALREADY' to fix.
@@ -145,5 +145,5 @@ kill $PID && sleep 2
 
 echo "$0: Creating liquid-democracy-base checkpoint"
 ./create-checkpoint.sh rgov
-
+grep '{"ReadcapURI" : `' deploy-all.log|tail -1|sed 's-`-"-g' > ../ReadcapURI.json
 stty echo

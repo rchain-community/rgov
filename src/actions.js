@@ -1,5 +1,6 @@
 // @ts-check
-
+const ReadcapURI = require('../ReadcapURI.json') // gives error but works correctly
+console.log(ReadcapURI)
 // TODO: rholang goes in .rho files
 
 /**
@@ -72,7 +73,7 @@ export const actions = {
   },
   newinbox: {
     fields: {
-      // masterDirectoryURI: { value: 'rho:id:1jn9914tteesot7fi797fd451mmattxxzwmnxmaa5excuh57p4z84s', type: 'uri' },
+      ReadcapURI: { value: ReadcapURI.ReadcapURI, type: 'uri' },
     },
     filename: 'actions/newinbox.rho',
   },
