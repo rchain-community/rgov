@@ -1,1 +1,1 @@
-new world(`rho:rchain:deployId`) in { world!("Hello!") }
+new world in { world!("Hello!") } // Hit Explore. Result will be from first new name

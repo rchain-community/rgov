@@ -34,7 +34,7 @@ in {
               voterCh!(voters.union({name: *voter}))
             } |
             return!(bundle+{*voter}) |
-            contract voter(@"vote", @proposal, ack, log) = {
+            contract voter(@"vote", @proposal, return, log) = {
               //log!({ "for": proposal}) |
               //log!(proposalNames.contains(proposal)) |
               if(proposalNames.contains(proposal) == true)
@@ -43,13 +43,14 @@ in {
                 for ( @oldvote <- voteCh ) {
                   log!(["oldvote was",oldvote]) |
                   log!(["newvote is",proposal]) |
-                  ack!(Nil) |
+                  return!(["oldvote was",oldvote]) |
+                  return!(["newvote is",proposal]) |
                   voteCh!(proposal)
                 }
               } else
               {
                 log!({"unknown proposal": proposal}) |
-                ack!(Nil)
+                return!({"unknown proposal": proposal})
               }
             } |
             contract voter(@"choice", @priorDelegates, return, log) = {
@@ -99,7 +100,8 @@ in {
                     log!("end") |
                     for ( counts <- countCh ) {
                       log!(["counts", *counts])  |
-                      return!(*counts)
+                      return!(["counts",*counts]) |
+                      return!("done") //prior return was giving error: https://github.com/rchain-community/rchain-api/issues/86
                     }
                   }
                   {name: *voter, ...tail} => {

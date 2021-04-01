@@ -6,6 +6,6 @@ new
 in {
    lookup!(toInboxURI, *inboxCh) |
    for (toinbox <- inboxCh) {
-         toinbox!({"from": from, "to": to, "sub": sub, "body": body}, *deployId)
+         toinbox!(["email",from,{"to": to, "sub": sub, "body": body}], *deployId)
    }
 }

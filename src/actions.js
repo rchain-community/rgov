@@ -9,6 +9,39 @@ console.log(uris.ReadcapURI)
  * @type {Record<string, ActionSpec>}
  */
 export const actions = {
+  helloWorld: {
+    fields: {},
+    filename: 'actions/helloWorld.rho',
+  },
+  checkBalance: {
+    fields: {
+      myGovRevAddr: { type: 'walletRevAddr' },
+    },
+    filename: 'actions/checkBalance.rho',
+  },
+  newinbox: {
+    fields: {
+      ReadcapURI: { value: uris.ReadcapURI, type: 'uri' },
+    },
+    filename: 'actions/newinbox.rho',
+  },
+  peekInbox: {
+    fields: {
+      lockerTag: { value: 'inbox', type: 'string' },
+    },
+    filename: 'actions/peekInbox.rho',
+  },
+  sendMail: {
+    fields: {
+      lockerTag: { value: 'inbox', type: 'string' },
+      toInboxURI: { value: '', type: 'uri' },
+      from: { value: '', type: 'string' },
+      to: { value: '', type: 'string' },
+      sub: { value: '', type: 'string' },
+      body: { value: '', type: 'string' },
+    },
+    filename: 'actions/sendMail.rho',
+  },
   lookupURI: {
     fields: { URI: { value: '', type: 'uri'} },
     filename: 'actions/lookupURI.rho',
@@ -33,56 +66,13 @@ export const actions = {
     },
     filename: 'actions/newIssue.rho',
   },
-  newMemberDirectory: {
-    fields: {},
-    filename: 'actions/newMemberDirectory.rho',
-  },
-  claimWithInbox: {
-    fields: {
-      myGovRevAddr: { type: 'walletRevAddr' }
-    },
-    filename: 'actions/claimWithInbox.rho',
-  },
-  helloWorld: {
-    fields: {},
-    filename: 'actions/helloWorld.rho',
-  },
-  raviWorld: {
-    fields:{},
-    filename: 'actions/raviWorld.rho',
-  },
-  getRoll: {
-    fields: {},
-    filename: 'actions/getRoll.rho',
-  },
-  peekKudos: {
-    fields: {},
-    filename: 'actions/peekKudos.rho',
-  },
-  awardKudos: {
-    fields: {
-      them: { type: 'string', value: '' }
-    },
-    filename: 'actions/awardKudos.rho',
-  },
-  checkBalance: {
-    fields: {
-      myGovRevAddr: { type: 'walletRevAddr' },
-    },
-    filename: 'actions/checkBalance.rho',
-  },
-  newinbox: {
-    fields: {
-      ReadcapURI: { value: uris.ReadcapURI, type: 'uri' },
-    },
-    filename: 'actions/newinbox.rho',
-  },
-  tallyVotes: {
+  addVoterToIssue: {
     fields: {
       lockerTag: { value: 'inbox', type: 'string' },
-      issue: { value: '', type: 'string' }
+      toInboxURI: { value: '', type: 'uri' },
+      issue: { value: '', type: 'string'}
     },
-    filename: 'actions/tallyVotes.rho',
+    filename: 'actions/addVoterToIssue.rho',
   },
   castVote: {
     fields: {
@@ -99,47 +89,26 @@ export const actions = {
     },
     filename: 'actions/choiceVote.rho',
   },
-  addVoterToIssue: {
+  tallyVotes: {
     fields: {
       lockerTag: { value: 'inbox', type: 'string' },
-      toInboxURI: { value: '', type: 'uri' },
-      issue: { value: '', type: 'string'}
+      issue: { value: '', type: 'string' }
     },
-    filename: 'actions/addVoterToIssue.rho',
+    filename: 'actions/tallyVotes.rho',
   },
-  sendMail: {
-    fields: {
-      lockerTag: { value: 'inbox', type: 'string' },
-      toInboxURI: { value: '', type: 'uri' },
-      from: { value: '', type: 'string' },
-      to: { value: '', type: 'string' },
-      sub: { value: 'hello', type: 'string' },
-      body: { value: 'hello from ravi for hackathon 2020', type: 'string' },
-    },
-    filename: 'actions/sendMail.rho',
+  getRoll: {
+    fields: {},
+    filename: 'actions/getRoll.rho',
   },
-  CallForHelp: {
-    fields: {
-      lockerTag: { value: 'inbox', type: 'string' },
-      toInboxURI: { value: '', type: 'uri' },
-      from: { value: '', type: 'string' },
-      tips: { value: '', type: 'string' },
-      revletts: { value: "100000000", type: 'number' },
-      body: { value: 'hello from ravi for hackathon 2020', type: 'string' },
-    },
-    filename: 'actions/CallForHelp.rho',
+  peekKudos: {
+    fields: {},
+    filename: 'actions/peekKudos.rho',
   },
-  peekInbox: {
+  awardKudos: {
     fields: {
-      lockerTag: { value: 'inbox', type: 'string' },
+      them: { type: 'string', value: '' }
     },
-    filename: 'actions/peekInbox.rho',
-  },
-  checkRegistration: {
-    fields: {
-      myGovRevAddr: { type: 'walletRevAddr' }
-    },
-    filename: 'actions/checkRegistration.rho',
+    filename: 'actions/awardKudos.rho',
   },
   newCommunity: {
     fields: {
@@ -156,6 +125,33 @@ export const actions = {
       lockerTag: { value: 'inbox', type: 'string' },
     },
     filename: 'actions/addMember.rho',
+  },
+  newMemberDirectory: {
+    fields: {},
+    filename: 'actions/newMemberDirectory.rho',
+  },
+  claimWithInbox: {
+    fields: {
+      myGovRevAddr: { type: 'walletRevAddr' }
+    },
+    filename: 'actions/claimWithInbox.rho',
+  },
+  CallForHelp: {
+    fields: {
+      lockerTag: { value: 'inbox', type: 'string' },
+      toInboxURI: { value: '', type: 'uri' },
+      from: { value: '', type: 'string' },
+      tips: { value: '', type: 'string' },
+      revletts: { value: "100000000", type: 'number' },
+      body: { value: 'hello from ravi for hackathon 2020', type: 'string' },
+    },
+    filename: 'actions/CallForHelp.rho',
+  },
+  checkRegistration: {
+    fields: {
+      myGovRevAddr: { type: 'walletRevAddr' }
+    },
+    filename: 'actions/checkRegistration.rho',
   },
   makeMint: {
     fields: {
