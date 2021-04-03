@@ -15,7 +15,7 @@ import { actions } from './actions.js';
 const { freeze, keys, entries } = Object;
 
 // TODO: UI for phloLimit
-const maxFee = { phloPrice: 1, phloLimit: 0.05 * 100000000 };
+const maxFee = { phloPrice: 1, phloLimit: 0.5 * 100000000 };
 
 // TODO: ISSUE: are networks really const? i.e. design-time data?
 const NETWORKS = {
@@ -29,6 +29,12 @@ const NETWORKS = {
     // TODO: rotate validators
     validatorBase: 'https://node1.testnet.rchain-dev.tk',
     adminBase: '',
+  },
+  rhobot: {
+    observerBase: 'http://rhobot.net:40403',
+    // TODO: rotate validators
+    validatorBase: 'http://rhobot.net:40403',
+    adminBase: 'http://rhobot.net:40405',
   },
   mainnet: {
     observerBase: 'https://observer.services.mainnet.rchain.coop',
@@ -169,7 +175,7 @@ function buildUI({
 }) {
   const rnode = RNode(fetch);
   let action = 'helloWorld';
-  let network = 'localhost';
+  let network = 'rhobot';
   /** @type {{ observer: Observer, validator: Validator, admin: import('rchain-api/src/rnode').RNodeAdmin }} shard */
   let shard;
   let term = ''; //@@DEBUG
@@ -177,7 +183,7 @@ function buildUI({
   let fieldValues = {};
   /** @type {RhoExpr[]} */
   let results = [];
-  const bindings = { mainnet: {}, localhost: { $roll: ROLL}, testnet: { } };
+  const bindings = { mainnet: {}, localhost: { $roll: ROLL}, testnet: { }, rhobot: { } };
 
   const state = {
     get shard() {
@@ -278,7 +284,7 @@ function buildUI({
     problem: undefined,
   };
   state.action = action; // compute initial term
-  state.network = 'localhost'; // initialize shard
+  state.network = 'rhobot'; // initialize shard
 
   mount('#actionControl', actionControl(state, { html, getEthProvider }));
   mount('#netControl', networkControl(state, { html }));
@@ -579,6 +585,7 @@ function networkControl(state, { html }) {
           <option name="network" value="mainnet">mainnet</option>
           <option name="network" value="testnet">testnet</option>
           <option name="network" value="localhost" selected>localhost</option>
+          <option name="network" value="rhobot" selected>rhobot</option>
         </select>
       </div>`;
     },

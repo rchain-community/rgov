@@ -7,7 +7,7 @@ for t in $@;do
    rnode deploy \
    --valid-after-block-number 0 \
    --phlo-price 1 \
-   --phlo-limit 10000000 \
+   --phlo-limit 1000000000 \
    --private-key $private_key \
    $t
 done 2>&1
