@@ -147,6 +147,10 @@ export const actions = {
     },
     filename: 'actions/CallForHelp.rho',
   },
+  wannainit : {
+    fields: {},
+    filename: 'actions/wannainit.rho',
+  },
   checkRegistration: {
     fields: {
       myGovRevAddr: { type: 'walletRevAddr' }

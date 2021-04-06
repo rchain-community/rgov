@@ -1,13 +1,13 @@
 new
-   stdout(`rho:io:stdout`),
-   deployId(`rho:rchain:deployId`),
-   deployerId(`rho:rchain:deployerId`),
-   lookup(`rho:registry:lookup`),
-   inboxCh
+   stdout(`rho:io:stdout`), deployId(`rho:rchain:deployId`), deployerId(`rho:rchain:deployerId`),
+   lookup(`rho:registry:lookup`), inboxCh, ret
 in {
-   lookup!(toInboxURI, *inboxCh) |
-   for (toinbox <- inboxCh) {
-      stdout!(["toinbox",*toinbox]) |
-      toinbox!(["wanna","CallForHelp", {"from": from, "tips": tips, "bounty": revletts, "body": body}], *deployId)
+   for ( dict <<- @[*deployerId, "dictionary"]) {
+      dict!("read","Wanna",ret) |
+      for (wanna <- ret) {
+        stdout!(["found wanna",*wanna]) |
+        wanna!(["addCallForHelp", {"from": from, "tips": tips, "bounty": revletts, "body": body}], *deployId)  
+      }
+   }
    }
 }
