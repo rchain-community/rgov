@@ -1,0 +1,12 @@
+#!/bin/bash
+
+for t in $@;do
+TMP=/tmp/`basename $t`
+cat $t | sed 's/(`rho:rchain:deployId`)//g
+   s/(`rho:rchain:deployerId`)//g
+   s,//.*, ,
+   ' > $TMP
+
+curl -d @$TMP http://localhost:40403/api/explore-deploy 2>&1
+done
+echo

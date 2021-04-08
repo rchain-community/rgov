@@ -19,6 +19,7 @@ in {
     contract Issue(@proposalNames , return, log) = {
       new admin, tally, voterCh in {
         log!("creating ballot") |
+        log!("Test of redeploy") |
         return!(bundle+{*admin}, bundle+{*tally}) |
         voterCh!({}) |
 

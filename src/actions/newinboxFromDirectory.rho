@@ -1,0 +1,38 @@
+match [
+    `rho:id:ht8rdsnips7s6mweniodcg3azfthn7axzi1n177hrjz799pebu6gpx`
+    ,`rho:id:xr4reggz9y4h6um94c5hdqnkakzdmm134yhi1i4eu9qd3xkqmwycz4`
+] {[
+    inboxURI
+    ,masterURI
+] => { new
+  stdout(`rho:io:stdout`),
+  deployId(`rho:rchain:deployId`),
+  deployerId(`rho:rchain:deployerId`),
+  insertArbitrary(`rho:registry:insertArbitrary`),
+  lookup(`rho:registry:lookup`),
+  lookupCh,
+  masterCh,
+  ch,
+  caps,
+  ret
+in {
+  lookup!(masterURI, *masterCh) |
+  for (masterRead <- masterCh) {
+    stdout!(["masterRead", *masterRead]) |
+    masterRead!("Inbox", *ch)
+  } |
+  for (C_Inbox <- ch) {
+    stdout!(["Inbox", *C_Inbox]) |
+    C_Inbox!(*caps)|
+    for (receive, send, peek <- caps) {
+      stdout!(["caps", *receive, *send, *peek])|
+      insertArbitrary!(*send, *ret)|
+      for (@uri <- ret) {
+        stdout!(["#define", "$inbox", uri]) |
+        deployId!(["#define", "$inbox", uri]) |
+        @[*deployerId, "inbox"]!({"inbox": *send, "receive": *receive, "peek": *peek, "URI": uri})
+      }
+    }
+  }
+}
+}}

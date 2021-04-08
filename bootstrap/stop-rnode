@@ -16,3 +16,5 @@ $0: rnode is currently running. Use 'kill $ALREADY' to fix.
 		exit 1
 	fi
 done
+
+exit 0

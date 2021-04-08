@@ -137,10 +137,18 @@ echo "generated.create-master-contract-directory.rho"| deployFiles | tee -a crea
 echo "$0: Proposing master contract directory creation" |tee -a create-master-directory.log
 rnode --grpc-port 40402 propose 2>&1 | tee -a deployment.log
 
+echo "Creating ../src/MasterURI.localhost.json"
+echo "{\"MasterURI\": { \"rhoid\":" > ../src/MasterURI.localhost.json
+grep "ReadcapURI" $LOGFILE |tail -1 | cut -d' ' -f3|sed '
+s/\}/"/
+s/^/"/
+'>> ../src/MasterURI.localhost.json
+echo "}}" >> ../src/MasterURI.localhost.json
+
 echo "$0: listing master"
 ./deploy listMasterURI.rho
 rnode --grpc-port 40402 propose 2>&1 | tee -a deployment.log
-echo "Waiting for rnode to finish (60s)" && sleep 60 && echo "$0: Stopping deployment rnode"
+echo "Waiting for rnode to finish (10s)" && sleep 10 && echo "$0: Stopping deployment rnode"
 kill $PID && sleep 2
 
 echo "$0: Creating liquid-democracy-base checkpoint"

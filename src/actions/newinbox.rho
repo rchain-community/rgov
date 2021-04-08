@@ -11,7 +11,7 @@ new
   directoryCaps,
   ret
 in {
-  lookup!(ReadcapURI, *masterLookupCh) |
+  lookup!(`rho:id:1jz85fab4wbrmpc81y7ehuewbmzc5swse53f9bxdboeey3eeaf6fkh`, *masterLookupCh) |
   for (lookup_Master <- masterLookupCh) {
     stdout!({"master-dictionary dictionary unforgeable": *lookup_Master}) |
     lookup_Master!("Inbox", *lookupCh_DirInbox) |
