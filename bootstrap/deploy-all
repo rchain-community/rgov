@@ -79,13 +79,13 @@ find rchain -name "*.rho"|grep -v "test"|grep -v "tests" |grep -v "examples" | d
 ls -1 \
 ../CrowdFund.rho \
 ../Directory.rho \
-../inbox.rho \
+../Inbox.rho \
 ../Issue.rho \
-../kudos.rho \
-../log.rho \
+../Kudos.rho \
+../Log.rho \
 ../memberIdGovRev.rho \
 ../RevIssuer.rho \
-../echo.rho \
+../Echo.rho \
 ./voter-insertion.rho \
 | deployFiles
 
