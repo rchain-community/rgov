@@ -57,10 +57,14 @@ in {
         for ( map <- mapCh ) {
           if ( value == Nil ) {
             mapCh!(*map.delete(key)) |
-            ret!([key,"deleted"])
+            for (_ <<-mapCh) {
+              ret!([key,"deleted"])
+            }
           } else {
             mapCh!(*map.set(key,value)) |
-            ret!([key,value,"added"])
+            for (_ <<-mapCh) {
+              ret!([key,value,"added"])
+            }
           }
         }
       }
