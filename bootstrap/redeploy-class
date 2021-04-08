@@ -1,10 +1,5 @@
 #!/bin/bash
 
-if ! ./stop-rnode;then
-   echo "$0 Aborting"
-   exit 1
-fi
-
 [ ! -d ~/.rnode ] && echo "
 $0: $HOME/.rnode does not exist
 Use 'bootstrap' to fix.
@@ -12,7 +7,6 @@ Use 'bootstrap' to fix.
 
 CLASS=`basename $1|sed 's/.rho$//'`
 ME=`basename $0`
-LOGFILE=$ME.$CLASS.log
 
 DEPLOY="./deploy"
 
@@ -22,27 +16,22 @@ cd `dirname $0`
 
 private_key=`cat pk.bootstrap`
 
-rnode run -s \
-   --validator-private-key $private_key \
-   --dev-mode \
-   -XX:MaxDirectMemorySize=100m -XX:MaxRAMPercentage=25 \
-   > $LOGFILE 2>&1 &
+
+
+if ! ps -fu | grep "java.*rnode" |grep -v grep > /dev/null 2>&1 ;then
+   echo "rnode not running. Use ./run-rnode to fix." && exit 1
+fi
 
 set +x
-
-PID=$!
-
-# The previous command doesn't produce output -- but this makes up for that
-tail -f $LOGFILE|sed -e '/Making a transition to Running state./q'
 
 $DEPLOY $1 |tee -a $LOGFILE
 
 # Finalize the rnode
 echo "Proposing...." |tee -a $LOGFILE
-rnode --grpc-port 40402 propose 2>&1 | tail -n 0 -f $LOGFILE | sed '/Blocks ready to be added/q' 2>&1
+rnode --grpc-port 40402 propose 2>&1 | tail -n 0 -f ./run-rnode.log | sed '/Blocks ready to be added/q' 2>&1
 echo "Propose finished." |tee -a $LOGFILE
 
-URI=`grep \#define $LOGFILE|tail -1|cut -d' ' -f3|sed 's/]//'`
+URI=`grep \#define ./run-rnode.log|tail -1|cut -d' ' -f3|sed 's/]//'`
 
 echo "Generating master directory update."
 echo "match [$URI]{[newURI] => {" > generated.$ME.$CLASS.update-directory.rho
@@ -63,14 +52,18 @@ cat - >> generated.$ME.$CLASS.update-directory.rho << EOF3
 for(@{"read": *read, "write": *write, ..._} <<- @[*deployerId, "MasterContractAdmin"]) {
    stdout!(["read", *read, "write", *write]) |
    read!("$CLASS", *ch) |
-   stdout!(["Old class", *ch]) |
-   lookup!(newURI, *lookCh) |
-   for (C <- lookCh) {
-      stdout!(["writing class to dictionary: $CLASS", newURI, *C]) |
-      write!("$CLASS", *C, *ch1) |
-      for (_ <- ch1) {
-         read!("$CLASS", *ch2) |
-         stdout!(["Updated value", *ch2])
+   for (oldClass <- ch) {
+      stdout!(["Old class $CLASS", *oldClass]) |
+      lookup!(newURI, *lookCh) |
+      for (C <- lookCh) {
+         stdout!(["writing class to dictionary: $CLASS", newURI, *C]) |
+         write!("$CLASS", *C, *ch1) |
+         for (_ <- ch1) {
+            read!("$CLASS", *ch2) |
+            for (dumb <- ch2) {
+               stdout!(["Updated value", *dumb])
+            }
+         }
       }
    }
 }}}}
@@ -79,7 +72,6 @@ EOF3
 $DEPLOY generated.$ME.$CLASS.update-directory.rho
 
 echo "Proposing master directory update...." |tee -a $LOGFILE
-rnode --grpc-port 40402 propose 2>&1 | tail -n 0 -f $LOGFILE | sed '/Blocks ready to be added/q' 2>&1
+rnode --grpc-port 40402 propose 2>&1 | tail -n 0 -f ./run-rnode.log | sed '/Blocks ready to be added/q' 2>&1
 
-sleep 3 && echo "Stopping deployment rnode" && sleep 3
-kill $PID
+echo "Waiting for rnode to complete (10s)" && sleep 10

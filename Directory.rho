@@ -1,5 +1,6 @@
 new
   deployId(`rho:rchain:deployId`),
+  stdout(`rho:io:stdout`),
   directory
 in {
   contract directory(capabilities) = {
@@ -57,12 +58,14 @@ in {
         for ( map <- mapCh ) {
           if ( value == Nil ) {
             mapCh!(*map.delete(key)) |
-            for (_ <<-mapCh) {
+            for (updated <<- mapCh) {
+              stdout!(["Updated", *updated]) |
               ret!([key,"deleted"])
             }
           } else {
             mapCh!(*map.set(key,value)) |
-            for (_ <<-mapCh) {
+            for (updated <<- mapCh) {
+              stdout!(["Updated", *updated]) |
               ret!([key,value,"added"])
             }
           }

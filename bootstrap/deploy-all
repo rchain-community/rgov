@@ -78,7 +78,7 @@ find rchain -name "*.rho"|grep -v "test"|grep -v "tests" |grep -v "examples" | d
 # ../Community.rho \
 ls -1 \
 ../CrowdFund.rho \
-../directory.rho \
+../Directory.rho \
 ../inbox.rho \
 ../Issue.rho \
 ../kudos.rho \
