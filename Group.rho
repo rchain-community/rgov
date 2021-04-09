@@ -1,0 +1,116 @@
+new
+  Group,
+  commMap,
+  deployId(`rho:rchain:deployId`),
+  deployerId(`rho:rchain:deployerId`),
+  stdout(`rho:io:stdout`),
+  lookup(`rho:registry:lookup`),
+  insertArbitrary(`rho:registry:insertArbitrary`),
+  uriCh,
+  ret,
+  ack
+in {
+    insertArbitrary!(bundle+{*Group},*uriCh) |
+    for ( @uri <- uriCh ) {
+       stdout!(["#define $Group", uri]) |
+       deployId!(uri)
+    } |
+    commMap!({}) |
+    contract Group (@"new", @name, inbox, return) = {
+        new
+          admin,
+          methods,
+          userlist,
+          infoCh,
+          ret,
+          CapDirectory
+        in {
+            userlist!([]) | methods!({}) |
+            stdout!("creating Group.") |
+            for (@comms <- commMap ) {
+                if ( comms.get(name) != Nil ) {
+                    stdout!("error: Group with that name already exists") |
+                    commMap!(comms) |
+                    return!(Nil)
+                } else {
+                  for(@{"read": *masterRead, ..._} <<- @[*deployerId, "MasterContractAdmin"]) {
+                    stdout!({"read": *masterRead}) |
+                    masterRead!("Directory", *ret)
+                  } |
+                  for ( Directory <- ret ) {
+                    stdout!(["got directory", *Directory]) |
+                    // Create Group capability directory
+                    Directory!(*CapDirectory) |
+                    // Create member directory
+                    Directory!(*ret) |
+                    for ( @{"read": *read, "write": *write, "grant": *grant, ..._ } <- ret ) {
+                      commMap!(comms.union({name: *infoCh})) |
+                      infoCh!({"name": name, "request": *inbox}) |
+                      return!({"admin": *admin, "read": *read, "write": *write, "grant": *grant}) |
+                      contract admin(@"add info", @key, @value, return) = {
+                        for (info <- infoCh) {
+                          infoCh!(*info.set(key, value))
+                        }
+                      } |
+                      contract admin(@"add user", @username, @inbox, return) = {
+                        //TODO see if already a member
+                        for ( @list <- userlist) {
+                          if ( list.length() == 0 ) { userlist!([username]) |
+                            write!(username, {"inbox": inbox, "delegate": Nil}, *stdout) |
+                            stdout!("first user being added")
+                          } else {
+                            userlist!(list.slice(1,list.length()) ++ [ username, list.nth(0)]) |
+                            write!(username, {"inbox": inbox, "delegate": list.nth(0)}, *stdout) |
+                            stdout!(list.slice(1,list.length()) ++ [username, list.nth(0)])
+                          }
+                        } |
+                        grant!(username, *ret) |
+                        for ( updateself <- ret ) {
+                          return!({"selfupdate": *updateself})
+                        }
+                       }
+                     }
+                   }
+                 }
+              }
+            }
+          } |
+    contract Group (@"request", @name, @userid, return) = {
+            //stdout!(*info) |
+        for ( @{map /\  {=name: *infoCh, ..._}} <<- commMap ) {
+          for ( @{info /\ {"request": *inbox, ..._ }}  <<- infoCh ) {
+            inbox!(["Group", "request", name, userid])|
+            return!(info)
+          }
+        }
+      } |
+    contract Group (@"lookup", @name, return) = {
+        for ( @{map /\  {=name: *infoCh, ..._}} <<- commMap ) {
+          for ( info <<- infoCh ) {
+            //stdout!(*info) |
+            return!(*info)
+          }
+        }
+      } |
+    contract Group (@"lookup", return) = {
+        for ( @map <<- commMap ) {
+          //stdout!(map) |
+          return!(map)
+        }
+    } |
+    Group!("new","test", Nil, *ret) |
+    Group!("new","test2", Nil, *ret) |
+    for (_ <- ret) { Nil } |
+    for ( @{"admin": admin, "read": read, "write": write, "grant": grant} <- ret ) {
+      stdout!("got em") |
+      Group!("lookup","test",*stdout) |
+      Group!("lookup","test2",*stdout) |
+      Group!("lookup",*stdout) |
+      //Group!("new","test", Nil, *stdout) |
+      admin|("add user","jim","xxxxx", *ret) |
+      for ( _ <- ret ) {
+       Group!("lookup","test",*stdout) |
+       Group!("lookup","test2",*stdout)
+      }
+    }
+}
