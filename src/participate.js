@@ -15,7 +15,7 @@ import { actions } from './actions.js';
 const { freeze, keys, entries } = Object;
 
 // TODO: UI for phloLimit
-const maxFee = { phloPrice: 1, phloLimit: 0.5 * 100000000 };
+const maxFee = { phloPrice: 1, phloLimit: 0.05 * 100000000 };
 
 // TODO: ISSUE: are networks really const? i.e. design-time data?
 const NETWORKS = {
@@ -584,9 +584,9 @@ function networkControl(state, { html }) {
         >
           <option name="network" value="mainnet">mainnet</option>
           <option name="network" value="localhost" selected>localhost</option>
-          <script>docWrite("<option name="network" value="testnet">testnet"+window.location.href.indexOf("test") ? "selected" : "")+">testnet</option>"</script>>
-          <script>docWrite("<option name="network" value="rhobot">rhobot"+window.location.href.indexOf("test") ? "selected" : "")+">rhobot</option>"</script>>
-        </select>
+          <option name="network" value="testnet">testnet</option>
+          <option name="network" value="rhobot" selected>rhobot</option>
+         </select>
       </div>`;
     },
   });
