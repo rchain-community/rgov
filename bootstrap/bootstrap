@@ -1,5 +1,7 @@
 #!/bin/bash
 
+cd `dirname $0`
+
 ALREADY=`ps -fu |grep -v grep |grep " java .*rnode"|sed 's/[ \t][ \t]*/ /g'|cut -d' ' -f 2`
 
 [ -n "$ALREADY" ] && echo "
@@ -31,21 +33,23 @@ $0: $HOME/.rnode exists. Use 'rm -rf $HOME/.rnode' to fix.
 	fi
 done
 
-[ -n "`./list-checkpoints.sh |grep '$0'`>/dev/null" ] && echo "
-$0 checkpoint exists.
-" && while read -p "Use checkpoint instead of re-running $0 [y]? " response;do
+mkdir -p checkpoint 2>/dev/null
+
+ME=`basename $0`
+
+./list-checkpoints.sh |grep "$ME" >/dev/null 2>&1 && echo "
+$ME checkpoint exists.
+" && while read -p "Use checkpoint instead of re-running $ME [y]? " response;do
 	if [ "$response" == "y" ] || [ -z "$response" ];then
-		./restore-checkpoint.sh $0
+		./restore-checkpoint.sh $ME
 		exit 0
 	else
-		echo "Rerunning $0"
+		echo "Rerunning $ME"
 		break
 	fi
 done
 
 set -x
-
-cd `dirname $0`
 
 LOGFILE="$0.log"
 
@@ -60,15 +64,15 @@ rnode run -s \
 	-XX:MaxDirectMemorySize=100m -XX:MaxRAMPercentage=25 \
 	> $LOGFILE 2>&1 &
 
+PID=$!
+
 # The previous command doesn't produce output -- but this one makes up for that
 tail -f $LOGFILE|sed -e '/Making a transition to Running state./q'
 
-PID=$!
+echo "$ME: Stopping $ME rnode process"
+sleep 3 && kill $PID && sleep 3
 
-echo "$0: Stopping $0 rnode process"
-kill $PID && sleep 3
-
-echo "$0: Creating $0 checkpoint"
-./create-checkpoint.sh $0
+echo "$0: Creating $ME checkpoint"
+./create-checkpoint.sh $ME
 
 stty echo

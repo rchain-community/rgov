@@ -3,13 +3,13 @@
 ## To run RNode stand alone on localhost:
 for bootstrapping, checkpointing and updating a liquid democracy RChain RNode localhost instance for linux and Window10 WSL2
 
-[see below](#localhost-deployment-and-development)
-
 This localhost environment aims to be a complete usable development system, (once testnet works again). While there are pieces elsewhere and this may not be the final resting place, this is not a docker solution and is specific to the capability directory structure of communities/working groups and their communications and their governance. A future aim would be to make this play well with jakefile and docker shard solutions.
 
 Watch video of how to run an rnode localhost and add rgov actions here https://youtu.be/9TIPXXSXwnE bootstraping updates https://youtu.be/fuXFDRXJsVM
 
-## To deploy the contracts: (may not be up to date)
+[see below](#localhost-deployment-and-development)
+
+## To deploy the contracts: (out of date)
 
 ```
 npm install
@@ -116,7 +116,7 @@ To create an rchain node locally, deploy rchain dependencies, and deploy liquid-
   1) Create several log files, which can be largely ignored.
   2) clone the rchain repo
   3) deploy the rholang files from rchain and liquid-democracy
-  4) Generate javascript, json, and rholang files containing the URI values for contracts that emit a '#define' line - generated files have a filename that starts with 'generated'
+  4) Generate javascript, json, and rholang files containing the URI values for contracts that emit a '#define' line - generated files have a filenames that starts with 'generated'
   5) Create a 'checkpoint' containing the resulting rnode database that can be restored with restore-checkpoint.sh
   6) Place the running rnode log file in 'bootstrap/run-rnode.log'
 
@@ -126,6 +126,16 @@ cd bootstrap
 ./deploy-all
 ./run-rnode
 cd ..
+```
+
+## web interface installation
+```
+npm install
+```
+
+## running web interface
+```
+npm start
 ```
 
 ## checkpointing
