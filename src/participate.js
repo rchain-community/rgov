@@ -583,9 +583,9 @@ function networkControl(state, { html }) {
           onchange=${(event) => (state.network = ckControl(event.target).value)}
         >
           <option name="network" value="mainnet">mainnet</option>
-          <option name="network" value="testnet">testnet</option>
           <option name="network" value="localhost" selected>localhost</option>
-          <option name="network" value="rhobot" selected>rhobot</option>
+          <script>docWrite("<option name="network" value="testnet">testnet"+window.location.href.indexOf("test") ? "selected" : "")+">testnet</option>"</script>>
+          <script>docWrite("<option name="network" value="rhobot">rhobot"+window.location.href.indexOf("test") ? "selected" : "")+">rhobot</option>"</script>>
         </select>
       </div>`;
     },
