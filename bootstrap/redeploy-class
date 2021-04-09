@@ -58,7 +58,8 @@ for(@{"read": *read, "write": *write, ..._} <<- @[*deployerId, "MasterContractAd
       for (C <- lookCh) {
          stdout!(["writing class to dictionary: $CLASS", newURI, *C]) |
          write!("$CLASS", *C, *ch1) |
-         for (_ <- ch1) {
+         for (result <- ch1) {
+            stdout!(*result) |
             read!("$CLASS", *ch2) |
             for (dumb <- ch2) {
                stdout!(["Updated value", *dumb])
