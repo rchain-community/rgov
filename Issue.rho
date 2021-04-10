@@ -55,7 +55,7 @@ in {
               }
             } |
             contract voter(@"choice", @priorDelegates, return, log) = {
-              log!(["name", name]) |
+              log!({"proposals": proposalNames.toList(),"name": name}) |
               for ( @vote <<- voteCh ) {
                 log!(["vote",vote])|
                 if ( vote == Nil ) {
