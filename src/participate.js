@@ -289,9 +289,13 @@ function buildUI({
   mount('#actionControl', actionControl(state, { html, getEthProvider }));
   mount('#netControl', networkControl(state, { html }));
   let netselect = document.getElementById("netControlSelect")
-  netselect.value = document.location.hostname.indexOf("test")>=0 ? "testnet" : 
-    (document.location.hostname.indexOf("rhobot")>=0 ? "rhobot" :
-      (document.location.hostname.indexOf("localhost")>=0 ? "localhost" : "mainnet"));
+  let host = document.location.hostname;
+  if ( host.indexOf("test")>=0 ) network = "texnet";
+  else if ( host.indexOf("rhobot")>=0 ) network = "rhobot";
+  else if ( host.indexOf("localhost")>=0 ) network = "localhost";
+  else network = "mainnet";
+  state.network = network;
+  netselect.value = network;
   mount(
     '#runControl',
     runControl(state, {
