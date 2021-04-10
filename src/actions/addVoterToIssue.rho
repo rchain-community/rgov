@@ -10,7 +10,7 @@ in {
    for (@{ "peek": *peek, ..._ } <<- @[*deployerId, lockerTag]) {
       stdout!(["peek", *peek]) |
       peek!("issue", issue, *ch) |
-      for (@[{ "admin": *admin, ..._ }] <- ch) {
+      for (@[{ "admin": *admin, "tally": *tally, ..._ }] <- ch) {
          stdout!(["admin", *admin]) |
          admin!("giveRightToVote", toInboxURI, *ch1, *return) |
          for (voterCap <- ch1) {
@@ -18,7 +18,9 @@ in {
             inboxLookup!(toInboxURI, *inboxCh) |
             for (inbox <- inboxCh) {
                stdout!(["inbox", *inbox]) |
-               inbox!(["vote", issue, {"voterCap": *voterCap}], *return)
+               inbox!(["vote", issue, {"voterCap": *voterCap}], *return) |
+               inbox!(["issue", issue, {"tally": *tally}], *stdout)
+
             }
          }
       }

@@ -82,12 +82,12 @@ export const actions = {
     },
     filename: 'actions/castVote.rho',
   },
-  choiceVote: {
+  displyeVote: {
     fields: {
       lockerTag: { value: 'inbox', type: 'string' },
       issue: { value: '', type: 'string' },
     },
-    filename: 'actions/choiceVote.rho',
+    filename: 'actions/displayVote.rho',
   },
   tallyVotes: {
     fields: {
