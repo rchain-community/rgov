@@ -1,3 +1,5 @@
+match ["?"] {
+[URI] => {
 new
    lookup(`rho:registry:lookup`),
    return(`rho:rchain:deployId`),
@@ -10,3 +12,5 @@ in {
       return!([ "URI", URI, "Obj", *u])
    }
 }
+
+}} // end of match

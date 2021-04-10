@@ -1,3 +1,5 @@
+match [ "inbox", "", Set()] {
+[lockerTag, name, proposals] => {
 new
    trace,
    lookupCh,
@@ -22,3 +24,5 @@ in {
       }
    }
 }
+
+}} // end of match

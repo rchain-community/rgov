@@ -221,7 +221,10 @@ function buildUI({
     },
     async setFields(/** @type {Record<String, string>} */ value) {
       const { fields, filename } = actions[state.action];
-      const content = await (await fetch(filename)).text()
+      const tmp = await (await fetch(filename)).text()
+      const newPos = tmp.indexOf("new");
+      const endPos = tmp.lastIndexOf("}", tmp.lastIndexOf("}"));
+      let content = tmp.substring(newPos, endPos - 1);
       if (fields) {
         fieldValues = Object.fromEntries(
           keys(fields).map((k) => [k, value[k]]),

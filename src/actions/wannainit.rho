@@ -1,6 +1,7 @@
-// initialized the wanna class (channel)
-
+match [] {
+[] => {
 new wanna, stdout(`rho:io:stdout`), return(`rho:rchain:deployId`), callsForHelp, deployerId(`rho:rchain:deployerId`)
+// initialized the wanna class (channel)
 in {
   for ( @{"write": *write, ..._} <<- @[*deployerId, "MasterContractAdmin"]) {
     write!("Wanna", bundle+{*wanna}) |
@@ -8,7 +9,7 @@ in {
   } |
   callsForHelp!([]) |
   //contract wanna("new", ret) = { new mywanna in { ret!(mywanna)}}|
-  
+
   contract wanna(@"addCallForHelp", @map, return) = {
     for ( list <- callsForHelp ) {
       callsForHelp!([*list] ++ [map])|
@@ -16,3 +17,5 @@ in {
     }
   }
 }
+
+}} // end of match

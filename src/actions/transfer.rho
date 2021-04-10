@@ -1,3 +1,5 @@
+match["", "", 1] {
+[revAddrFrom, revAddrTo, amount] => {
 new rl(`rho:registry:lookup`), RevVaultCh in {
   rl!(`rho:rchain:revVault`, *RevVaultCh) |
   for (@(_, RevVault) <- RevVaultCh) {
@@ -29,3 +31,5 @@ new rl(`rho:registry:lookup`), RevVaultCh in {
       }
     }
   }
+
+  }} // end of match

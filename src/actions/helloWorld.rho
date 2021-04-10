@@ -1,4 +1,10 @@
-new world in { world!("Hello!") } 
-
-
+match [] {
+[] => {
+new
+   world
+in {
 // Hit Explore. Result will be from first new name  //
+   world!("Hello!")
+}
+
+}} // end of match

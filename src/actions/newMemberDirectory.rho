@@ -1,3 +1,5 @@
+match [] {
+[] => {
 new
    return(`rho:rchain:deployId`),
    lookup(`rho:registry:lookup`),
@@ -17,3 +19,5 @@ in {
       }
    }
 }
+
+}} // end of match

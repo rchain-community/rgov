@@ -1,5 +1,5 @@
-
-
+match ["inbox"] {
+[lockerTag] => {
 new
    deployId(`rho:rchain:deployId`),
    deployerId(`rho:rchain:deployerId`),
@@ -10,3 +10,5 @@ in {
       peek!(*deployId)
    }
 }
+
+}} // end of match

@@ -1,4 +1,5 @@
-
+match [] {
+[] => {
 new
    return,
    lookup(`rho:registry:lookup`), ch
@@ -9,3 +10,5 @@ in {
       }
    }
 }
+
+}} // end of match

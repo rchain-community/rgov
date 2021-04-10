@@ -1,3 +1,5 @@
+match ["?", "?", "?", "inbox"] {
+[name, themBoxReg, community, lockerTag] => {
 new
    deployId(`rho:rchain:deployId`),
    deployerId(`rho:rchain:deployerId`),
@@ -19,3 +21,5 @@ in {
       }
    }
 }
+
+}} // end of match

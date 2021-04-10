@@ -1,3 +1,5 @@
+match [""] {
+[myGovRevAddr] => {
 new    // use Explore to see result at return
    return,
    lookup(`rho:registry:lookup`),
@@ -16,3 +18,5 @@ in {
       }
    }
 }
+
+}} // end of match

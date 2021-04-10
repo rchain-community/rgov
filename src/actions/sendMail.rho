@@ -1,3 +1,5 @@
+match ["inbox", "", "", "", "", ""] {
+[lockerTag, toInboxURI, from, to, sub, body] => {
 new
    deployId(`rho:rchain:deployId`),
    deployerId(`rho:rchain:deployerId`),
@@ -9,3 +11,5 @@ in {
          toinbox!(["email",from,{"to": to, "sub": sub, "body": body}], *deployId)
    }
 }
+
+}} // end of match

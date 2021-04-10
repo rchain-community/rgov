@@ -1,3 +1,5 @@
+match ["inbox", "", ""] {
+[lockerTag, toInboxURI, issue] => {
 new
    return(`rho:rchain:deployId`),
    deployerId(`rho:rchain:deployerId`),
@@ -26,3 +28,5 @@ in {
       }
    }
 }
+
+}} // end of match

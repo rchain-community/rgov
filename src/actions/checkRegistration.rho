@@ -1,3 +1,5 @@
+match [""] {
+[myGovRevAddr] => {
 new
    trace,
    return,
@@ -13,3 +15,5 @@ in
       return!(["#define", "$agm2020voter", addrSet.contains(myGovRevAddr)])
    }
 }
+
+}} // end of match

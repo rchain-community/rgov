@@ -1,4 +1,5 @@
-
+match [""] {
+[them] => {
 new
    deployId(`rho:rchain:deployId`),
    lookup(`rho:registry:lookup`),
@@ -10,3 +11,5 @@ in {
       }
    }
 }
+
+}} // end of match

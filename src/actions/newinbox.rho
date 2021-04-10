@@ -1,3 +1,5 @@
+match ["URI-value-for-master-dictionary"] {
+[ReadcapURI] => {
 new
   stdout(`rho:io:stdout`),
   lookup(`rho:registry:lookup`),
@@ -42,3 +44,5 @@ in {
     }
   }
 }
+
+}} // end of match

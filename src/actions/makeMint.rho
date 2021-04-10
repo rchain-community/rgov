@@ -1,3 +1,5 @@
+match ["myTokenMint", "inbox"] {
+[name, lockerTag] => {
 new
    return,
    lookup(`rho:registry:lookup`),
@@ -19,3 +21,5 @@ in {
     }
   }
 }
+
+}} // end of match
