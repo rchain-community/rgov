@@ -288,6 +288,10 @@ function buildUI({
 
   mount('#actionControl', actionControl(state, { html, getEthProvider }));
   mount('#netControl', networkControl(state, { html }));
+  let netselect = document.getElementById("netControlSelect")
+  netselect.value = document.location.hostname.indexOf("test")>=0 ? "testnet" : 
+    (document.location.hostname.indexOf("rhobot")>=0 ? "rhobot" :
+      (document.location.hostname.indexOf("localhost")>=0 ? "localhost" : "mainnet"));
   mount(
     '#runControl',
     runControl(state, {
@@ -579,13 +583,13 @@ function networkControl(state, { html }) {
   return freeze({
     view() {
       return html`<div id="netControl">
-        <select
+        <select  id="netControlSelect"
           onchange=${(event) => (state.network = ckControl(event.target).value)}
         >
           <option name="network" value="mainnet">mainnet</option>
-          <option name="network" value="localhost" selected>localhost</option>
-          <option name="network" value="testnet">testnet</option>
-          <option name="network" value="rhobot" selected>rhobot</option>
+          <option name="network" value="localhost">localhost</option>
+          <option name="network" value="rhobot" ${"selected"}>rhobot</option>
+          <option name="network" id="testnet" value="testnet">testnet</option>
          </select>
       </div>`;
     },
