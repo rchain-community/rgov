@@ -232,7 +232,7 @@ function buildUI({
         const exprs = entries(fieldValues).map(([name, value]) => {
           if(fields[name].type === 'uri')
           {
-            return `\`${value}\``
+            return `\`${value.trim()}\``
           }
           else if(fields[name].type === 'set')
           {
