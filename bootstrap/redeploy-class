@@ -14,10 +14,6 @@ set -x
 
 cd `dirname $0`
 
-private_key=`cat pk.bootstrap`
-
-
-
 if ! ps -fu | grep "java.*rnode" |grep -v grep > /dev/null 2>&1 ;then
    echo "rnode not running. Use ./run-rnode to fix." && exit 1
 fi
@@ -28,7 +24,7 @@ $DEPLOY $1 |tee -a $LOGFILE
 
 # Finalize the rnode
 echo "Proposing...." |tee -a $LOGFILE
-rnode --grpc-port 40402 propose 2>&1 | tail -n 0 -f ./run-rnode.log | sed '/Blocks ready to be added/q' 2>&1
+rnode --grpc-port 40402 propose 2>&1 | tail -n 0 -F ./run-rnode.log | sed '/Blocks ready to be added/q' 2>&1
 echo "Propose finished." |tee -a $LOGFILE
 
 URI=`grep \#define ./run-rnode.log|tail -1|cut -d' ' -f3|sed 's/]//'`
@@ -59,7 +55,7 @@ for(@{"read": *read, "write": *write, ..._} <<- @[*deployerId, "MasterContractAd
          stdout!(["writing class to dictionary: $CLASS", newURI, *C]) |
          write!("$CLASS", *C, *ch1) |
          for (result <- ch1) {
-            stdout!(*result) |
+            stdout!(["Write result", *result]) |
             read!("$CLASS", *ch2) |
             for (dumb <- ch2) {
                stdout!(["Updated value", *dumb])
@@ -73,6 +69,6 @@ EOF3
 $DEPLOY generated.$ME.$CLASS.update-directory.rho
 
 echo "Proposing master directory update...." |tee -a $LOGFILE
-rnode --grpc-port 40402 propose 2>&1 | tail -n 0 -f ./run-rnode.log | sed '/Blocks ready to be added/q' 2>&1
+rnode --grpc-port 40402 propose 2>&1 | tail -n 0 -F ./run-rnode.log | sed '/Blocks ready to be added/q' 2>&1
 
 echo "Waiting for rnode to complete (10s)" && sleep 10
