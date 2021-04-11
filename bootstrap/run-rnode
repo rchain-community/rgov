@@ -11,6 +11,6 @@ rnode run -s \
    -XX:MaxDirectMemorySize=100m -XX:MaxRAMPercentage=25 \
    > run-rnode.log 2>&1 &
 
-tail -f run-rnode.log|sed -e '/Making a transition to Running state./q'
+tail -F run-rnode.log 2>/dev/null|sed -e '/Making a transition to Running state./q'
 
 stty echo
