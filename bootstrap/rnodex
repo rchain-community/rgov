@@ -1,4 +1,0 @@
-#!/bin/bash
-
-sed 's/(`rho:rchain:deployId`)//g'
-rnode --grpc-port 40402 eval
