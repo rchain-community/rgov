@@ -59,7 +59,7 @@ set +x
 PID=$!
 
 # The previous command doesn't produce output -- but this makes up for that
-tail -f $LOGFILE|sed -e '/Making a transition to Running state./q'
+tail -F $LOGFILE|sed -e '/Making a transition to Running state./q'
 
 deployFiles() {
    WAITPID=""
