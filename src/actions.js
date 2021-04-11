@@ -89,6 +89,14 @@ export const actions = {
     },
     filename: 'actions/displayVote.rho',
   },
+  delegateVote: {
+    fields: {
+      lockerTag: { value: 'inbox', type: 'string' },
+      issue: { value: '', type: 'string' },
+      delegateURI: { value: '', type: 'uri' }
+    },
+    filename: 'actions/delegateVote.rho',
+  },
   tallyVotes: {
     fields: {
       lockerTag: { value: 'inbox', type: 'string' },

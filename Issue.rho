@@ -38,7 +38,7 @@ in {
             contract voter(@"vote", @proposal, return, log) = {
               //log!({ "for": proposal}) |
               //log!(proposalNames.contains(proposal)) |
-              if(proposalNames.contains(proposal) == true)
+              if((proposalNames.union(Set(Nil))).contains(proposal) == true)
               {
                 log!("valid proposal") |
                 for ( @oldvote <- voteCh ) {
@@ -61,6 +61,7 @@ in {
                 if ( vote == Nil ) {
                   for ( @delegate <- delegateCh; @voters <- voterCh ) {
                     delegateCh!(delegate) |
+                    log!(["delegate",delegate]) |
                     voterCh!(voters) |
                     if (delegate == Nil or priorDelegates.contains(delegate) or voters.get(delegate) == Nil ) {
                       return!(Nil)
