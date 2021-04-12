@@ -50,7 +50,7 @@ export const actions = {
     fields: {
       revAddrFrom: { value: '', type: 'walletRevAddr' },
       revAddrTo: { value: '', type: 'string'},
-      amount: { value: '1', type: 'number' }
+      amount: { value: '100000000', type: 'number' }
     },
     filename: 'actions/transfer.rho',
   },
