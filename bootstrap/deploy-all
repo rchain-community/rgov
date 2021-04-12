@@ -107,8 +107,9 @@ s/\t/  /g
 '
 }
 
-echo "$0: Generating javascript file [$javascript_file]"
-gen_javascript < $LOGFILE > $javascript_file
+# These are no longer necessary and are invalid after a redploy-class
+# echo "$0: Generating javascript file [$javascript_file]"
+# gen_javascript < $LOGFILE > $javascript_file
 
 # generate json
 gen_json() {
@@ -126,15 +127,16 @@ echo '    "NecessaryInvalidPlaceholder": ""
 }'
 }
 
-echo "$0: Generating json file [$json_file]"
-gen_json < $LOGFILE > $json_file
+# These are no longer necessary and are invalid after a redploy-class
+# echo "$0: Generating json file [$json_file]"
+# gen_json < $LOGFILE > $json_file
 
 # generate and create the master contract directory
-echo "$0: Generating directory creation rholang"
+echo "$0: Generating generated.create-master-contract-directory.rho"
 ./master-contract-directory.sh > generated.create-master-contract-directory.rho
 
 echo "generated.create-master-contract-directory.rho"| deployFiles | tee -a create-master-directory.log
-echo "$0: Proposing master contract directory creation" |tee -a create-master-directory.log
+echo "$0: Proposing generated.create-master-contract-directory.rho" |tee -a create-master-directory.log
 rnode --grpc-port 40402 propose 2>&1 | tee -a deployment.log
 
 echo "Creating ../src/MasterURI.localhost.json"
@@ -145,13 +147,13 @@ s/^/"/
 '>> ../src/MasterURI.localhost.json
 echo "}}" >> ../src/MasterURI.localhost.json
 
-echo "$0: listing master"
+echo "$0: listing master directory"
 ./deploy listMasterURI.rho
 rnode --grpc-port 40402 propose 2>&1 | tee -a deployment.log
 echo "Waiting for rnode to finish (10s)" && sleep 10 && echo "$0: Stopping deployment rnode"
 kill $PID && sleep 2
 
-echo "$0: Creating liquid-democracy-base checkpoint"
+echo "$0: Creating rgov checkpoint"
 ./create-checkpoint.sh rgov
 grep '{"ReadcapURI" : `' deploy-all.log|tail -1|sed 's-`-"-g' > ../ReadcapURI.json
 stty echo

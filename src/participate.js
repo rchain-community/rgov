@@ -20,7 +20,7 @@ const maxFee = { phloPrice: 1, phloLimit: 0.05 * 100000000 };
 // TODO: ISSUE: are networks really const? i.e. design-time data?
 const NETWORKS = {
   localhost: {
-	  observerBase: 'http://localhost:40403',
+    observerBase: 'http://localhost:40403',
     validatorBase: 'http://localhost:40403',
     adminBase: 'http://localhost:40405',
   },
