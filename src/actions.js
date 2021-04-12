@@ -104,6 +104,16 @@ export const actions = {
     },
     filename: 'actions/tallyVotes.rho',
   },
+  share: {
+    fields: {
+      lockerTag: { value: 'inbox', type: 'string' },
+      toInboxURI: { value: '', type: 'uri' },
+      type: { value: '', type: 'string'},
+      subtype: { value: '', type: 'string'}
+
+    },
+    filename: 'actions/share.rho',
+  },
   getRoll: {
     fields: {},
     filename: 'actions/getRoll.rho',

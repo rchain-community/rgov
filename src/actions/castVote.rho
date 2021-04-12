@@ -9,9 +9,12 @@ in {
    for(@{"peek": *peek, ..._} <<- @[*deployerId, lockerTag]) {
       peek!("vote", issue, *ch) |
       for (@[{"voterCap": voterCapability}] <- ch) {
-         @voterCapability!("vote", theVote, *return, *stdout)
+         if ( theVote == "" ) {
+            @voterCapability!("vote", Nil, *return, *stdout)
+         } else {
+            @voterCapability!("vote", theVote, *return, *stdout)
+         }
       }
    }
 }
-
 }} // end of match
