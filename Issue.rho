@@ -3,6 +3,8 @@
 new Issue,
 deployId(`rho:rchain:deployId`),
 trace(`rho:rchain:deployId`),
+// deployId(`rho:io:stdout`),
+// trace(`rho:io:stdout`),
 stdout(`rho:io:stdout`)
 in {
   new insertArbitrary(`rho:registry:insertArbitrary`), uriCh in {
@@ -51,7 +53,7 @@ in {
               } else
               {
                 log!({"unknown proposal": proposal}) |
-                return!({"unknown proposal": proposal})
+                return!({"unknown proposal": proposal, "valid proposals": proposalNames})
               }
             } |
             contract voter(@"choice", @priorDelegates, return, log) = {
@@ -59,18 +61,20 @@ in {
               for ( @vote <<- voteCh ) {
                 log!(["vote",vote])|
                 if ( vote == Nil ) {
-                  for ( @delegate <<- delegateCh; @voters <<- voterCh ) {
-                    log!(["delegate",delegate]) |
-                    if (delegate == Nil or priorDelegates.contains(delegate) or voters.get(delegate) == Nil ) {
-                      return!(Nil)
-                    } else {
-                      log!([name ++ " -> " ++ delegate, voters.get(delegate)]) |
-                      @{voters.get(delegate)}!("choice", priorDelegates.add(delegate), *return, *log)
+                  for ( @delegate <<- delegateCh) {
+                    for ( @voters <<- voterCh ) {
+                      log!(["delegate",delegate]) |
+                      if (delegate == Nil or priorDelegates.contains(delegate) or voters.get(delegate) == Nil ) {
+                        return!(Nil)
+                      } else {
+                        log!([name,  " -> ", delegate, voters.get(delegate)]) |
+                        @{voters.get(delegate)}!("choice", priorDelegates.add(delegate), *return, *log)
+                      }
                     }
                   }
                 } else
                 {
-                  log!(name ++ " " ++ vote) |
+                  log!([name, vote]) |
                   return!(vote)
                 }
               }

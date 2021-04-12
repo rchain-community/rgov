@@ -4,3 +4,4 @@ rnode.log
 rhoid.js
 .vscode/
 dist/
+yarn.lock
