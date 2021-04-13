@@ -8,6 +8,10 @@
 		"files.exclude": {
 			"bootstrap/rchain": true,
 			"node_modules": true
+		},
+		"files.watcherExclude": {
+			"**/bootstrap/rchain": true,
+			"**/dist": true
 		}
 	}
 }
