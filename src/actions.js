@@ -9,6 +9,10 @@ console.log(uris.ReadcapURI)
  * @type {Record<string, ActionSpec>}
  */
 export const actions = {
+  _select_an_action_: {
+    fields: {},
+    filename: 'dropdown-spacer',
+  },
   checkBalance: {
     fields: {
       myGovRevAddr: { type: 'walletRevAddr' },

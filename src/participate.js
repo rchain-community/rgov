@@ -174,7 +174,7 @@ function buildUI({
   fetch,
 }) {
   const rnode = RNode(fetch);
-  let action = 'helloWorld';
+  let action = '_select_an_action_';
   let network = 'rhobot';
   /** @type {{ observer: Observer, validator: Validator, admin: import('rchain-api/src/rnode').RNodeAdmin }} shard */
   let shard;
