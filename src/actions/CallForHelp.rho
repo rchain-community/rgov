@@ -11,7 +11,6 @@ in {
         wanna!(["addCallForHelp", {"from": from, "tips": tips, "bounty": revletts, "body": body}], *deployId)
       }
    }
-   }
 }
 
 }} // end of match
