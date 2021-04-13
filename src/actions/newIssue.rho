@@ -4,6 +4,7 @@ new
    trace,
    lookupCh,
    bCh,
+   ch1,
    lookup(`rho:registry:lookup`),
    return(`rho:rchain:deployId`),
    deployerId(`rho:rchain:deployerId`)
@@ -17,9 +18,14 @@ in {
       Issue!(proposals, *bCh, *return) |
       for(admin, tally <- bCh) {
          return!(["bCh", *admin, *tally]) |
-         for (@{"inbox": *inbox, ..._} <<- @[*deployerId, lockerTag]) {
+         for (@{"inbox": *inbox, "URI": uri ..._} <<- @[*deployerId, lockerTag]) {
             return!(["issue", name, {"admin": *admin, "tally": *tally}]) |
-            inbox!(["issue", name, {"admin": *admin, "tally": *tally}], *return)
+            inbox!(["issue", name, {"admin": *admin, "tally": *tally}], *return) |
+            admin!("giveRightToVote", uri, *ch1, *return) |
+            for (voterCap <- ch1) {
+               inbox!(["vote", name, {"voterCap": *voterCap}], *return) 
+            }
+
          }
       }
    }
