@@ -9,50 +9,17 @@ console.log(uris.ReadcapURI)
  * @type {Record<string, ActionSpec>}
  */
 export const actions = {
-  helloWorld: {
-    fields: {},
-    filename: 'actions/helloWorld.rho',
-  },
   checkBalance: {
     fields: {
       myGovRevAddr: { type: 'walletRevAddr' },
     },
     filename: 'actions/checkBalance.rho',
   },
-  newinbox: {
+  newInbox: {
     fields: {
       ReadcapURI: { value: uris.ReadcapURI, type: 'uri' },
     },
     filename: 'actions/newinbox.rho',
-  },
-  peekInbox: {
-    fields: {
-      lockerTag: { value: 'inbox', type: 'string' },
-    },
-    filename: 'actions/peekInbox.rho',
-  },
-  sendMail: {
-    fields: {
-      lockerTag: { value: 'inbox', type: 'string' },
-      toInboxURI: { value: '', type: 'uri' },
-      from: { value: '', type: 'string' },
-      to: { value: '', type: 'string' },
-      sub: { value: '', type: 'string' },
-      body: { value: '', type: 'string' },
-    },
-    filename: 'actions/sendMail.rho',
-  },
-  lookupURI: {
-    fields: { URI: { value: '', type: 'uri'} },
-    filename: 'actions/lookupURI.rho',
-  },
-  transfer: {
-    fields: {
-      revAddrFrom: { value: '', type: 'walletRevAddr' },
-      revAddrTo: { value: '', type: 'string'},
-      amount: { value: '100000000', type: 'number' }
-    },
-    filename: 'actions/transfer.rho',
   },
   newIssue: {
     fields: {
@@ -70,9 +37,15 @@ export const actions = {
     fields: {
       lockerTag: { value: 'inbox', type: 'string' },
       toInboxURI: { value: '', type: 'uri' },
-      issue: { value: '', type: 'string'}
+      issue: { value: '', type: 'string' }
     },
     filename: 'actions/addVoterToIssue.rho',
+  },
+  peekInbox: {
+    fields: {
+      lockerTag: { value: 'inbox', type: 'string' },
+    },
+    filename: 'actions/peekInbox.rho',
   },
   castVote: {
     fields: {
@@ -81,13 +54,6 @@ export const actions = {
       theVote: { value: '', type: 'string' }
     },
     filename: 'actions/castVote.rho',
-  },
-  displayVote: {
-    fields: {
-      lockerTag: { value: 'inbox', type: 'string' },
-      issue: { value: '', type: 'string' },
-    },
-    filename: 'actions/displayVote.rho',
   },
   delegateVote: {
     fields: {
@@ -104,29 +70,49 @@ export const actions = {
     },
     filename: 'actions/tallyVotes.rho',
   },
+  _____________________________: {
+    fields:{},
+    filename: `dropdown-spacer`,
+  },
   share: {
     fields: {
       lockerTag: { value: 'inbox', type: 'string' },
       toInboxURI: { value: '', type: 'uri' },
-      type: { value: '', type: 'string'},
-      subtype: { value: '', type: 'string'}
+      type: { value: '', type: 'string' },
+      subtype: { value: '', type: 'string' }
 
     },
     filename: 'actions/share.rho',
   },
-  getRoll: {
-    fields: {},
-    filename: 'actions/getRoll.rho',
-  },
-  peekKudos: {
-    fields: {},
-    filename: 'actions/peekKudos.rho',
-  },
-  awardKudos: {
+  displayVote: {
     fields: {
-      them: { type: 'string', value: '' }
+      lockerTag: { value: 'inbox', type: 'string' },
+      issue: { value: '', type: 'string' },
     },
-    filename: 'actions/awardKudos.rho',
+    filename: 'actions/displayVote.rho',
+  },
+  sendMail: {
+    fields: {
+      lockerTag: { value: 'inbox', type: 'string' },
+      toInboxURI: { value: '', type: 'uri' },
+      from: { value: '', type: 'string' },
+      to: { value: '', type: 'string' },
+      sub: { value: '', type: 'string' },
+      body: { value: '', type: 'string' },
+    },
+    filename: 'actions/sendMail.rho',
+  },
+  ____________________________: {
+    fields: {},
+    filename: `dropdown-spacer`,
+  },
+  transfer: {
+    fields: {
+      revAddrFrom: { value: '', type: 'walletRevAddr' },
+      revAddrTo: { value: '', type: 'string' },
+      amount: { value: '100000000', type: 'number' }
+    },
+    filename: 'actions/transfer.rho',
   },
   newCommunity: {
     fields: {
@@ -143,6 +129,10 @@ export const actions = {
       lockerTag: { value: 'inbox', type: 'string' },
     },
     filename: 'actions/addMember.rho',
+  },
+  ___________________________: {
+    fields: {},
+    filename: `dropdown-spacer`,
   },
   newMemberDirectory: {
     fields: {},
@@ -181,5 +171,27 @@ export const actions = {
       lockerTag: { value: 'inbox', type: 'string' }
     },
     filename: 'actions/makeMint.rho',
+  },
+  helloWorld: {
+    fields: {},
+    filename: 'actions/helloWorld.rho',
+  },
+  getRoll: {
+    fields: {},
+    filename: 'actions/getRoll.rho',
+  },
+  peekKudos: {
+    fields: {},
+    filename: 'actions/peekKudos.rho',
+  },
+  awardKudos: {
+    fields: {
+      them: { type: 'string', value: '' }
+    },
+    filename: 'actions/awardKudos.rho',
+  },
+  lookupURI: {
+    fields: { URI: { value: '', type: 'uri' } },
+    filename: 'actions/lookupURI.rho',
   },
 };
