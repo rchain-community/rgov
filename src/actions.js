@@ -151,7 +151,6 @@ export const actions = {
   CallForHelp: {
     fields: {
       lockerTag: { value: 'inbox', type: 'string' },
-      toInboxURI: { value: '', type: 'uri' },
       from: { value: '', type: 'string' },
       tips: { value: '', type: 'string' },
       revletts: { value: "100000000", type: 'number' },
