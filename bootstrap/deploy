@@ -3,9 +3,9 @@
 private_key=`cat pk.bootstrap`
 lastblock=$(curl -s 'http://localhost:40403/api/blocks/1'|jq '.[].blockNumber')
 for t in $@;do
-   echo "Deploying $t after block $lastblock"
+   echo "Deploying $t after block ${lastblock:-0}"
    rnode deploy \
-   --valid-after-block-number $lastblock \
+   --valid-after-block-number ${lastblock:-0} \
    --phlo-price 1 \
    --phlo-limit 100000000 \
    --private-key $private_key \
