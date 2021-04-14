@@ -293,7 +293,7 @@ function buildUI({
   mount('#netControl', networkControl(state, { html }));
   let netselect = document.getElementById("netControlSelect")
   let host = document.location.hostname;
-  if ( host.indexOf("test")>=0 ) network = "texnet";
+  if ( host.indexOf("test")>=0 ) network = "testnet";
   else if ( host.indexOf("rhobot")>=0 ) network = "rhobot";
   else if ( host.indexOf("localhost")>=0 ) network = "localhost";
   else network = "mainnet";
