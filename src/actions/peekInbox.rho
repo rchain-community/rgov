@@ -1,6 +1,6 @@
-match ["inbox"] {
-[lockerTag] => {
-new  
+match ["inbox", "", ""] {
+[lockerTag, type, subtype] => {
+new
 //                 type and subtype are optional
 
    deployId(`rho:rchain:deployId`),
