@@ -19,13 +19,10 @@
   <div>
     <h1>Liquid Democracy Participation Experiment</h1>
 
-    <p>idea: show avatars for members; give emoji kudos <a href="https://emojipedia.org/red-heart/">❤️</a></p>
-    <h3>ToDo</h3>
     <ul>
-      <li>handle multiple deploys concurrently</li>
-      <li>"insert 25cents to play" account rather than in-your-face signature at each move</li>
-      <li>push more of the actions down into deployed contracts</li>
-      <li>provide access to #define bindings in actions</li>
+      <li>Select an <a href="https://us02web.zoom.us/j/6853551826?pwd=NG1BdDFpSUZBQndQRnZvUUtLRG1BUT09">
+        account in metamask</a> which owns REV in the selected network.</li>
+      <li>Create a newinbox <b>only once</b>  per network and share your URI (on discord for now).</li>
     </ul>
     <form>
       <fieldset>
@@ -41,6 +38,7 @@
           <textarea id='rholang-term' cols="80" rows="16"></textarea>
         </div>
         <div id="netControl">
+          Network:
           <select id="netControlSelect">
             <!-- <option name="network" value="mainnet">mainnet</option>
             <option name="network" value="testnet" selected>testnet</option>
@@ -72,10 +70,24 @@
   </div>
   <hr />
   <address>
-    by Dan Connolly, Jim Whitescarver,
+    by Dan Connolly, Jim Whitescarver, Bill Keuntje
     <br />
     and the <a href="https://github.com/rchain-community/">RChain Community</a>
   </address>
+  <p>idea: show avatars for members; give emoji kudos <a href="https://emojipedia.org/red-heart/">❤️</a></p>
+    <h3>ToDo</h3>
+    <ul>
+      <li>user interface</li>
+      <li>working group (multi-sig)</li>
+      <li>Ballots (multi-issue)</li>
+      <li>crowd fund budgeting</li>
+      <li>Integration with github issues (graphql)</li>
+      <li>Ranked choice voting</li>
+      <li>handle multiple deploys concurrently</li>
+      <li>"insert 25cents to play" account rather than in-your-face signature at each move</li>
+      <li>push more of the actions down into deployed contracts</li>
+      <li>provide access to #define bindings in actions</li>
+    </ul>
 </body>
 
 </html>

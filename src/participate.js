@@ -590,6 +590,7 @@ function networkControl(state, { html }) {
   return freeze({
     view() {
       return html`<div id="netControl">
+        Network:
         <select  id="netControlSelect"
           onchange=${(event) => (state.network = ckControl(event.target).value)}
         >
