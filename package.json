@@ -18,6 +18,8 @@
   "license": "Apache-2.0",
   "devDependencies": {
     "@types/babel__core": "^7.1.14",
+    "@typescript-eslint/eslint-plugin": "^4.21.0",
+    "@typescript-eslint/parser": "^4.21.0",
     "eslint": "^7.9.0",
     "eslint-config-airbnb": "^18.2.0",
     "eslint-config-airbnb-base": "^14.2.0",
