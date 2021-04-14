@@ -1,3 +1,4 @@
+
 match ["inbox"] {
 [lockerTag] => {
 new  
@@ -7,14 +8,14 @@ new
    deployerId(`rho:rchain:deployerId`),
    ch
 in {
-   for(@{"peek": *peek, "URI": uri ..._} <<- @[*deployerId, lockerTag]) {
+   for(@{"receive": *receive, "URI": uri ..._} <<- @[*deployerId, lockerTag]) {
       deployId!({"URI": uri}) |
       if (type == "" ) {
-         peek!(*deployId)
+         receive!(*deployId)
       } else if (subtype == "" ) {
-         peek!(type,*deployId)
+         receive!(type,*deployId)
       }  else {
-         peek!(type,subtype,*deployId)
+         receive!(type,subtype,*deployId)
       }
    }
 }

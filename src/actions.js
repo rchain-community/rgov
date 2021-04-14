@@ -48,8 +48,18 @@ export const actions = {
   peekInbox: {
     fields: {
       lockerTag: { value: 'inbox', type: 'string' },
+      type: { value: '', type: 'string'},
+      subtype: { value: '', type: 'string'},
     },
     filename: 'actions/peekInbox.rho',
+  },
+  receiveFromInbox: {
+    fields: {
+      lockerTag: { value: 'inbox', type: 'string' },
+      type: { value: '', type: 'string'},
+      subtype: { value: '', type: 'string'},
+    },
+    filename: 'actions/receiveFromInbox.rho',
   },
   castVote: {
     fields: {
