@@ -34,7 +34,7 @@ const NETWORKS = {
     observerBase: 'https://rnodeapi.rhobot.net',
     // TODO: rotate validators
     validatorBase: 'https://rnodeapi.rhobot.net',
-    adminBase: 'https://rnodeadminrhobot.net',
+    adminBase: 'https://rnodeadmin.rhobot.net',
   },
   mainnet: {
     observerBase: 'https://observer.services.mainnet.rchain.coop',
