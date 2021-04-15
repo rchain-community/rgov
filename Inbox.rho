@@ -1,14 +1,16 @@
 new Inbox,
   deployId(`rho:rchain:deployId`),
+  lookup(`rho:registry:lookup`),
   stdout(`rho:io:stdout`) in {
 stdout!("begin") |
 contract Inbox(capabilities) = {
   new read, write, peek, box in {
+    stdout!(["Inbox returning", bundle+{*read}, bundle+{*write}, bundle+{*peek}]) |
     capabilities!(bundle+{*read}, bundle+{*write}, bundle+{*peek}) |
     box!(Nil) |
 
     contract read(ret) = {
-      for (items <<- box) {
+      for (items <- box) {
         ret!(*items)
       }
     } |
@@ -65,7 +67,7 @@ contract Inbox(capabilities) = {
         match (*items) {
           {[=*type, =*subtype, ...item] | rest} => {
             //stdout!(item) |
-            ret!(item) 
+            ret!(item)
           }
           _ => {
            ret!(Nil) | stdout!([*type, *subtype, "not found"])
@@ -100,23 +102,32 @@ contract Inbox(capabilities) = {
     }
   }
 } |
-new capabilities, ack, ack1, ack2, ack3, ack4, ack5, message, uriCh, ret, insertArbitrary(`rho:registry:insertArbitrary`) in {
+new creationCh, lookupCh, lookupCaps, capabilities, ack, ack1, ack2, ack3, ack4, ack5, message, uriCh, ret, insertArbitrary(`rho:registry:insertArbitrary`) in {
   stdout!("hello world") |
-  insertArbitrary!(bundle+{*Inbox}, *uriCh)|
-  for (@uri <- uriCh) {
+  stdout!(["Unforgeable", bundle+{*Inbox}]) |
+  insertArbitrary!(bundle+{*Inbox}, *creationCh)|
+  for (@uri <- creationCh) {
     stdout!(["#define $Inbox", uri]) |
-    deployId!(uri)
+    deployId!(uri) |
+    lookup!(uri, *lookupCh) |
+    for (InboxClass <- lookupCh) {
+      stdout!(["InboxClass", *InboxClass]) |
+      InboxClass!(*lookupCaps) |
+      for (x, y, z <- lookupCaps) {
+        stdout!(["x", *x, "y", *y, "z", *z])
+      }
+    }
   } |
   Inbox!(*capabilities) |
   for (receive, send, peek <- capabilities) {
-    stdout!("received capabilities") |
+    stdout!(["received capabilities", *receive, *send, *peek]) |
   insertArbitrary!(*send, *uriCh)|
     send!(["values","test", {"a": "b", "b": "c"}], *ack) |
     send!(["chat","myusername" ++ ": Watson come quickly!"], *ack1) |
-    send!(["chat","myusername", "Watson come now!"], *ack1) |
-    send!(["chat","hello world"], *ack) |
+    send!(["chat","myusername", "Watson come now!"], *ack2) |
+    send!(["chat","hello world"], *ack3) |
     for ( uri <- uriCh;  _ <- ack; _ <- ack1; _ <- ack2; _ <- ack3) {
-      stdout!(["inbox",*uri]) | // for testing temprarily
+      stdout!(["test inbox",*uri]) | // for testing temprarily
       send!(["values","test", {"a": "x", "c": "d"}], *ret) |
       for ( map <- ret ) {peek!("values","test",*stdout)} |
       //receive!(["chat", _ ], *message) |

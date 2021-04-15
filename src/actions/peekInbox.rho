@@ -1,0 +1,22 @@
+match ["inbox", "", ""] {
+[lockerTag, type, subtype] => {
+new
+//                 type and subtype are optional
+
+   deployId(`rho:rchain:deployId`),
+   deployerId(`rho:rchain:deployerId`),
+   ch
+in {
+   for(@{"peek": *peek, "URI": uri ..._} <<- @[*deployerId, lockerTag]) {
+      deployId!({"URI": uri}) |
+      if (type == "" ) {
+         peek!(*deployId)
+      } else if (subtype == "" ) {
+         peek!(type,*deployId)
+      }  else {
+         peek!(type,subtype,*deployId)
+      }
+   }
+}
+
+}} // end of match

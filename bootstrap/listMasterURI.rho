@@ -1,0 +1,17 @@
+new
+   stdout(`rho:io:stdout`)
+   ,deployerId(`rho:rchain:deployerId`)
+   ,mapCh
+in {
+   for(@{"read": *read, ..._} <<- @[*deployerId, "MasterContractAdmin"])
+   {  stdout!(["read", *read])
+   |  deployerId!(["read", *read])
+   |  read!(*mapCh)
+   |  for (map <- mapCh)
+      {  stdout!(*map.keys().toList())
+      |  deployerId!(["read", *read])
+      |  stdout!(*map)
+      |  deployerId!(*map)
+      }
+   }
+}

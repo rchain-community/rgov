@@ -19,6 +19,11 @@
   <div>
     <h1>Liquid Democracy Participation Experiment</h1>
 
+    <ul>
+      <li>Select an <a href="https://us02web.zoom.us/j/6853551826?pwd=NG1BdDFpSUZBQndQRnZvUUtLRG1BUT09">
+        account in metamask</a> which owns REV in the selected network.</li>
+      <li>Create a newinbox <b><u>only once</u></b>  per network and share your URI (on discord for now).</li>
+    </ul>
     <form>
       <fieldset>
         <div id="actionControl" class="mount">
@@ -33,16 +38,19 @@
           <textarea id='rholang-term' cols="80" rows="16"></textarea>
         </div>
         <div id="netControl">
-          <select>
-            <option name="network" value="mainnet">mainnet</option>
+          Network:
+          <select id="netControlSelect">
+            <!-- <option name="network" value="mainnet">mainnet</option>
             <option name="network" value="testnet" selected>testnet</option>
             <option name="network" value="localhost" selected>localhost</option>
+            <option name="network" value="rhobot" selected>rhobot</option> -->
           </select>
         </div>
         <div id="runControl">
           <button id="run">Run</button>
           <section id="resultSection" style="display: none">
             <h2>Result</h2>
+            <pre id ="deployId"></pre>
             <pre id="result"></pre>
             <h2>Block Info</h2>
             <small>
@@ -70,10 +78,27 @@
   </div>
   <hr />
   <address>
-    by Dan Connolly, Jim Whitescarver,
+    by Dan Connolly, Jim Whitescarver, Bill Keuntje
     <br />
     and the <a href="https://github.com/rchain-community/">RChain Community</a>
   </address>
+  <p>idea: show avatars for members; give emoji kudos <a href="https://emojipedia.org/red-heart/">❤️</a></p>
+    <h3>ToDo</h3>
+    <ul>
+      <li>Groups and group operations with membership nick-names, not URIs for inboxes</li>
+      <li>collect result history below current result</li>
+      <li>make retuned rholang executabl in result area</li>
+      <li>Governance user interface with dashboard</li>
+      <li>Working group (multi-sig actions)</li>
+      <li>Ballots (multi-issue)</li>
+      <li>Crowd fund budgeting</li>
+      <li>Integration with github issues (graphql)</li>
+      <li>Ranked choice voting</li>
+      <li>Handle multiple deploys concurrently</li>
+      <li>"insert 25cents to play" account rather than in-your-face signature at each move</li>
+      <li>Push more of the actions down into deployed contracts</li>
+      <li>Provide access to #define bindings in actions</li>
+    </ul>
 </body>
 
 </html>

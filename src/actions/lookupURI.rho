@@ -1,0 +1,16 @@
+match ["?"] {
+[URI] => {
+new
+   lookup(`rho:registry:lookup`),
+   return(`rho:rchain:deployId`),
+   stdout(`rho:io:stdout`),
+   lookupCh
+in {
+   lookup!(URI, *lookupCh) |
+   for (u <- lookupCh) {
+      stdout!([ "URI", URI, "Obj", *u]) |
+      return!([ "URI", URI, "Obj", *u])
+   }
+}
+
+}} // end of match

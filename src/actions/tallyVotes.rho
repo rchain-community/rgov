@@ -1,0 +1,17 @@
+match ["inbox",""] {
+[lockerTag, issue] => {
+new
+   return(`rho:rchain:deployId`),
+   deployerId(`rho:rchain:deployerId`),
+   stdout(`rho:io:stdout`),
+   ch
+in {
+   for (@{ "peek": *peek, ..._ } <<- @[*deployerId, lockerTag]) {
+      peek!("issue", issue, *ch) |
+      for (@[{"tally": *tally, ...restOfStuff }] <- ch) {
+         tally!(*return, *stdout)
+      }
+   }
+}
+
+}} // end of match

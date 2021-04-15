@@ -1,2 +1,7 @@
 node_modules
 rho_modules/
+rnode.log
+rhoid.js
+.vscode/
+dist/
+yarn.lock

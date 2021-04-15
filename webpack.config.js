@@ -5,7 +5,7 @@ module.exports = {
   mode: process.env.NODE_ENV,
   devtool: 'inline-source-map',
   devServer: {
-    contentBase: './dist',
+    contentBase: './src',
     hot: true,
   },
   entry: './src/participate.js',

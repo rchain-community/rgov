@@ -1,26 +1,47 @@
-new Community, commMap, deployId(`rho:rchain:deployId`), stdout(`rho:io:stdout`), lookup(`rho:registry:lookup`),
-insertArbitrary(`rho:registry:insertArbitrary`), uriCh, ret, ack in {
-    insertArbitrary!(bundle+{*Community},*uriCh) |
+new
+  Group,
+  commMap,
+  deployId(`rho:rchain:deployId`),
+  deployerId(`rho:rchain:deployerId`),
+  stdout(`rho:io:stdout`),
+  lookup(`rho:registry:lookup`),
+  insertArbitrary(`rho:registry:insertArbitrary`),
+  uriCh,
+  ret,
+  ack
+in {
+    insertArbitrary!(bundle+{*Group},*uriCh) |
     for ( @uri <- uriCh ) {
-       stdout!(["#define $Community", uri]) |
+       stdout!(["#define $Group", uri]) |
        deployId!(uri)
     } |
     commMap!({}) |
-    contract Community (@"new", @name, inbox, return) = {
-        new admin, methods, userlist, infoCh, ret in {
+    contract Group (@"new", @name, inbox, return) = {
+        new
+          admin,
+          methods,
+          userlist,
+          infoCh,
+          ret,
+          CapDirectory
+        in {
             userlist!([]) | methods!({}) |
-            stdout!("creating community.") |
+            stdout!("creating Group.") |
             for (@comms <- commMap ) {
                 if ( comms.get(name) != Nil ) {
-                    stdout!("error: community with that name already exists") |
+                    stdout!("error: Group with that name already exists") |
                     commMap!(comms) |
                     return!(Nil)
                 } else {
-                  match ("import", "./directory.rho", `rho:id:...`) {
-                    (_, _, directoryURI) => lookup!(directoryURI, *ret)
+                  for(@{"read": *masterRead, ..._} <<- @[*deployerId, "MasterContractAdmin"]) {
+                    stdout!({"read": *masterRead}) |
+                    masterRead!("Directory", *ret)
                   } |
                   for ( Directory <- ret ) {
                     stdout!(["got directory", *Directory]) |
+                    // Create Group capability directory
+                    Directory!(*CapDirectory) |
+                    // Create member directory
                     Directory!(*ret) |
                     for ( @{"read": *read, "write": *write, "grant": *grant, ..._ } <- ret ) {
                       commMap!(comms.union({name: *infoCh})) |
@@ -54,16 +75,16 @@ insertArbitrary(`rho:registry:insertArbitrary`), uriCh, ret, ack in {
               }
             }
           } |
-    contract Community (@"request", @name, @userid, return) = {
+    contract Group (@"request", @name, @userid, return) = {
             //stdout!(*info) |
         for ( @{map /\  {=name: *infoCh, ..._}} <<- commMap ) {
           for ( @{info /\ {"request": *inbox, ..._ }}  <<- infoCh ) {
-            inbox!(["Community", "request", name, userid])|
+            inbox!(["Group", "request", name, userid])|
             return!(info)
           }
         }
       } |
-    contract Community (@"lookup", @name, return) = {
+    contract Group (@"lookup", @name, return) = {
         for ( @{map /\  {=name: *infoCh, ..._}} <<- commMap ) {
           for ( info <<- infoCh ) {
             //stdout!(*info) |
@@ -71,25 +92,25 @@ insertArbitrary(`rho:registry:insertArbitrary`), uriCh, ret, ack in {
           }
         }
       } |
-    contract Community (@"lookup", return) = {
+    contract Group (@"lookup", return) = {
         for ( @map <<- commMap ) {
           //stdout!(map) |
           return!(map)
         }
     } |
-    Community!("new","test", Nil, *ret) |
-    Community!("new","test2", Nil, *ret) |
+    Group!("new","test", Nil, *ret) |
+    Group!("new","test2", Nil, *ret) |
     for (_ <- ret) { Nil } |
     for ( @{"admin": admin, "read": read, "write": write, "grant": grant} <- ret ) {
       stdout!("got em") |
-      Community!("lookup","test",*stdout) |
-      Community!("lookup","test2",*stdout) |
-      Community!("lookup",*stdout) |
-      //Community!("new","test", Nil, *stdout) |
+      Group!("lookup","test",*stdout) |
+      Group!("lookup","test2",*stdout) |
+      Group!("lookup",*stdout) |
+      //Group!("new","test", Nil, *stdout) |
       admin|("add user","jim","xxxxx", *ret) |
       for ( _ <- ret ) {
-       Community!("lookup","test",*stdout) |
-       Community!("lookup","test2",*stdout)
+       Group!("lookup","test",*stdout) |
+       Group!("lookup","test2",*stdout)
       }
     }
 }

@@ -20,17 +20,26 @@ const maxFee = { phloPrice: 1, phloLimit: 0.05 * 100000000 };
 // TODO: ISSUE: are networks really const? i.e. design-time data?
 const NETWORKS = {
   localhost: {
-	  observerBase: 'http://localhost:40403',
+    observerBase: 'http://localhost:40403',
     validatorBase: 'http://localhost:40403',
+    adminBase: 'http://localhost:40405',
   },
   testnet: {
     observerBase: 'https://observer.testnet.rchain.coop',
     // TODO: rotate validators
-    validatorBase: 'https://node2.testnet.rchain-dev.tk',
+    validatorBase: 'https://node1.testnet.rchain-dev.tk',
+    adminBase: '',
+  },
+  rhobot: {
+    observerBase: 'http://rhobot.net:40403',
+    // TODO: rotate validators
+    validatorBase: 'http://rhobot.net:40403',
+    adminBase: 'http://rhobot.net:40405',
   },
   mainnet: {
     observerBase: 'https://observer.services.mainnet.rchain.coop',
     validatorBase: 'https://node12.root-shard.mainnet.rchain.coop',
+    adminBase: '',
   },
 };
 
@@ -53,6 +62,8 @@ const ROLL = `11112fZEixuoKqrGH6BxAPayFD8LWq9KRVFwcLvA5gg6GAaNEZvcKL
 `
   .trim()
   .split('\n');
+
+var deployId = "";
 
 /**
  * TODO: expect rather than unwrap (better diagnostics)
@@ -163,16 +174,16 @@ function buildUI({
   fetch,
 }) {
   const rnode = RNode(fetch);
-  let action = 'helloWorld';
-  let network = 'localhost';
-  /** @type {{ observer: Observer, validator: Validator}} shard */
+  let action = '_select_an_action_';
+  let network = 'rhobot';
+  /** @type {{ observer: Observer, validator: Validator, admin: import('rchain-api/src/rnode').RNodeAdmin }} shard */
   let shard;
   let term = ''; //@@DEBUG
   /** @type {Record<string, string>} */
   let fieldValues = {};
   /** @type {RhoExpr[]} */
   let results = [];
-  const bindings = { mainnet: {}, localhost: { $roll: ROLL}, testnet: { } };
+  const bindings = { mainnet: {}, localhost: { $roll: ROLL}, testnet: { }, rhobot: { } };
 
   const state = {
     get shard() {
@@ -189,6 +200,7 @@ function buildUI({
       shard = {
         observer: rnode.observer(net.observerBase),
         validator: rnode.validator(net.validatorBase),
+        admin: rnode.admin(net.adminBase),
       };
       state.bindings = bindings[network];
     },
@@ -202,29 +214,51 @@ function buildUI({
       const init = Object.fromEntries(
         entries(fields).map(([name, { value }]) => [name, value || '']),
       );
-      state.fields = init;
+      state.setFields(init);
     },
     get fields() {
       return fieldValues;
     },
-    set fields(/** @type {Record<String, string>} */ value) {
-      const { fields, template } = actions[state.action];
+    async setFields(/** @type {Record<String, string>} */ value) {
+      const { fields, filename } = actions[state.action];
+      const tmp = await (await fetch(filename)).text()
+      const newPos = tmp.indexOf("new");
+      const endPos = tmp.lastIndexOf("}", tmp.lastIndexOf("}"));
+      let content = tmp.substring(newPos, endPos - 1);
       if (fields) {
         fieldValues = Object.fromEntries(
           keys(fields).map((k) => [k, value[k]]),
         );
-        const exprs = entries(fieldValues).map(([name, value]) =>
-          fields[name].type === 'uri' ? `\`${value}\`` : JSON.stringify(value),
-        );
+        const exprs = entries(fieldValues).map(([name, value]) => {
+          if(fields[name].type === 'uri')
+          {
+            return `\`${value.trim()}\``
+          }
+          else if(fields[name].type === 'set')
+          {
+            return `Set(${value})`
+          }
+          else if(fields[name].type === 'number')
+          {
+            return value
+          }
+          else
+          {
+            return JSON.stringify(value)
+          }
+          //fields[name].type === 'uri' ? `\`${value}\`` : JSON.stringify(value),
+
+        });
         state.term = `match [${exprs.join(', ')}] {
           [${keys(fieldValues).join(', ')}] => {
-            ${template}
+            ${content}
           }
         }`;
       } else {
         fieldValues = {};
-        state.term = template;
+        state.term = content;
       }
+      m.redraw();
     },
     get term() {
       return term;
@@ -253,10 +287,18 @@ function buildUI({
     problem: undefined,
   };
   state.action = action; // compute initial term
-  state.network = 'localhost'; // initialize shard
+  state.network = 'rhobot'; // initialize shard
 
   mount('#actionControl', actionControl(state, { html, getEthProvider }));
   mount('#netControl', networkControl(state, { html }));
+  let netselect = document.getElementById("netControlSelect")
+  let host = document.location.hostname;
+  if ( host.indexOf("test")>=0 ) network = "testnet";
+  else if ( host.indexOf("rhobot")>=0 ) network = "rhobot";
+  else if ( host.indexOf("localhost")>=0 ) network = "localhost";
+  else network = "mainnet";
+  state.network = network;
+  netselect.value = network;
   mount(
     '#runControl',
     runControl(state, {
@@ -306,6 +348,7 @@ function fixIndent(code) {
  * @param {{
  *   action: string,
  *   fields: Record<string, string>,
+ *   setFields: (r:Record<string, string>) => Promise<void>,
  *   term: string,
  * }} state
  * @param {HTMLBuilder & EthSignAccess} io
@@ -325,7 +368,7 @@ function actionControl(state, { html, getEthProvider }) {
 
   const fty = (action, name) => {
     const f = actions[action].fields;
-    if (!f) return 'string';
+    if (!f || !f[name]) return 'string';
     return f[name].type;
   };
 
@@ -337,7 +380,8 @@ function actionControl(state, { html, getEthProvider }) {
           if (!revAddr) throw new Error('bad ethAddr???');
           const current = { [name]: revAddr };
           const old = state.fields;
-          state.fields = { ...old, ...current };
+          state.setFields({ ...old, ...current });
+          // state.fields = ;
           m.redraw(); // FIXME ambient?
         }),
       );
@@ -362,7 +406,7 @@ function actionControl(state, { html, getEthProvider }) {
               onchange=${(/** @type {Event} */ event) => {
                 const current = { [name]: ckControl(event.target).value };
                 const old = state.fields;
-                state.fields = { ...old, ...current };
+                state.setFields({ ...old, ...current });
                 return false;
               }}
           /></label>
@@ -381,6 +425,7 @@ function actionControl(state, { html, getEthProvider }) {
             name="action"
             onchange=${(/** @type {Event} */ event) => {
               state.action = ckControl(event.target).value;
+              deployId = "";
               return false;
             }}
           >
@@ -404,10 +449,11 @@ ${state.term}</textarea
 
 /**
  * @param {{
- *   shard: { observer: Observer, validator: Validator },
+ *   shard: { observer: Observer, validator: Validator, admin: import('rchain-api/src/rnode').RNodeAdmin },
  *   term: string,
  *   results: RhoExpr[],
  *   problem?: string,
+ *   action: any
  * }} state
  * @param {HTMLBuilder & FormAccess<any> & EthSignAccess & ScheduleAccess} io
  *
@@ -444,12 +490,25 @@ function runControl(
     }
   }
 
+  var proposeCount = 0;
+  async function propose() {
+    proposeCount++;
+    const adm = state.shard.admin;
+    adm.propose()
+    .then ( x => {console.log(x); proposeCount = 0} )
+    .catch(err => {
+      console.log(proposeCount, err)
+      if ( proposeCount < 7) { 
+        setTimeout(propose,10000)
+      }
+     });
+  }
+
   async function deploy(/** @type {string} */ term) {
     const obs = state.shard.observer;
     const val = state.shard.validator;
     state.problem = undefined;
     state.results = [];
-
     const account = freeze({
       polling: () =>
         // TODO: UI to cancel
@@ -478,8 +537,12 @@ function runControl(
       await busy(
         '#deploy',
         (async () => {
+          console.log('@@DEBUG', state.action, { "log message": "string" });
+          setTimeout(propose, 10000);
+          console.log('@@DEBUG', state.action, { "log message": "propose" });
           const deploy = await startTerm(term, val, obs, account);
           console.log('@@DEBUG', state.action, { deploy });
+          deployId = deploy.sig;
           const { expr } = await listenAtDeployId(obs, deploy);
           console.log('@@DEBUG', state.action, { expr });
           state.results = [expr];
@@ -513,6 +576,7 @@ function runControl(
         </button>
         <section id="resultSection" ...${hide(!state.results)}>
           <h2>Result</h2>
+          <pre id="deployId"> ${deployId} </pre>
           <pre id="result">
 ${state.results ? pprint(state.results.map(RhoExpr.parse)) : ''}</pre
           >
@@ -535,13 +599,15 @@ function networkControl(state, { html }) {
   return freeze({
     view() {
       return html`<div id="netControl">
-        <select
+        Network:
+        <select  id="netControlSelect"
           onchange=${(event) => (state.network = ckControl(event.target).value)}
         >
           <option name="network" value="mainnet">mainnet</option>
-          <option name="network" value="testnet">testnet</option>
-          <option name="network" value="localhost" selected>localhost</option>
-        </select>
+          <option name="network" value="localhost">localhost</option>
+          <option name="network" value="rhobot" ${"selected"}>rhobot</option>
+          <option name="network" id="testnet" value="testnet">testnet</option>
+         </select>
       </div>`;
     },
   });

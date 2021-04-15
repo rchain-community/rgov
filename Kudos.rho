@@ -1,9 +1,13 @@
 new Kudos,
   deployId(`rho:rchain:deployId`),
   insertArbitrary(`rho:registry:insertArbitrary`),
+  stdout(`rho:io:stdout`),
   state, regCh
 in {
-  insertArbitrary!(*Kudos, *regCh) | for (@uri <- regCh) { deployId!(uri) }
+  insertArbitrary!(*Kudos, *regCh) | for (@uri <- regCh) {
+    stdout!(["#define $Kudos", uri]) |
+    deployId!(["#define $Kudos", uri])
+  }
   |
   contract Kudos(@"peek", return) = { for (@current <<- state) { return!(current) } }
   |

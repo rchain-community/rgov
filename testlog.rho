@@ -1,3 +1,0 @@
-lookup!(`rho:id:5bca6m8fz5ydcpqirz4fdjohbmkpj3khzbmm44ptgidp5njg8d6s7a`,logCh)
-for( Log <- logCh) {
-}
