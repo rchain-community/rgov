@@ -490,9 +490,18 @@ function runControl(
     }
   }
 
+  var proposeCount = 0;
   async function propose() {
+    proposeCount++;
     const adm = state.shard.admin;
-    adm.propose();
+    adm.propose()
+    .then ( x => {console.log(x); proposeCount = 0} )
+    .catch(err => {
+      console.log(proposeCount, err)
+      if ( proposeCount < 7) { 
+        setTimeout(propose,10000)
+      }
+     });
   }
 
   async function deploy(/** @type {string} */ term) {
