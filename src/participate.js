@@ -30,6 +30,12 @@ const NETWORKS = {
     validatorBase: 'https://node1.testnet.rchain-dev.tk',
     adminBase: '',
   },
+  demo: {
+    observerBase: 'https://demoapi.rhobot.net',
+    // TODO: rotate validators
+    validatorBase: 'https://demoapi.rhobot.net',
+    adminBase: 'https://demoadmin.rhobot.net',
+  },
   rhobot: {
     observerBase: 'https://rnodeapi.rhobot.net',
     // TODO: rotate validators
@@ -183,7 +189,7 @@ function buildUI({
   let fieldValues = {};
   /** @type {RhoExpr[]} */
   let results = [];
-  const bindings = { mainnet: {}, localhost: { $roll: ROLL}, testnet: { }, rhobot: { } };
+  const bindings = { mainnet: {}, localhost: { $roll: ROLL}, testnet: { }, demo: { }, rhobot: { } };
 
   const state = {
     get shard() {
@@ -294,6 +300,7 @@ function buildUI({
   let netselect = document.getElementById("netControlSelect")
   let host = document.location.hostname;
   if ( host.indexOf("test")>=0 ) network = "testnet";
+  else if ( host.indexOf("demo")>=0 ) network = "demo";
   else if ( host.indexOf("rhobot")>=0 ) network = "rhobot";
   else if ( host.indexOf("localhost")>=0 ) network = "localhost";
   else network = "mainnet";
@@ -605,7 +612,8 @@ function networkControl(state, { html }) {
         >
           <option name="network" value="mainnet">mainnet</option>
           <option name="network" value="localhost">localhost</option>
-          <option name="network" value="rhobot" ${"selected"}>rhobot</option>
+          <option name="network" value="demo" ${"selected"}>demo</option>
+          <option name="network" value="rhobot">rhobot</option>
           <option name="network" id="testnet" value="testnet">testnet</option>
          </select>
       </div>`;
