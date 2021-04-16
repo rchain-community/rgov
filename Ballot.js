@@ -1,4 +1,4 @@
-/**
+/** 
  * @title Ballot - a one-member-one-vote contract
  *
  * "A member may cast his or her vote solely by means of written
