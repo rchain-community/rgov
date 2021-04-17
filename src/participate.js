@@ -1,3 +1,5 @@
+/* global window, document, fetch, setTimeout */
+/* global HTMLInputElement, HTMLSelectElement, HTMLTextAreaElement, HTMLButtonElement */
 // @ts-check
 import htm from 'htm';
 import m from 'mithril';

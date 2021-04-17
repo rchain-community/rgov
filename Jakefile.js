@@ -3,6 +3,7 @@
  *
  * See https://jakejs.com/
  */
+/* global setTimeout, clearTimeout, setInterval, clearInterval, module, require, process */
 // @ts-check
 
 'use strict';
