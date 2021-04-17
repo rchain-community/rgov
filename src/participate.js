@@ -25,6 +25,7 @@ const maxFee = { phloPrice: 1, phloLimit: 0.05 * 100000000 };
 // TODO: ISSUE: are networks really const? i.e. design-time data?
 const NETWORKS = {
   localhost: {
+    hostPattern: 'localhost',
     observerBase: 'http://localhost:40403',
     validatorBase: 'http://localhost:40403',
     adminBase: 'http://localhost:40405',
@@ -36,12 +37,14 @@ const NETWORKS = {
     adminBase: '',
   },
   demo: {
+    hostPattern: 'demo',
     observerBase: 'https://demoapi.rhobot.net',
     // TODO: rotate validators
     validatorBase: 'https://demoapi.rhobot.net',
     adminBase: 'https://demoadmin.rhobot.net',
   },
   rhobot: {
+    hostPattern: 'rhobot',
     observerBase: 'https://rnodeapi.rhobot.net',
     // TODO: rotate validators
     validatorBase: 'https://rnodeapi.rhobot.net',
@@ -53,6 +56,15 @@ const NETWORKS = {
     adminBase: '',
   },
 };
+/**
+ * @param {string} hostname
+ * @returns {string}
+ */
+function netFromHost(hostname) {
+  return (Object.entries(NETWORKS).find(
+    ([_name, { hostPattern }]) => hostname.indexOf(hostPattern) >= 0,
+  ) || ['mainnet'])[0];
+}
 
 // rnode.js:63 POST https://observer.services.mainnet.rchain.coop/api/explore-deploy 400 (Bad Request)
 // rnode.js:73 Uncaught (in promise) Error: File write failed: No space left on device
@@ -88,6 +100,7 @@ function unwrap(x) {
   return x;
 }
 
+// WARNING: ambient access
 document.addEventListener('DOMContentLoaded', () => {
   /** @type {(selector: string) => HTMLElement} */
   const $ = (selector) => unwrap(document.querySelector(selector));
@@ -104,6 +117,7 @@ document.addEventListener('DOMContentLoaded', () => {
     getEthProvider: () => getEthProvider({ window }),
     mount: (selector, control) => m.mount($(selector), control),
     redraw: () => m.redraw(),
+    hostname: document.location.hostname,
   });
 });
 
@@ -147,7 +161,8 @@ function makeBusy($) {
 }
 
 /**
- * @param { HTMLBuilder & EthSignAccess & MithrilMount & WebAccess & FormAccess<any> & ScheduleAccess } io
+ * @param { HTMLBuilder & EthSignAccess & MithrilMount & WebAccess & FormAccess<any> & ScheduleAccess & {
+ *  hostname: string }} io
  * @typedef {import('./actions').FieldSpec} FieldSpec
  *
  * @typedef {{
@@ -183,10 +198,11 @@ function buildUI({
   getEthProvider,
   mount,
   fetch,
+  hostname,
 }) {
   const rnode = RNode(fetch);
   let action = '_select_an_action_';
-  let network = 'rhobot';
+  let network = netFromHost(hostname);
   /** @type {{ observer: Observer, validator: Validator, admin: import('rchain-api/src/rnode').RNodeAdmin }} shard */
   let shard;
   let term = ''; // @@DEBUG
@@ -294,19 +310,10 @@ function buildUI({
     problem: undefined,
   };
   state.action = action; // compute initial term
-  state.network = 'rhobot'; // initialize shard
 
   mount('#actionControl', actionControl(state, { html, getEthProvider }));
   mount('#netControl', networkControl(state, { html }));
-  let netselect = document.getElementById("netControlSelect")
-  let host = document.location.hostname;
-  if ( host.indexOf("test")>=0 ) network = "testnet";
-  else if ( host.indexOf("demo")>=0 ) network = "demo";
-  else if ( host.indexOf("rhobot")>=0 ) network = "rhobot";
-  else if ( host.indexOf("localhost")>=0 ) network = "localhost";
-  else network = "mainnet";
-  state.network = network;
-  netselect.value = network;
+
   mount(
     '#runControl',
     runControl(state, {
