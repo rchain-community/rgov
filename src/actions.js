@@ -11,7 +11,7 @@ console.log(uris.ReadcapURI)
 export const actions = {
   _select_an_action_: {
     fields: {},
-    filename: 'dropdown-spacer',
+    filename: 'actions/dropdown-spacer.rho',
   },
   checkBalance: {
     fields: {
@@ -86,7 +86,7 @@ export const actions = {
   },
   _____________________________: {
     fields:{},
-    filename: `dropdown-spacer`,
+    filename: `actions/dropdown-spacer.rho`,
   },
   share: {
     fields: {
@@ -118,7 +118,7 @@ export const actions = {
   },
   ____________________________: {
     fields: {},
-    filename: `dropdown-spacer`,
+    filename: `actions/dropdown-spacer.rho`,
   },
   transfer: {
     fields: {
@@ -146,7 +146,7 @@ export const actions = {
   },
   ___________________________: {
     fields: {},
-    filename: `dropdown-spacer`,
+    filename: `actions/dropdown-spacer.rho`,
   },
   newMemberDirectory: {
     fields: {},
