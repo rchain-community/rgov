@@ -109,14 +109,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
   buildUI({
     html,
-    busy: makeBusy($),
+    busy: makeBusy($, m.redraw),
     formValue: (selector) => ckControl($(selector)).value,
     fetch,
     setTimeout,
     clock: () => Promise.resolve(Date.now()),
     getEthProvider: () => getEthProvider({ window }),
     mount: (selector, control) => m.mount($(selector), control),
-    redraw: () => m.redraw(),
     hostname: document.location.hostname,
   });
 });
@@ -131,8 +130,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
 /**
  * @param {(selector: string) => HTMLElement} $
+ * @param { () => void } redraw
  */
-function makeBusy($) {
+function makeBusy($, redraw) {
   /**
    * @param {string} selector
    * @param {Promise<T>} p
@@ -154,7 +154,7 @@ function makeBusy($) {
       button.disabled = false;
       $('form').style.cursor = 'inherit';
       button.style.cursor = 'inherit';
-      m.redraw(); // FIXME ambient
+      redraw();
     }
   }
   return busy;
@@ -187,7 +187,6 @@ function rhoBody(tmp) {
  *
  * @typedef {{
  *   mount: (selector: string, component: import('mithril').Component) => void,
- *   redraw: () => void,
  * }} MithrilMount
  * @typedef {{
  *   getEthProvider: () => Promise<MetaMaskProvider>
@@ -216,7 +215,9 @@ function buildUI({
   let network = netFromHost(hostname);
   /** @type {{ observer: Observer, validator: Validator, admin: import('rchain-api/src/rnode').RNodeAdmin }} shard */
   let shard;
-  let term = ''; // @@DEBUG
+  let matchBody = '';
+  /** @type {string?} */
+  let term = '';
   /** @type {Record<string, string>} */
   let fieldValues = {};
   /** @type {RhoExpr[]} */
@@ -251,26 +252,36 @@ function buildUI({
     get action() {
       return action;
     },
-    set action(value) {
+    /** @param { string } value */
+    async setAction(value) {
       if (typeof value !== 'string') return;
+      const { fields = {}, filename } = actions[state.action];
       action = value;
-      const fields = actions[action].fields || {};
       const init = fromEntries(
         entries(fields).map(([name, { value }]) => [name, value || '']),
       );
-      state.setFields(init);
+      state.fields = init;
+      matchBody = '';
+      if (filename) {
+        term = null;
+        await busy(
+          '#deploy',
+          fetch(filename).then((reply) =>
+            reply.text().then((text) => {
+              matchBody = rhoBody(text);
+              state.fields = init; // redraw
+            }),
+          ),
+        );
+      }
     },
     get fields() {
       return fieldValues;
     },
-    async setFields(/** @type {Record<string, string>} */ value) {
-      const { fields, filename } = actions[state.action];
-      let content = '';
-      if (filename) {
-        content = rhoBody(await (await fetch(filename)).text());
-      }
+    set fields(/** @type {Record<string, string>} */ value) {
+      const { fields = {} } = actions[state.action];
       if (fields) {
-        fieldValues = fromEntries(keys(fields).map((k) => [k, value[k]]));
+        fieldValues = fromEntries(keys(fields).map((k) => [k, value[k] || '']));
         const exprs = entries(fieldValues).map(([name, value]) => {
           if (fields[name].type === 'uri') {
             return `\`${value.trim()}\``;
@@ -285,14 +296,13 @@ function buildUI({
         });
         state.term = `match [${exprs.join(', ')}] {
           [${keys(fieldValues).join(', ')}] => {
-            ${content}
+            ${matchBody}
           }
         }`;
       } else {
         fieldValues = {};
-        state.term = content;
+        state.term = matchBody;
       }
-      m.redraw();
     },
     get term() {
       return term;
@@ -320,7 +330,7 @@ function buildUI({
     },
     problem: undefined,
   };
-  state.action = action; // compute initial term
+  state.setAction(action); // compute initial term
 
   mount('#actionControl', actionControl(state, { html, getEthProvider }));
   mount('#netControl', networkControl(state, { html }));
@@ -373,9 +383,9 @@ function fixIndent(code) {
 /**
  * @param {{
  *   action: string,
+ *   setAction: (a: string) => Promise<void>,
  *   fields: Record<string, string>,
- *   setFields: (r:Record<string, string>) => Promise<void>,
- *   term: string,
+ *   term: string?,
  * }} state
  * @param {HTMLBuilder & EthSignAccess} io
  */
@@ -406,9 +416,7 @@ function actionControl(state, { html, getEthProvider }) {
           if (!revAddr) throw new Error('bad ethAddr???');
           const current = { [name]: revAddr };
           const old = state.fields;
-          state.setFields({ ...old, ...current });
-          // state.fields = ;
-          m.redraw(); // FIXME ambient?
+          state.fields = { ...old, ...current };
         }),
       );
       return false;
@@ -432,7 +440,7 @@ function actionControl(state, { html, getEthProvider }) {
               onchange=${(/** @type {Event} */ event) => {
                 const current = { [name]: ckControl(event.target).value };
                 const old = state.fields;
-                state.setFields({ ...old, ...current });
+                state.fields = { ...old, ...current };
                 return false;
               }}
           /></label>
@@ -450,7 +458,7 @@ function actionControl(state, { html, getEthProvider }) {
           <select
             name="action"
             onchange=${(/** @type {Event} */ event) => {
-              state.action = ckControl(event.target).value;
+              state.setAction(ckControl(event.target).value);
               deployId = '';
               return false;
             }}
@@ -466,7 +474,7 @@ function actionControl(state, { html, getEthProvider }) {
             state.term = ckControl(event.target).value;
           }}
         >
-${state.term}</textarea
+${state.term || ''}</textarea
         >
       `;
     },
@@ -476,7 +484,7 @@ ${state.term}</textarea
 /**
  * @param {{
  *   shard: { observer: Observer, validator: Validator, admin: import('rchain-api/src/rnode').RNodeAdmin },
- *   term: string,
+ *   term: string?,
  *   results: RhoExpr[],
  *   problem?: string,
  *   action: any
@@ -500,7 +508,10 @@ function runControl(
 
   const pprint = (obj) => JSON.stringify(obj, null, 2);
 
-  async function explore(/** @type {string} */ term) {
+  async function explore(/** @type {string?} */ term) {
+    if (!term) {
+      return;
+    }
     const obs = state.shard.observer;
     state.problem = undefined;
     state.results = [];
@@ -536,7 +547,10 @@ function runControl(
       });
   }
 
-  async function deploy(/** @type {string} */ term) {
+  async function deploy(/** @type {string?} */ term) {
+    if (!term) {
+      return;
+    }
     const obs = state.shard.observer;
     const val = state.shard.validator;
     state.problem = undefined;
@@ -590,6 +604,7 @@ function runControl(
     view() {
       return html`<button
           id="explore"
+          disabled=${state.term === null}
           onclick=${async (/** @type {Event} */ event) => {
             event.preventDefault();
             explore(state.term);
@@ -599,6 +614,7 @@ function runControl(
         </button>
         <button
           id="deploy"
+          disabled=${state.term === null}
           onclick=${async (/** @type {Event} */ event) => {
             event.preventDefault();
             deploy(state.term);
