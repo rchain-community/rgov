@@ -1,10 +1,11 @@
 // @ts-check
-import uris from '../ReadcapURI.json' // gives error but works correctly. https://mariusschulz.com/blog/importing-json-modules-in-typescript
-console.log(uris.ReadcapURI)
-// TODO: rholang goes in .rho files
+// gives error but works correctly. https://mariusschulz.com/blog/importing-json-modules-in-typescript
+import uris from '../ReadcapURI.json';
+
+console.log(uris.ReadcapURI);
 
 /**
- * @typedef {{ filename: string, fields?: Record<string, FieldSpec> }} ActionSpec
+ * @typedef {{ filename?: string, fields?: Record<string, FieldSpec> }} ActionSpec
  * @typedef {{ type: 'number' | 'string' | 'set' | 'uri' | 'walletRevAddr', value?: string }} FieldSpec
  * @type {Record<string, ActionSpec>}
  */
@@ -29,11 +30,11 @@ export const actions = {
     fields: {
       lockerTag: { value: 'inbox', type: 'string' },
       name: { type: 'string', value: '' },
-      //choice, choice, choice, ...
+      // choice, choice, choice, ...
       proposals: {
         type: 'set',
-        value: "",
-      }
+        value: '',
+      },
     },
     filename: 'actions/newIssue.rho',
   },
@@ -41,23 +42,23 @@ export const actions = {
     fields: {
       lockerTag: { value: 'inbox', type: 'string' },
       toInboxURI: { value: '', type: 'uri' },
-      issue: { value: '', type: 'string' }
+      issue: { value: '', type: 'string' },
     },
     filename: 'actions/addVoterToIssue.rho',
   },
   peekInbox: {
     fields: {
       lockerTag: { value: 'inbox', type: 'string' },
-      type: { value: '', type: 'string'},
-      subtype: { value: '', type: 'string'},
+      type: { value: '', type: 'string' },
+      subtype: { value: '', type: 'string' },
     },
     filename: 'actions/peekInbox.rho',
   },
   receiveFromInbox: {
     fields: {
       lockerTag: { value: 'inbox', type: 'string' },
-      type: { value: '', type: 'string'},
-      subtype: { value: '', type: 'string'},
+      type: { value: '', type: 'string' },
+      subtype: { value: '', type: 'string' },
     },
     filename: 'actions/receiveFromInbox.rho',
   },
@@ -65,7 +66,7 @@ export const actions = {
     fields: {
       lockerTag: { value: 'inbox', type: 'string' },
       issue: { value: '', type: 'string' },
-      theVote: { value: '', type: 'string' }
+      theVote: { value: '', type: 'string' },
     },
     filename: 'actions/castVote.rho',
   },
@@ -73,19 +74,19 @@ export const actions = {
     fields: {
       lockerTag: { value: 'inbox', type: 'string' },
       issue: { value: '', type: 'string' },
-      delegateURI: { value: '', type: 'uri' }
+      delegateURI: { value: '', type: 'uri' },
     },
     filename: 'actions/delegateVote.rho',
   },
   tallyVotes: {
     fields: {
       lockerTag: { value: 'inbox', type: 'string' },
-      issue: { value: '', type: 'string' }
+      issue: { value: '', type: 'string' },
     },
     filename: 'actions/tallyVotes.rho',
   },
   _____________________________: {
-    fields:{},
+    fields: {},
     filename: `dropdown-spacer`,
   },
   share: {
@@ -93,8 +94,7 @@ export const actions = {
       lockerTag: { value: 'inbox', type: 'string' },
       toInboxURI: { value: '', type: 'uri' },
       type: { value: '', type: 'string' },
-      subtype: { value: '', type: 'string' }
-
+      subtype: { value: '', type: 'string' },
     },
     filename: 'actions/share.rho',
   },
@@ -124,14 +124,14 @@ export const actions = {
     fields: {
       revAddrFrom: { value: '', type: 'walletRevAddr' },
       revAddrTo: { value: '', type: 'string' },
-      amount: { value: '100000000', type: 'number' }
+      amount: { value: '100000000', type: 'number' },
     },
     filename: 'actions/transfer.rho',
   },
   newCommunity: {
     fields: {
       name: { value: '', type: 'string' },
-      lockerTag: { value: 'inbox', type: 'string' }
+      lockerTag: { value: 'inbox', type: 'string' },
     },
     filename: 'actions/newCommunity.rho',
   },
@@ -154,7 +154,7 @@ export const actions = {
   },
   claimWithInbox: {
     fields: {
-      myGovRevAddr: { type: 'walletRevAddr' }
+      myGovRevAddr: { type: 'walletRevAddr' },
     },
     filename: 'actions/claimWithInbox.rho',
   },
@@ -163,25 +163,25 @@ export const actions = {
       lockerTag: { value: 'inbox', type: 'string' },
       from: { value: '', type: 'string' },
       tips: { value: '', type: 'string' },
-      revletts: { value: "100000000", type: 'number' },
+      revletts: { value: '100000000', type: 'number' },
       body: { value: 'hello from ravi for hackathon 2020', type: 'string' },
     },
     filename: 'actions/CallForHelp.rho',
   },
-  wannainit : {
+  wannainit: {
     fields: {},
     filename: 'actions/wannainit.rho',
   },
   checkRegistration: {
     fields: {
-      myGovRevAddr: { type: 'walletRevAddr' }
+      myGovRevAddr: { type: 'walletRevAddr' },
     },
     filename: 'actions/checkRegistration.rho',
   },
   makeMint: {
     fields: {
       name: { value: 'myTokenMint', type: 'string' },
-      lockerTag: { value: 'inbox', type: 'string' }
+      lockerTag: { value: 'inbox', type: 'string' },
     },
     filename: 'actions/makeMint.rho',
   },
@@ -199,7 +199,7 @@ export const actions = {
   },
   awardKudos: {
     fields: {
-      them: { type: 'string', value: '' }
+      them: { type: 'string', value: '' },
     },
     filename: 'actions/awardKudos.rho',
   },

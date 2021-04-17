@@ -1,3 +1,5 @@
+/* eslint-disable no-use-before-define */
+/* eslint-disable no-shadow */
 /* global window, document, fetch, setTimeout */
 /* global HTMLInputElement, HTMLSelectElement, HTMLTextAreaElement, HTMLButtonElement */
 // @ts-check
@@ -71,10 +73,11 @@ const ROLL = `11112fZEixuoKqrGH6BxAPayFD8LWq9KRVFwcLvA5gg6GAaNEZvcKL
   .trim()
   .split('\n');
 
-var deployId = "";
+let deployId = '';
 
 /**
  * TODO: expect rather than unwrap (better diagnostics)
+ *
  * @param {T?} x
  * @returns {T}
  * @template T
@@ -118,7 +121,7 @@ function makeBusy($) {
   /**
    * @param {string} selector
    * @param {Promise<T>} p
-   * @return {Promise<T>}
+   * @returns {Promise<T>}
    *
    * @template T
    */
@@ -178,7 +181,6 @@ function buildUI({
   setTimeout,
   getEthProvider,
   mount,
-  redraw,
   fetch,
 }) {
   const rnode = RNode(fetch);
@@ -186,12 +188,18 @@ function buildUI({
   let network = 'rhobot';
   /** @type {{ observer: Observer, validator: Validator, admin: import('rchain-api/src/rnode').RNodeAdmin }} shard */
   let shard;
-  let term = ''; //@@DEBUG
+  let term = ''; // @@DEBUG
   /** @type {Record<string, string>} */
   let fieldValues = {};
   /** @type {RhoExpr[]} */
   let results = [];
-  const bindings = { mainnet: {}, localhost: { $roll: ROLL}, testnet: { }, demo: { }, rhobot: { } };
+  const bindings = {
+    mainnet: {},
+    localhost: { $roll: ROLL },
+    testnet: {},
+    demo: {},
+    rhobot: {},
+  };
 
   const state = {
     get shard() {
@@ -229,33 +237,25 @@ function buildUI({
     },
     async setFields(/** @type {Record<String, string>} */ value) {
       const { fields, filename } = actions[state.action];
-      const tmp = await (await fetch(filename)).text()
-      const newPos = tmp.indexOf("new");
-      const endPos = tmp.lastIndexOf("}", tmp.lastIndexOf("}"));
-      let content = tmp.substring(newPos, endPos - 1);
+      const tmp = await (await fetch(filename)).text();
+      const newPos = tmp.indexOf('new');
+      const endPos = tmp.lastIndexOf('}', tmp.lastIndexOf('}'));
+      const content = tmp.substring(newPos, endPos - 1);
       if (fields) {
         fieldValues = Object.fromEntries(
           keys(fields).map((k) => [k, value[k]]),
         );
         const exprs = entries(fieldValues).map(([name, value]) => {
-          if(fields[name].type === 'uri')
-          {
-            return `\`${value.trim()}\``
+          if (fields[name].type === 'uri') {
+            return `\`${value.trim()}\``;
+          } else if (fields[name].type === 'set') {
+            return `Set(${value})`;
+          } else if (fields[name].type === 'number') {
+            return value;
+          } else {
+            return JSON.stringify(value);
           }
-          else if(fields[name].type === 'set')
-          {
-            return `Set(${value})`
-          }
-          else if(fields[name].type === 'number')
-          {
-            return value
-          }
-          else
-          {
-            return JSON.stringify(value)
-          }
-          //fields[name].type === 'uri' ? `\`${value}\`` : JSON.stringify(value),
-
+          // fields[name].type === 'uri' ? `\`${value}\`` : JSON.stringify(value),
         });
         state.term = `match [${exprs.join(', ')}] {
           [${keys(fieldValues).join(', ')}] => {
@@ -363,7 +363,7 @@ function fixIndent(code) {
  * @param {HTMLBuilder & EthSignAccess} io
  */
 function actionControl(state, { html, getEthProvider }) {
-  const options = (/** @type {string[]}*/ ids) =>
+  const options = (/** @type {string[]} */ ids) =>
     ids.map(
       (id) =>
         html`<option value=${id} ...${{ selected: id === state.action }}>
@@ -382,7 +382,7 @@ function actionControl(state, { html, getEthProvider }) {
   };
 
   const connectButton = (name) => html`<button
-    onclick=${(/** @type {Event} */ event) => {
+    onclick=${(/** @type {Event} */ _event) => {
       metaMaskP.then((mm) =>
         mm.ethereumAddress().then((ethAddr) => {
           const revAddr = getAddrFromEth(ethAddr);
@@ -434,7 +434,7 @@ function actionControl(state, { html, getEthProvider }) {
             name="action"
             onchange=${(/** @type {Event} */ event) => {
               state.action = ckControl(event.target).value;
-              deployId = "";
+              deployId = '';
               return false;
             }}
           >
@@ -487,7 +487,7 @@ function runControl(
     state.results = [];
     try {
       console.log('explore...');
-      const { expr, block } = await busy(
+      const { expr, _block } = await busy(
         '#explore',
         obs.exploratoryDeploy(term),
       );
@@ -499,18 +499,22 @@ function runControl(
     }
   }
 
-  var proposeCount = 0;
+  let proposeCount = 0;
   async function propose() {
-    proposeCount++;
+    proposeCount += 1;
     const adm = state.shard.admin;
-    adm.propose()
-    .then ( x => {console.log(x); proposeCount = 0} )
-    .catch(err => {
-      console.log(proposeCount, err)
-      if ( proposeCount < 7) { 
-        setTimeout(propose,10000)
-      }
-     });
+    adm
+      .propose()
+      .then((x) => {
+        console.log(x);
+        proposeCount = 0;
+      })
+      .catch((err) => {
+        console.log(proposeCount, err);
+        if (proposeCount < 7) {
+          setTimeout(propose, 10000);
+        }
+      });
   }
 
   async function deploy(/** @type {string} */ term) {
@@ -546,9 +550,9 @@ function runControl(
       await busy(
         '#deploy',
         (async () => {
-          console.log('@@DEBUG', state.action, { "log message": "string" });
+          console.log('@@DEBUG', state.action, { 'log message': 'string' });
           setTimeout(propose, 10000);
-          console.log('@@DEBUG', state.action, { "log message": "propose" });
+          console.log('@@DEBUG', state.action, { 'log message': 'propose' });
           const deploy = await startTerm(term, val, obs, account);
           console.log('@@DEBUG', state.action, { deploy });
           deployId = deploy.sig;
@@ -609,15 +613,16 @@ function networkControl(state, { html }) {
     view() {
       return html`<div id="netControl">
         Network:
-        <select  id="netControlSelect"
+        <select
+          id="netControlSelect"
           onchange=${(event) => (state.network = ckControl(event.target).value)}
         >
           <option name="network" value="mainnet">mainnet</option>
           <option name="network" value="localhost">localhost</option>
-          <option name="network" value="demo" ${"selected"}>demo</option>
+          <option name="network" value="demo" ${'selected'}>demo</option>
           <option name="network" value="rhobot">rhobot</option>
           <option name="network" id="testnet" value="testnet">testnet</option>
-         </select>
+        </select>
       </div>`;
     },
   });
@@ -630,7 +635,7 @@ function networkControl(state, { html }) {
  */
 function groupControl(state, { html }) {
   const score = (/** @type { string } */ revAddr) => {
-    const kudos = state.bindings['$kudos'];
+    const kudos = state.bindings.$kudos;
     if (typeof kudos !== 'object' || !kudos) return 0;
     const score = kudos[revAddr];
     if (typeof score !== 'number') return 0;
@@ -642,8 +647,8 @@ function groupControl(state, { html }) {
 
   return freeze({
     view() {
-      const roll = state.bindings['$roll'];
-      if (!Array.isArray(roll)) return;
+      const roll = state.bindings.$roll;
+      if (!Array.isArray(roll)) return html``;
       return html` <h3>Members</h3>
         <div>
           ${roll.map(

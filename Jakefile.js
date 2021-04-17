@@ -4,6 +4,7 @@
  * See https://jakejs.com/
  */
 /* global setTimeout, clearTimeout, setInterval, clearInterval, module, require, process */
+/* eslint-disable global-require */
 // @ts-check
 
 'use strict';
@@ -24,7 +25,7 @@ const { desc, directory, task } = jake;
 // Our own libraries are written as ES6 modules.
 // eslint-disable-next-line no-global-assign
 require = require('esm')(module);
-const { rhopm, makeAccount, signDeploy: sign } = require('rchain-api');
+const { rhopm, makeAccount } = require('rchain-api');
 
 /**
  * BEGIN project-specific tasks and dependencies.
@@ -47,7 +48,7 @@ const TARGETS = Object.fromEntries(
  * https://github.com/rchain-community/liquid-democracy/issues/17
  * https://github.com/tgrospic/rnode-client-js
  */
-const { shard, account } = ((net) => {
+const ofNet = (net) => {
   const acct = (shard, pk) =>
     makeAccount(
       pk,
@@ -109,7 +110,8 @@ const { shard, account } = ((net) => {
       throw new TypeError(net);
     // return { shard: 1, account: 2 };
   }
-})(process.env.NETWORK || 'local');
+};
+const { shard, account } = ofNet(process.env.NETWORK || 'local');
 
 desc(`deploy ${SRCS}`);
 task('default', ['startShard', rhopm.rhoDir, ...Object.values(TARGETS)], () => {
