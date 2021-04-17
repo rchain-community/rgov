@@ -1,5 +1,14 @@
 # Development and Design notes for Contributors
 
+Thanks for your interest in contributing!
+
+## Quality Code Style
+
+All contributions should pass:
+
+ 1. `npm run lint-check`
+ 2. `npm run lint:types`
+
 ## To run RNode stand alone on localhost:
 for bootstrapping, checkpointing and updating a liquid democracy RChain RNode localhost instance for linux and Window10 WSL2
 
