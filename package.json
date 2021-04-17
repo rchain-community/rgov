@@ -18,6 +18,8 @@
   ],
   "license": "Apache-2.0",
   "devDependencies": {
+    "@agoric/eslint-config": "^0.3.3",
+    "@agoric/eslint-plugin": "^0.2.3",
     "@types/babel__core": "^7.1.14",
     "@types/mithril": "^2.0.7",
     "@typescript-eslint/eslint-plugin": "^4.21.0",
@@ -27,6 +29,7 @@
     "eslint-config-airbnb-base": "^14.2.0",
     "eslint-config-prettier": "^6.11.0",
     "eslint-plugin-import": "^2.22.0",
+    "eslint-plugin-jsdoc": "^32.3.0",
     "eslint-plugin-prettier": "^3.1.4",
     "html-webpack-plugin": "^4.5.0",
     "prettier": "^2.1.1",
@@ -35,41 +38,10 @@
     "webpack-cli": "^3.3.12",
     "webpack-dev-server": "^3.11.0"
   },
-  "eslint": {
+  "eslintConfig": {
     "extends": [
-      "airbnb-base",
-      "plugin:prettier/recommended"
-    ],
-    "env": {
-      "es6": true
-    },
-    "globals": {
-      "globalThis": "writeable"
-    },
-    "rules": {
-      "implicit-arrow-linebreak": "off",
-      "function-paren-newline": "off",
-      "arrow-parens": "off",
-      "strict": "off",
-      "prefer-destructuring": "off",
-      "no-else-return": "off",
-      "no-console": "off",
-      "no-unused-vars": [
-        "error",
-        {
-          "argsIgnorePattern": "^_"
-        }
-      ],
-      "no-return-assign": "off",
-      "no-param-reassign": "off",
-      "no-restricted-syntax": [
-        "off",
-        "ForOfStatement"
-      ],
-      "no-unused-expressions": "off",
-      "no-loop-func": "off",
-      "import/prefer-default-export": "off"
-    }
+      "@agoric"
+    ]
   },
   "prettier": {
     "trailingComma": "all",
