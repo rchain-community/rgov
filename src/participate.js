@@ -236,7 +236,7 @@ function buildUI({
     get fields() {
       return fieldValues;
     },
-    async setFields(/** @type {Record<String, string>} */ value) {
+    async setFields(/** @type {Record<string, string>} */ value) {
       const { fields, filename } = actions[state.action];
       const tmp = await (await fetch(filename)).text();
       const newPos = tmp.indexOf('new');
@@ -464,6 +464,8 @@ ${state.term}</textarea
  *   action: any
  * }} state
  * @param {HTMLBuilder & FormAccess<any> & EthSignAccess & ScheduleAccess} io
+ *
+ * @param { number } period
  *
  * @typedef {import('rchain-api').RhoExpr} RhoExpr
  * @typedef {import('rchain-api').Observer} Observer

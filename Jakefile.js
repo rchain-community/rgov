@@ -47,6 +47,8 @@ const TARGETS = Object.fromEntries(
  * See also https://github.com/rchain-community/rchain-docker-shard
  * https://github.com/rchain-community/liquid-democracy/issues/17
  * https://github.com/tgrospic/rnode-client-js
+ *
+ * @param {string} net
  */
 const ofNet = (net) => {
   const acct = (shard, pk) =>
@@ -78,6 +80,7 @@ const ofNet = (net) => {
       // TODO: narrow http usage to request()
       // so http and https are compatible
       const https = io.https;
+      // @ts-ignore https is close enough to http
       const shard = rhopm.shardAccess(io.env, api, https, {
         setInterval,
         clearInterval,
@@ -97,6 +100,7 @@ const ofNet = (net) => {
       // TODO: narrow http usage to request()
       // so http and https are compatible
       const https = io.https;
+      // @ts-ignore https is close enough to http
       const shard = rhopm.shardAccess(io.env, api, https, {
         setInterval,
         clearInterval,
