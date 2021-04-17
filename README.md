@@ -1,5 +1,5 @@
 # RChain Rgov
- - This project aims to create an environment to support governance capabilities on RChain designed to support a collective inteligance of members, support other applications forked from this repo, and specifically the development of governance related ideaton awards.
+ - This project aims to create an environment to support governance capabilities on RChain designed to support a collective intelligence of members, support other applications forked from this repo, and specifically the development of governance related ideaton awards.
 
  - 2020-10: [RChain Annual General Meeting Oct 24 2020 \- RChain Blog](https://blog.rchain.coop/2020/10/27/rchain-annual-general-meeting-oct24-2020/) demo at RChain Annual Meeting
 
