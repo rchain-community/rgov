@@ -16,7 +16,8 @@ import {
   listenAtDeployId,
 } from 'rchain-api';
 import { actions } from './actions.js';
-const { freeze, keys, entries } = Object;
+
+const { freeze, keys, entries, fromEntries } = Object;
 
 // TODO: UI for phloLimit
 const maxFee = { phloPrice: 1, phloLimit: 0.05 * 100000000 };
@@ -227,7 +228,7 @@ function buildUI({
       if (typeof value !== 'string') return;
       action = value;
       const fields = actions[action].fields || {};
-      const init = Object.fromEntries(
+      const init = fromEntries(
         entries(fields).map(([name, { value }]) => [name, value || '']),
       );
       state.setFields(init);
@@ -242,9 +243,7 @@ function buildUI({
       const endPos = tmp.lastIndexOf('}', tmp.lastIndexOf('}'));
       const content = tmp.substring(newPos, endPos - 1);
       if (fields) {
-        fieldValues = Object.fromEntries(
-          keys(fields).map((k) => [k, value[k]]),
-        );
+        fieldValues = fromEntries(keys(fields).map((k) => [k, value[k]]));
         const exprs = entries(fieldValues).map(([name, value]) => {
           if (fields[name].type === 'uri') {
             return `\`${value.trim()}\``;
