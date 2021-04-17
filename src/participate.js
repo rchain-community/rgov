@@ -161,6 +161,17 @@ function makeBusy($) {
 }
 
 /**
+ * @param {string} tmp
+ * @returns { string }
+ */
+function rhoBody(tmp) {
+  const newPos = tmp.indexOf('new');
+  const endPos = tmp.lastIndexOf('}', tmp.lastIndexOf('}'));
+  const content = tmp.substring(newPos, endPos - 1);
+  return content;
+}
+
+/**
  * @param { HTMLBuilder & EthSignAccess & MithrilMount & WebAccess & FormAccess<any> & ScheduleAccess & {
  *  hostname: string }} io
  * @typedef {import('./actions').FieldSpec} FieldSpec
@@ -254,10 +265,10 @@ function buildUI({
     },
     async setFields(/** @type {Record<string, string>} */ value) {
       const { fields, filename } = actions[state.action];
-      const tmp = await (await fetch(filename)).text();
-      const newPos = tmp.indexOf('new');
-      const endPos = tmp.lastIndexOf('}', tmp.lastIndexOf('}'));
-      const content = tmp.substring(newPos, endPos - 1);
+      let content = '';
+      if (filename) {
+        content = rhoBody(await (await fetch(filename)).text());
+      }
       if (fields) {
         fieldValues = fromEntries(keys(fields).map((k) => [k, value[k]]));
         const exprs = entries(fieldValues).map(([name, value]) => {

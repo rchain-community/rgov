@@ -12,7 +12,6 @@ console.log(uris.ReadcapURI);
 export const actions = {
   _select_an_action_: {
     fields: {},
-    filename: 'dropdown-spacer',
   },
   checkBalance: {
     fields: {
