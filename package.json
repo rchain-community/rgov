@@ -6,7 +6,7 @@
   "scripts": {
     "lint-fix": "eslint --fix '**/*.{js,jsx}'",
     "lint-check": "eslint '**/*.{js,jsx}'",
-    "lint:types": "tsc -p jsconfig.json",
+    "lint:types": "tsc -p jsconfig.json --resolveJsonModule",
     "start": "webpack-dev-server --open",
     "build": "webpack",
     "build:deploy": "npm run build; cp -pr src/actions/ dist/"
