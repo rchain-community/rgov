@@ -128,18 +128,18 @@ export const actions = {
     },
     filename: 'actions/transfer.rho',
   },
-  newCommunity: {
+  newGroup: {
     fields: {
       name: { value: '', type: 'string' },
       lockerTag: { value: 'inbox', type: 'string' }
     },
-    filename: 'actions/newCommunity.rho',
+    filename: 'actions/newGroup.rho',
   },
   addMember: {
     fields: {
       name: { type: 'string', value: '?' },
       themBoxReg: { type: 'uri', value: '?' },
-      community: { type: 'string', value: '?' },
+      group: { type: 'string', value: '?' },
       lockerTag: { value: 'inbox', type: 'string' },
     },
     filename: 'actions/addMember.rho',
