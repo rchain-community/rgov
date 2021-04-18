@@ -1,6 +1,6 @@
 new
   Group,
-  commMap,
+  groupMap,
   deployId(`rho:rchain:deployId`),
   deployerId(`rho:rchain:deployerId`),
   stdout(`rho:io:stdout`),
@@ -15,36 +15,38 @@ in {
        stdout!(["#define $Group", uri]) |
        deployId!(uri)
     } |
-    commMap!({}) |
+    groupMap!({}) |
     contract Group (@"new", @name, inbox, return) = {
         new
           admin,
-          methods,
+          inboxURIs,
           userlist,
+          allowedRevAddrs,
+          memberRvAddrs,
           infoCh,
           ret,
-          CapDirectory
+          dirCh
         in {
-            userlist!([]) | methods!({}) |
+            userlist!([]) | usernames!({}) | inboxURIs!({}) |
             stdout!("creating Group.") |
-            for (@comms <- commMap ) {
-                if ( comms.get(name) != Nil ) {
+            for (@groups <- groupMap ) {
+                if ( groups.get(name) != Nil ) {
                     stdout!("error: Group with that name already exists") |
-                    commMap!(comms) |
+                    groupMap!(groups) |
                     return!(Nil)
                 } else {
-                  for(@{"read": *masterRead, ..._} <<- @[*deployerId, "MasterContractAdmin"]) {
+                  for(@{"read": *masterRead, ..._} <<- @[*deployerId, "dictionary"]) {
                     stdout!({"read": *masterRead}) |
                     masterRead!("Directory", *ret)
                   } |
                   for ( Directory <- ret ) {
                     stdout!(["got directory", *Directory]) |
-                    // Create Group capability directory
-                    Directory!(*CapDirectory) |
+                    // Create Group user directory
+                    Directory!(*dirCh) |
                     // Create member directory
                     Directory!(*ret) |
                     for ( @{"read": *read, "write": *write, "grant": *grant, ..._ } <- ret ) {
-                      commMap!(comms.union({name: *infoCh})) |
+                      groupMap!(groups.union({name: *infoCh})) |
                       infoCh!({"name": name, "request": *inbox}) |
                       return!({"admin": *admin, "read": *read, "write": *write, "grant": *grant}) |
                       contract admin(@"add info", @key, @value, return) = {
@@ -52,7 +54,7 @@ in {
                           infoCh!(*info.set(key, value))
                         }
                       } |
-                      contract admin(@"add user", @username, @inbox, return) = {
+                      contract admin(@"add user", @username, revAddr,  @inbox, return) = {
                         //TODO see if already a member
                         for ( @list <- userlist) {
                           if ( list.length() == 0 ) { userlist!([username]) |
@@ -60,8 +62,11 @@ in {
                             stdout!("first user being added")
                           } else {
                             userlist!(list.slice(1,list.length()) ++ [ username, list.nth(0)]) |
-                            write!(username, {"inbox": inbox, "delegate": list.nth(0)}, *stdout) |
-                            stdout!(list.slice(1,list.length()) ++ [username, list.nth(0)])
+                            write!(username, {"inbox": inbox, "revaddr":, *revAddr. "delegate": list.nth(0)}, *stdout) |
+                            stdout!(list.slice(1,list.length()) ++ [username, list.nth(0)]) |
+                            for (map <- revAddrs) {
+                              revaddrs!(map.set(revAddr,username))
+                            }
                           }
                         } |
                         grant!(username, *ret) |
@@ -76,8 +81,12 @@ in {
             }
           } |
     contract Group (@"request", @name, @userid, return) = {
-            //stdout!(*info) |
-        for ( @{map /\  {=name: *infoCh, ..._}} <<- commMap ) {
+            // call request methos for group
+            // TODO: get the deployers rev address and add if allowed
+      // for ( allowed <<- allowedRevAddrs) {
+      //   if ( allowed.contains(revAcct)) add user else send request as below
+      // }
+        for ( @{map /\  {=name: *infoCh, ..._}} <<- groupMap ) {
           for ( @{info /\ {"request": *inbox, ..._ }}  <<- infoCh ) {
             inbox!(["Group", "request", name, userid])|
             return!(info)
@@ -85,7 +94,7 @@ in {
         }
       } |
     contract Group (@"lookup", @name, return) = {
-        for ( @{map /\  {=name: *infoCh, ..._}} <<- commMap ) {
+        for ( @{map /\  {=name: *infoCh, ..._}} <<- groupMap ) {
           for ( info <<- infoCh ) {
             //stdout!(*info) |
             return!(*info)
@@ -93,7 +102,7 @@ in {
         }
       } |
     contract Group (@"lookup", return) = {
-        for ( @map <<- commMap ) {
+        for ( @map <<- groupMap ) {
           //stdout!(map) |
           return!(map)
         }
