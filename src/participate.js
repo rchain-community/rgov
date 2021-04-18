@@ -322,6 +322,7 @@ function buildUI({
     problem: undefined,
   };
   state.action = action; // compute initial term
+  state.network = network; // set up shard of initial network
 
   mount('#actionControl', actionControl(state, { html, getEthProvider }));
   mount('#netControl', networkControl(state, { html }));
