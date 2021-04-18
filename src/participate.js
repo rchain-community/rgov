@@ -31,6 +31,7 @@ const NETWORKS = {
     adminBase: 'http://localhost:40405',
   },
   testnet: {
+    hostPattern: 'test',
     observerBase: 'https://observer.testnet.rchain.coop',
     // TODO: rotate validators
     validatorBase: 'https://node1.testnet.rchain-dev.tk',
@@ -634,13 +635,15 @@ function networkControl(state, { html }) {
         Network:
         <select
           id="netControlSelect"
+          value=${state.network}
           onchange=${(event) => (state.network = ckControl(event.target).value)}
         >
-          <option name="network" value="mainnet">mainnet</option>
-          <option name="network" value="localhost">localhost</option>
-          <option name="network" value="demo" ${'selected'}>demo</option>
-          <option name="network" value="rhobot">rhobot</option>
-          <option name="network" id="testnet" value="testnet">testnet</option>
+          ${keys(NETWORKS).map(
+            (network) =>
+              html`<option ...${{ name: 'network', value: network }}>
+                ${network}
+              </option>`,
+          )}
         </select>
       </div>`;
     },
