@@ -1,5 +1,12 @@
 # RChain Rgov
- - This project aims to create an environment to support governance capabilities on RChain designed to support a collective intelligence of members, support other applications forked from this repo, and specifically the development of governance related ideaton awards.
+
+This project aims to create an environment to support governance capabilities on RChain designed to support a collective intelligence of members, support other applications forked from this repo, and specifically the development of governance related ideaton awards.
+
+![liquid democracy](https://miro.medium.com/max/701/1*vMFloIdXWyCLYKvwj8eU8Q.png)
+
+_image credit: [Liquid Democracy, Ethereum, and the slow path to revolution\. \| Jul 2017 by Luke Duncan \| 1Hive \| Medium](https://medium.com/1hive/liquid-democracy-ethereum-and-the-slow-path-to-revolution-9c1d5916e706)_
+
+## Progress
 
  - 2020-10: [RChain Annual General Meeting Oct 24 2020 \- RChain Blog](https://blog.rchain.coop/2020/10/27/rchain-annual-general-meeting-oct24-2020/) demo at RChain Annual Meeting
 

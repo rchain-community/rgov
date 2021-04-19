@@ -1,3 +1,4 @@
+/* global require, module, process, __dirname */
 const path = require('path');
 const HTMLWebpackPlugin = require('html-webpack-plugin');
 

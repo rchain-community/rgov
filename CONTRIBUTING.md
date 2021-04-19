@@ -1,5 +1,43 @@
 # Development and Design notes for Contributors
 
+Thanks for your interest in contributing!
+
+## Quality Code Style
+
+All contributions should pass:
+
+ 1. `npm run lint-check`
+ 2. `npm run lint:types`
+
+## Object capability (ocap) discipline
+
+In order to support robust composition and cooperation without
+vulnerability, code in this project should adhere to [object
+capability discipline][ocap].
+
+  - **Memory safety and encapsulation**
+    - There is no way to get a reference to an object except by
+      creating one or being given one at creation or via a message; no
+      casting integers to pointers, for example. _JavaScript is safe
+      in this way._
+
+      From outside an object, there is no way to access the internal
+      state of the object without the object's consent (where consent
+      is expressed by responding to messages). _We use `Object.freeze`
+      and closures rather than properties on `this` to achieve this._
+
+  - **Primitive effects only via references**
+    - The only way an object can affect the world outside itself is
+      via references to other objects. All primitives for interacting
+      with the external world are embodied by primitive objects and
+      **anything globally accessible is immutable data**. There must be
+      no `open(filename)` function in the global namespace, nor may
+      such a function be imported. _We use a convention
+      of only accessing ambient authority inside WARNING sections._
+
+[ocap]: http://erights.org/elib/capability/ode/ode-capabilities.html
+
+
 ## To run RNode stand alone on localhost:
 for bootstrapping, checkpointing and updating a liquid democracy RChain RNode localhost instance for linux and Window10 WSL2
 
