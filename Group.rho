@@ -18,10 +18,10 @@ in {
     deployId!(uri)
   } |
   groupMap!({}) |
-  contract deployerRevAddr(return) = {
+  contract deployerRevAddr(memberDeployerId,return) = {
     new revAddrCh, deployerPubKeyBytesCh, DeployerIdOps(`rho:rchain:deployerId:ops`) in {
       stdout!(" getting deployer rev address") |
-      DeployerIdOps!("pubKeyBytes", *deployerId, *deployerPubKeyBytesCh) |
+      DeployerIdOps!("pubKeyBytes", *memberDeployerId, *deployerPubKeyBytesCh) |
       for (@deployerPubKeyBytes <- deployerPubKeyBytesCh) {
         stdout!(["got pub key",deployerPubKeyBytes]) |
         RevAddress!("fromPublicKey", deployerPubKeyBytes, *revAddrCh) |
@@ -34,8 +34,8 @@ in {
   } |
   deployerRevAddr!(*deployId) |
   
-  contract Group (@"test", return) = {
-    deployerRevAddr!(*return)
+  contract Group (@"test", memberDeployerId, return) = {
+    deployerRevAddr!(memberDeployerIg,*return)
   } |
   contract Group (@"new", @name, inbox, return) = {
     new
@@ -103,7 +103,7 @@ in {
     }
   }
 } |
-contract Group (@"request", @name, @userid, return) = {
+contract Group (@"request", @name, @userid, inboxURI, @deployerId, return) = {
   // call request methos for group
   // TODO: get the deployers rev address and add if allowed
   // for ( allowed <<- allowedRevAddrs) {
