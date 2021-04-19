@@ -1,17 +1,24 @@
 // This file can contain .js-specific Typescript compiler config.
 {
-    "compilerOptions": {
-      "target": "es2020",
-
-      "noEmit": true,
-  /*
+  "compilerOptions": {
+    "target": "es2020",
+    "lib": [
+      "es2020",
+      "dom"
+    ],
+    "noEmit": true,
+    /*
       // The following flags are for creating .d.ts files:
       "noEmit": false,
       "declaration": true,
       "emitDeclarationOnly": true,
   */
-      "strictNullChecks": true,
-      "moduleResolution": "node",
-    },
-    "include": ["Jakefile.js", "src/*.js", "exports.js"],
-  }
+    "strictNullChecks": true,
+    "moduleResolution": "node",
+  },
+  "include": [
+    "Jakefile.js",
+    "src/*.js",
+    "exports.js"
+  ],
+}

@@ -1,3 +1,7 @@
+/* eslint-disable no-use-before-define */
+/* eslint-disable no-shadow */
+/* global window, document, fetch, setTimeout */
+/* global HTMLInputElement, HTMLSelectElement, HTMLTextAreaElement, HTMLButtonElement */
 // @ts-check
 import htm from 'htm';
 import m from 'mithril';
@@ -12,7 +16,8 @@ import {
   listenAtDeployId,
 } from 'rchain-api';
 import { actions } from './actions.js';
-const { freeze, keys, entries } = Object;
+
+const { freeze, keys, entries, fromEntries } = Object;
 
 // TODO: UI for phloLimit
 const maxFee = { phloPrice: 1, phloLimit: 0.05 * 100000000 };
@@ -20,23 +25,27 @@ const maxFee = { phloPrice: 1, phloLimit: 0.05 * 100000000 };
 // TODO: ISSUE: are networks really const? i.e. design-time data?
 const NETWORKS = {
   localhost: {
+    hostPattern: 'localhost',
     observerBase: 'http://localhost:40403',
     validatorBase: 'http://localhost:40403',
     adminBase: 'http://localhost:40405',
   },
   testnet: {
+    hostPattern: 'test',
     observerBase: 'https://observer.testnet.rchain.coop',
     // TODO: rotate validators
     validatorBase: 'https://node1.testnet.rchain-dev.tk',
     adminBase: '',
   },
   demo: {
+    hostPattern: 'demo',
     observerBase: 'https://demoapi.rhobot.net',
     // TODO: rotate validators
     validatorBase: 'https://demoapi.rhobot.net',
     adminBase: 'https://demoadmin.rhobot.net',
   },
   rhobot: {
+    hostPattern: 'rhobot',
     observerBase: 'https://rnodeapi.rhobot.net',
     // TODO: rotate validators
     validatorBase: 'https://rnodeapi.rhobot.net',
@@ -48,6 +57,15 @@ const NETWORKS = {
     adminBase: '',
   },
 };
+/**
+ * @param {string} hostname
+ * @returns {string}
+ */
+function netFromHost(hostname) {
+  return (Object.entries(NETWORKS).find(
+    ([_name, { hostPattern }]) => hostname.indexOf(hostPattern) >= 0,
+  ) || ['mainnet'])[0];
+}
 
 // rnode.js:63 POST https://observer.services.mainnet.rchain.coop/api/explore-deploy 400 (Bad Request)
 // rnode.js:73 Uncaught (in promise) Error: File write failed: No space left on device
@@ -69,10 +87,11 @@ const ROLL = `11112fZEixuoKqrGH6BxAPayFD8LWq9KRVFwcLvA5gg6GAaNEZvcKL
   .trim()
   .split('\n');
 
-var deployId = "";
+let deployId = '';
 
 /**
  * TODO: expect rather than unwrap (better diagnostics)
+ *
  * @param {T?} x
  * @returns {T}
  * @template T
@@ -82,6 +101,7 @@ function unwrap(x) {
   return x;
 }
 
+// WARNING: ambient access
 document.addEventListener('DOMContentLoaded', () => {
   /** @type {(selector: string) => HTMLElement} */
   const $ = (selector) => unwrap(document.querySelector(selector));
@@ -98,6 +118,7 @@ document.addEventListener('DOMContentLoaded', () => {
     getEthProvider: () => getEthProvider({ window }),
     mount: (selector, control) => m.mount($(selector), control),
     redraw: () => m.redraw(),
+    hostname: document.location.hostname,
   });
 });
 
@@ -116,7 +137,7 @@ function makeBusy($) {
   /**
    * @param {string} selector
    * @param {Promise<T>} p
-   * @return {Promise<T>}
+   * @returns {Promise<T>}
    *
    * @template T
    */
@@ -141,7 +162,19 @@ function makeBusy($) {
 }
 
 /**
- * @param { HTMLBuilder & EthSignAccess & MithrilMount & WebAccess & FormAccess<any> & ScheduleAccess } io
+ * @param {string} tmp
+ * @returns { string }
+ */
+function rhoBody(tmp) {
+  const newPos = tmp.indexOf('new');
+  const endPos = tmp.lastIndexOf('}', tmp.lastIndexOf('}'));
+  const content = tmp.substring(newPos, endPos - 1);
+  return content;
+}
+
+/**
+ * @param { HTMLBuilder & EthSignAccess & MithrilMount & WebAccess & FormAccess<any> & ScheduleAccess & {
+ *  hostname: string }} io
  * @typedef {import('./actions').FieldSpec} FieldSpec
  *
  * @typedef {{
@@ -176,20 +209,26 @@ function buildUI({
   setTimeout,
   getEthProvider,
   mount,
-  redraw,
   fetch,
+  hostname,
 }) {
   const rnode = RNode(fetch);
   let action = '_select_an_action_';
-  let network = 'rhobot';
+  let network = netFromHost(hostname);
   /** @type {{ observer: Observer, validator: Validator, admin: import('rchain-api/src/rnode').RNodeAdmin }} shard */
   let shard;
-  let term = ''; //@@DEBUG
+  let term = ''; // @@DEBUG
   /** @type {Record<string, string>} */
   let fieldValues = {};
   /** @type {RhoExpr[]} */
   let results = [];
-  const bindings = { mainnet: {}, localhost: { $roll: ROLL}, testnet: { }, demo: { }, rhobot: { } };
+  const bindings = {
+    mainnet: {},
+    localhost: { $roll: ROLL },
+    testnet: {},
+    demo: {},
+    rhobot: {},
+  };
 
   const state = {
     get shard() {
@@ -217,7 +256,7 @@ function buildUI({
       if (typeof value !== 'string') return;
       action = value;
       const fields = actions[action].fields || {};
-      const init = Object.fromEntries(
+      const init = fromEntries(
         entries(fields).map(([name, { value }]) => [name, value || '']),
       );
       state.setFields(init);
@@ -225,35 +264,25 @@ function buildUI({
     get fields() {
       return fieldValues;
     },
-    async setFields(/** @type {Record<String, string>} */ value) {
+    async setFields(/** @type {Record<string, string>} */ value) {
       const { fields, filename } = actions[state.action];
-      const tmp = await (await fetch(filename)).text()
-      const newPos = tmp.indexOf("new");
-      const endPos = tmp.lastIndexOf("}", tmp.lastIndexOf("}"));
-      let content = tmp.substring(newPos, endPos - 1);
+      let content = '';
+      if (filename) {
+        content = rhoBody(await (await fetch(filename)).text());
+      }
       if (fields) {
-        fieldValues = Object.fromEntries(
-          keys(fields).map((k) => [k, value[k]]),
-        );
+        fieldValues = fromEntries(keys(fields).map((k) => [k, value[k]]));
         const exprs = entries(fieldValues).map(([name, value]) => {
-          if(fields[name].type === 'uri')
-          {
-            return `\`${value.trim()}\``
+          if (fields[name].type === 'uri') {
+            return `\`${value.trim()}\``;
+          } else if (fields[name].type === 'set') {
+            return `Set(${value})`;
+          } else if (fields[name].type === 'number') {
+            return value;
+          } else {
+            return JSON.stringify(value);
           }
-          else if(fields[name].type === 'set')
-          {
-            return `Set(${value})`
-          }
-          else if(fields[name].type === 'number')
-          {
-            return value
-          }
-          else
-          {
-            return JSON.stringify(value)
-          }
-          //fields[name].type === 'uri' ? `\`${value}\`` : JSON.stringify(value),
-
+          // fields[name].type === 'uri' ? `\`${value}\`` : JSON.stringify(value),
         });
         state.term = `match [${exprs.join(', ')}] {
           [${keys(fieldValues).join(', ')}] => {
@@ -293,19 +322,11 @@ function buildUI({
     problem: undefined,
   };
   state.action = action; // compute initial term
-  state.network = 'rhobot'; // initialize shard
+  state.network = network; // set up shard of initial network
 
   mount('#actionControl', actionControl(state, { html, getEthProvider }));
   mount('#netControl', networkControl(state, { html }));
-  let netselect = document.getElementById("netControlSelect")
-  let host = document.location.hostname;
-  if ( host.indexOf("test")>=0 ) network = "testnet";
-  else if ( host.indexOf("demo")>=0 ) network = "demo";
-  else if ( host.indexOf("rhobot")>=0 ) network = "rhobot";
-  else if ( host.indexOf("localhost")>=0 ) network = "localhost";
-  else network = "mainnet";
-  state.network = network;
-  netselect.value = network;
+
   mount(
     '#runControl',
     runControl(state, {
@@ -361,7 +382,7 @@ function fixIndent(code) {
  * @param {HTMLBuilder & EthSignAccess} io
  */
 function actionControl(state, { html, getEthProvider }) {
-  const options = (/** @type {string[]}*/ ids) =>
+  const options = (/** @type {string[]} */ ids) =>
     ids.map(
       (id) =>
         html`<option value=${id} ...${{ selected: id === state.action }}>
@@ -380,7 +401,7 @@ function actionControl(state, { html, getEthProvider }) {
   };
 
   const connectButton = (name) => html`<button
-    onclick=${(/** @type {Event} */ event) => {
+    onclick=${(/** @type {Event} */ _event) => {
       metaMaskP.then((mm) =>
         mm.ethereumAddress().then((ethAddr) => {
           const revAddr = getAddrFromEth(ethAddr);
@@ -432,7 +453,7 @@ function actionControl(state, { html, getEthProvider }) {
             name="action"
             onchange=${(/** @type {Event} */ event) => {
               state.action = ckControl(event.target).value;
-              deployId = "";
+              deployId = '';
               return false;
             }}
           >
@@ -464,6 +485,8 @@ ${state.term}</textarea
  * }} state
  * @param {HTMLBuilder & FormAccess<any> & EthSignAccess & ScheduleAccess} io
  *
+ * @param { number } period
+ *
  * @typedef {import('rchain-api').RhoExpr} RhoExpr
  * @typedef {import('rchain-api').Observer} Observer
  * @typedef {import('rchain-api').Validator} Validator
@@ -485,7 +508,7 @@ function runControl(
     state.results = [];
     try {
       console.log('explore...');
-      const { expr, block } = await busy(
+      const { expr, _block } = await busy(
         '#explore',
         obs.exploratoryDeploy(term),
       );
@@ -497,18 +520,22 @@ function runControl(
     }
   }
 
-  var proposeCount = 0;
+  let proposeCount = 0;
   async function propose() {
-    proposeCount++;
+    proposeCount += 1;
     const adm = state.shard.admin;
-    adm.propose()
-    .then ( x => {console.log(x); proposeCount = 0} )
-    .catch(err => {
-      console.log(proposeCount, err)
-      if ( proposeCount < 7) { 
-        setTimeout(propose,10000)
-      }
-     });
+    adm
+      .propose()
+      .then((x) => {
+        console.log(x);
+        proposeCount = 0;
+      })
+      .catch((err) => {
+        console.log(proposeCount, err);
+        if (proposeCount < 7) {
+          setTimeout(propose, 10000);
+        }
+      });
   }
 
   async function deploy(/** @type {string} */ term) {
@@ -544,9 +571,9 @@ function runControl(
       await busy(
         '#deploy',
         (async () => {
-          console.log('@@DEBUG', state.action, { "log message": "string" });
+          console.log('@@DEBUG', state.action, { 'log message': 'string' });
           setTimeout(propose, 10000);
-          console.log('@@DEBUG', state.action, { "log message": "propose" });
+          console.log('@@DEBUG', state.action, { 'log message': 'propose' });
           const deploy = await startTerm(term, val, obs, account);
           console.log('@@DEBUG', state.action, { deploy });
           deployId = deploy.sig;
@@ -607,15 +634,18 @@ function networkControl(state, { html }) {
     view() {
       return html`<div id="netControl">
         Network:
-        <select  id="netControlSelect"
+        <select
+          id="netControlSelect"
+          value=${state.network}
           onchange=${(event) => (state.network = ckControl(event.target).value)}
         >
-          <option name="network" value="mainnet">mainnet</option>
-          <option name="network" value="localhost">localhost</option>
-          <option name="network" value="demo" ${"selected"}>demo</option>
-          <option name="network" value="rhobot">rhobot</option>
-          <option name="network" id="testnet" value="testnet">testnet</option>
-         </select>
+          ${keys(NETWORKS).map(
+            (network) =>
+              html`<option ...${{ name: 'network', value: network }}>
+                ${network}
+              </option>`,
+          )}
+        </select>
       </div>`;
     },
   });
@@ -628,7 +658,7 @@ function networkControl(state, { html }) {
  */
 function groupControl(state, { html }) {
   const score = (/** @type { string } */ revAddr) => {
-    const kudos = state.bindings['$kudos'];
+    const kudos = state.bindings.$kudos;
     if (typeof kudos !== 'object' || !kudos) return 0;
     const score = kudos[revAddr];
     if (typeof score !== 'number') return 0;
@@ -640,8 +670,8 @@ function groupControl(state, { html }) {
 
   return freeze({
     view() {
-      const roll = state.bindings['$roll'];
-      if (!Array.isArray(roll)) return;
+      const roll = state.bindings.$roll;
+      if (!Array.isArray(roll)) return html``;
       return html` <h3>Members</h3>
         <div>
           ${roll.map(
