@@ -1,6 +1,6 @@
 #!/bin/bash
 
-[ -z "$1" ] && echo "Please specify checkpoint name" && exit 1
+[ -z "$1" ] && echo "Please specify snapshot name" && exit 1
 
 ALREADY=`ps -fu |grep -v grep |grep " java .*rnode"|sed 's/[ \t][ \t]*/ /g'|cut -d' ' -f 2`
 
@@ -29,10 +29,10 @@ done
 
 cd `dirname $0`
 
-TARGET=$PWD/checkpoint/$1.tgz
+TARGET=$PWD/snapshot/$1.tgz
 
 if [ -f $TARGET ];then
-   (cd ~; tar xzf $TARGET) && echo "Checkpoint restored: $TARGET"
+   (cd ~; tar xzf $TARGET) && echo "snapshot restored: $TARGET"
 else
-   echo "Checkpoint not found: $TARGET"
+   echo "snapshot not found: $TARGET"
 fi
