@@ -4,7 +4,7 @@ new wanna, stdout(`rho:io:stdout`), return(`rho:rchain:deployId`), callsForHelp,
 // initialized the wanna class (channel)
 in {
   for ( @{"write": *write, ..._} <<- @[*deployerId, "MasterContractAdmin"]) {
-    write!("Wanna", bundle+{*wanna}) |
+    write!("Wanna", bundle+{*wanna}, *return) |
     return!("writing wanna to master dictionary")
   } |
   callsForHelp!([]) |
@@ -14,6 +14,11 @@ in {
     for ( list <- callsForHelp ) {
       callsForHelp!([*list] ++ [map])|
       return!(["wanna: added CallForHelp",map])
+    }
+  } |
+  contract wanna(@"listCallsForHelp", return) = {
+    for ( list <<- callsForHelp ) {
+      return!(*list)
     }
   }
 }
