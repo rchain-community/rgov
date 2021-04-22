@@ -33,8 +33,14 @@ in {
             delegateCh!(Nil) |
             //TODO assign default deligate if any
             for ( @voters <- voterCh ) {
-              //trace!(voters.union({name: *voter}).keys()) |
-              voterCh!(voters.union({name: *voter}))
+              if (voters.get(name) != Nil ) {
+                log!("user already added, returning existing voter capability.") |
+                voterCh!(voters) |
+                return!(bundle+{voters.get(name)})
+              } else {
+                //trace!(voters.union({name: *voter}).keys()) |
+                voterCh!(voters.union({name: *voter}))
+              }
             } |
             return!(bundle+{*voter}) |
             contract voter(@"vote", @proposal, return, log) = {
