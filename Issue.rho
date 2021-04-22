@@ -39,10 +39,10 @@ in {
                 return!(bundle+{voters.get(name)})
               } else {
                 //trace!(voters.union({name: *voter}).keys()) |
+                return!(bundle+{*voter}) |
                 voterCh!(voters.union({name: *voter}))
               }
             } |
-            return!(bundle+{*voter}) |
             contract voter(@"vote", @proposal, return, log) = {
               //log!({ "for": proposal}) |
               //log!(proposalNames.contains(proposal)) |
