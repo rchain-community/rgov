@@ -1,3 +1,6 @@
+// This creates a master dictionary entry for all registered
+// members' REV addresses
+// This file must be manually maintained
 new return(`rho:rchain:deployId`),
   insertArbitrary(`rho:registry:insertArbitrary`),
   stdout(`rho:io:stdout`)
