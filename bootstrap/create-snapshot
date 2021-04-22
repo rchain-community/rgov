@@ -11,9 +11,7 @@ $0: rnode is currently running
 Use 'kill $ALREADY' to fix.
 " && while read -p "Execute 'kill $ALREADY' [y]? " response;do
 	if [ "$response" == "y" ] || [ -z "$response" ];then
-      set -x
 		kill $ALREADY
-      set +x
 		break
 	else
 		echo "Aborting $0"
