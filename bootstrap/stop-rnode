@@ -7,9 +7,7 @@ grep "/usr/share/rnode/lib/coop.rchain.rnode"|sed 's/[ \t][ \t]*/ /g'|cut -d' ' 
 $0: rnode is currently running. Use 'kill $ALREADY' to fix.
 " && while read -p "Execute 'kill $ALREADY' [y]? " response;do
 	if [ "$response" == "y" ] || [ -z "$response" ];then
-      set -x
 		kill $ALREADY
-      set +x
 		break
 	else
 		echo "Aborting $0"

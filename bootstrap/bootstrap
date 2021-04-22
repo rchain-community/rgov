@@ -9,10 +9,8 @@ $0: rnode is currently running
 Use 'kill $ALREADY' to fix.
 " && while read -p "Execute 'kill $ALREADY' [y]? " response;do
 	if [ "$response" == "y" ] || [ -z "$response" ];then
-      set -x
 		kill $ALREADY
-      set +x
-		break
+      break
 	else
 		echo "Aborting $0"
 		exit 1
@@ -23,9 +21,7 @@ done
 $0: $HOME/.rnode exists. Use 'rm -rf $HOME/.rnode' to fix.
 " && while read -p "$0: Execute 'rm -rf $HOME/.rnode' [y]? " response;do
 	if [ "$response" == "y" ] || [ -z "$response" ];then
-      set -x
 		rm -rf $HOME/.rnode
-      set +x
 		break
 	else
 		echo "$0: Aborting $0"
@@ -49,7 +45,6 @@ $ME snapshot exists.
 	fi
 done
 
-set -x
 
 LOGFILE="log/$0.log"
 

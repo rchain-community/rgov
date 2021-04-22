@@ -10,7 +10,6 @@ ME=`basename $0`
 LOGFILE="log/$ME.$1.log"
 DEPLOY="./deploy"
 
-set -x
 
 cd `dirname $0`
 
@@ -18,7 +17,6 @@ if ! ps -fu | grep "java.*rnode" |grep -v grep > /dev/null 2>&1 ;then
    echo "rnode not running. Use ./run-rnode to fix." && exit 1
 fi
 
-set +x
 
 $DEPLOY $1 |tee -a $LOGFILE
 

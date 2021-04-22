@@ -6,9 +6,7 @@ $0: rnode is currently running
 Use 'kill $ALREADY' to fix.
 " && while read -p "$0: Execute 'kill $ALREADY' [n]? " response;do
 	if [ "$response" == "y" ] || [ -z "$response" ];then
-      set -x
 		kill $ALREADY
-      set +x
 		break
 	else
 		echo "$0: exiting"
@@ -32,7 +30,6 @@ cd `dirname $0`
    fi
 done
 
-set -x
 
 private_key=`cat pk.bootstrap`
 
@@ -56,7 +53,6 @@ rnode run -s \
    -XX:MaxDirectMemorySize=100m -XX:MaxRAMPercentage=25 \
    > $LOGFILE 2>&1 &
 
-set +x
 
 PID=$!
 
