@@ -1,3 +1,5 @@
+// Add all registered members' REVaddress to the voting roll
+// This file must be manually updated as members' registration status changes
 new return(`rho:rchain:deployId`),
   insertArbitrary(`rho:registry:insertArbitrary`),
   stdout(`rho:io:stdout`)
