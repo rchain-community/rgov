@@ -1,26 +1,13 @@
 #!/bin/bash
 
-ALREADY=`ps -fu |grep " java .*rnode"|grep -v grep |sed 's/[ \t][ \t]*/ /g'|cut -d' ' -f 1`
-[ -n "$ALREADY" ] && echo "
-$0: rnode is currently running
-Use 'kill $ALREADY' to fix.
-" && while read -p "$0: Execute 'kill $ALREADY' [n]? " response;do
-	if [ "$response" == "y" ] || [ -z "$response" ];then
-      set -x
-		kill $ALREADY
-      set +x
-		break
-	else
-		echo "$0: exiting"
-		exit 1
-	fi
-done
-
 [ ! -d ~/.rnode ] && echo "
 $0: $HOME/.rnode does not exist. Use 'bootstrap' to fix.
 " && exit 1
 
 cd `dirname $0`
+
+./stop-rnode
+if [ $? -ne 0 ] ; then exit $?; fi
 
 ./list-checkpoints.sh|grep "rgov" && echo "$0: checkpoint rgov already exists." && while read -p "Use it instead of re-running deploy [y]? " response;do
    if [ "$response" == 'y' ] || [ -z "$response" ];then

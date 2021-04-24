@@ -1,7 +1,6 @@
 #!/bin/bash
 
-ALREADY=`ps -fu |grep -v grep |grep -v $0|
-grep "/usr/share/rnode/lib/coop.rchain.rnode"|sed 's/[ \t][ \t]*/ /g'|cut -d' ' -f 2`
+ALREADY=`ps -fu |grep -v grep | grep " java .*rnode"|sed 's/[ \t][ \t]*/ /g'|cut -d' ' -f 2`
 
 [ -n "$ALREADY" ] && echo "
 $0: rnode is currently running. Use 'kill $ALREADY' to fix.
