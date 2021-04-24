@@ -1,5 +1,8 @@
 #!/bin/bash
 
+./check-rnode
+if [ $? -ne 0 ] ; then exit $?; fi
+
 private_key=`cat pk.bootstrap`
 lastblock=$(curl -s 'http://localhost:40403/api/blocks/1'|jq '.[].blockNumber')
 for t in $@;do
@@ -10,4 +13,11 @@ for t in $@;do
    --phlo-limit 100000000 \
    --private-key $private_key \
    $t
+   status=$?
+   
+   if [ $status -ne 0 ] ; then
+      echo "$0 status $status"
+      break;
+   fi
 done 2>&1
+exit $status
