@@ -35,7 +35,7 @@ $ME checkpoint exists.
 	fi
 done
 
-set -x
+#set -x
 
 LOGFILE="$0.log"
 

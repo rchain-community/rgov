@@ -23,7 +23,8 @@ set -x
 
 private_key=`cat pk.bootstrap`
 
-DEPLOY="./deploy"
+rm -f deployFiles.error
+DEPLOY="./deploy --error deployFiles.error"
 LOGFILE="$0.log"
 
 javascript_file=generated.rhoid.bootstrap.js
@@ -55,11 +56,18 @@ deployFiles() {
       WAITPID="$WAITPID $!"
    done |tee -a deployment.log 2>&1
    wait $WAITPID
+   echo "deployFiles done status $?"
 }
 
 # deploy rchain code
 find rchain -name "*.rho"|grep -v "test"|grep -v "tests" |grep -v "examples" | deployFiles
 
+if [ -f "deployFiles.error" ]; then
+   echo "$0 DeployFiles error:";
+   cat deployFiles.error;
+   rm -f deployFiles.error;
+   exit 2;
+fi
 
 # deploy rgov
 # ../Community.rho \
@@ -75,6 +83,13 @@ ls -1 \
 ../Echo.rho \
 ./voter-insertion.rho \
 | deployFiles
+
+if [ -f "deployFiles.error" ]; then
+   echo "$0 DeployFiles error:";
+   cat deployFiles.error;
+   rm -f deployFiles.error;
+   exit 2;
+fi
 
 # Finalize the rnode
 echo "$0: Proposing...." | tee -a deployment.log
