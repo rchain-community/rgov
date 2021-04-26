@@ -39,9 +39,9 @@ capability discipline][ocap].
 
 
 ## To run RNode stand alone on localhost:
-for bootstrapping, checkpointing and updating a liquid democracy RChain RNode localhost instance for linux and Window10 WSL2
+for bootstrapping, snapshots, and updating a rgov localhost instance for linux and Window10 WSL2
 
-This localhost environment aims to be a complete usable development system, (once testnet works again). While there are pieces elsewhere and this may not be the final resting place, this is not a docker solution and is specific to the capability directory structure of communities/working groups and their communications and their governance. A future aim would be to make this play well with jakefile and docker shard solutions.
+This localhost environment aims to be a complete usable development system, (once testnet works again). While there are pieces elsewhere and this may not be the final resting place, this is not a docker solution and is specific to the capability directory structure of communities/working groups, their communications and their governance. A future aim would be to make this play well with jakefile and docker shard solutions.
 
 Watch video of how to run an rnode localhost and add rgov actions here https://youtu.be/9TIPXXSXwnE bootstraping updates https://youtu.be/fuXFDRXJsVM
 
@@ -155,10 +155,10 @@ To create an rchain node locally, deploy rchain dependencies, and deploy liquid-
   2) clone the rchain repo
   3) deploy the rholang files from rchain and liquid-democracy
   4) Generate javascript, json, and rholang files containing the URI values for contracts that emit a '#define' line - generated files have a filenames that starts with 'generated'
-  5) Create a 'checkpoint' containing the resulting rnode database that can be restored with restore-checkpoint.sh
-  6) Place the running rnode log file in 'bootstrap/run-rnode.log'
+  5) Create a 'snapshot' containing the resulting rnode database that can be restored with restore-snapshot
+  6) Place the running rnode log file in 'bootstrap/log/run-rnode.log'
 
-```
+```bash
 cd bootstrap
 ./bootstrap
 ./deploy-all
@@ -167,40 +167,40 @@ cd ..
 ```
 
 ## web interface installation
-```
+```bash
 npm install
 ```
 
 ## running web interface
-```
+```bash
 npm start
 ```
 
-## checkpointing
-Restore a checkpoint previously created with bootstrap/create-checkpoint.sh
-```
-cd bootstrap && restore-checkpoint.sh
+## snapshots
+Restore a snapshot previously created with bootstrap/create-snapshot
+```bash
+cd bootstrap && restore-snapshot
 ```
 
-After initial bootstrap and deploy-all, there will be two checkpoints available: 'bootstrap' and 'rgov'
+After initial bootstrap and deploy-all, there will be two snapshots available: 'bootstrap' and 'rgov'
 
-List checkpoints available for restore
-```
-cd bootstrap && list-checkpoints.sh
+List snapshots available for restore
+```bash
+cd bootstrap && list-snapshot
 ```
 
 Save a copy of the localhost rnode that can be restored at a later date
-```
-cd bootstrap  && create-checkpoint.sh
+```bash
+cd bootstrap  && create-snapshot
 ```
 
 ## Command line deployment of rholang
 Deploy the rholang file "test.rho"
-```
+```bash
 cd bootstrap && ./deploy ../test.rho
 ```
 Propose the previously deployed rholang file "test.rho"
-```
+```bash
 bootstrap/propose
 ```
 
