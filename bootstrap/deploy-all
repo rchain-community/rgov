@@ -1,26 +1,13 @@
 #!/bin/bash
 
-ALREADY=`ps -fu |grep " java .*rnode"|grep -v grep |sed 's/[ \t][ \t]*/ /g'|cut -d' ' -f 1`
-[ -n "$ALREADY" ] && echo "
-$0: rnode is currently running
-Use 'kill $ALREADY' to fix.
-" && while read -p "$0: Execute 'kill $ALREADY' [n]? " response;do
-	if [ "$response" == "y" ] || [ -z "$response" ];then
-      set -x
-		kill $ALREADY
-      set +x
-		break
-	else
-		echo "$0: exiting"
-		exit 1
-	fi
-done
-
 [ ! -d ~/.rnode ] && echo "
 $0: $HOME/.rnode does not exist. Use 'bootstrap' to fix.
 " && exit 1
 
 cd `dirname $0`
+
+./stop-rnode
+if [ $? -ne 0 ] ; then exit $?; fi
 
 ./list-snapshot|grep "rgov" && echo "$0: snapshot rgov already exists." && while read -p "Use it instead of re-running deploy [y]? " response;do
    if [ "$response" == 'y' ] || [ -z "$response" ];then
@@ -37,9 +24,10 @@ set -x
 private_key=`cat pk.bootstrap`
 
 ME=`basename $0`
-
-DEPLOY="./deploy"
+ERRORLOG="$(mktemp /tmp/$ME.XXXXXX)"
 LOGFILE="log/$ME.log"
+rm -f $ERRORLOG
+DEPLOY="./deploy --error $ERRORLOG"
 
 javascript_file=generated/generated.rhoid.bootstrap.js
 json_file=generated/generated.rhoid.bootstrap.json
@@ -70,11 +58,18 @@ deployFiles() {
       WAITPID="$WAITPID $!"
    done |tee -a log/deployment.log 2>&1
    wait $WAITPID
+   echo "deployFiles done status $?"
 }
 
 # deploy rchain code
 find rchain -name "*.rho"|grep -v "test"|grep -v "tests" |grep -v "examples" | deployFiles
 
+if [ -f "$ERRORLOG" ]; then
+   echo "$0 DeployFiles error:";
+   cat $ERRORLOG;
+   rm -f $ERRORLOG;
+   exit 2;
+fi
 
 # deploy rgov
 # ../Community.rho \
@@ -90,6 +85,13 @@ ls -1 \
 ../Echo.rho \
 ./voter-insertion.rho \
 | deployFiles
+
+if [ -f "$ERRORLOG" ]; then
+   echo "$0 DeployFiles error:";
+   cat $ERRORLOG;
+   rm -f $ERRORLOG;
+   exit 2;
+fi
 
 # Finalize the rnode
 echo "$0: Proposing...." | tee -a log/deployment.log

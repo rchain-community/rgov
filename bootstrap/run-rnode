@@ -1,5 +1,6 @@
 #!/bin/bash
 ./stop-rnode
+if [ $? -ne 0 ] ; then exit $?; fi
 
 private_key=`cat pk.bootstrap`
 
