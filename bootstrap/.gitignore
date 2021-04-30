@@ -3,5 +3,7 @@ rhoid.bootstrap.json
 *.log
 rchain/
 rnode.data.dir_IS_UNDEFINED/
-checkpoint/
+snapshot/
 generated.*
+generated/
+log/

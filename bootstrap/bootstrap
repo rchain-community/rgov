@@ -19,15 +19,15 @@ $0: $HOME/.rnode exists. Use 'rm -rf $HOME/.rnode' to fix.
 	fi
 done
 
-mkdir -p checkpoint 2>/dev/null
+mkdir -p snapshot log 2>/dev/null
 
 ME=`basename $0`
 
-./list-checkpoints.sh |grep "$ME" >/dev/null 2>&1 && echo "
-$ME checkpoint exists.
-" && while read -p "Use checkpoint instead of re-running $ME [y]? " response;do
+./list-snapshot |grep "$ME" >/dev/null 2>&1 && echo "
+$ME snapshot exists.
+" && while read -p "Use snapshot instead of re-running $ME [y]? " response;do
 	if [ "$response" == "y" ] || [ -z "$response" ];then
-		./restore-checkpoint.sh $ME
+		./restore-snapshot $ME
 		exit 0
 	else
 		echo "Rerunning $ME"
@@ -37,7 +37,7 @@ done
 
 #set -x
 
-LOGFILE="$0.log"
+LOGFILE="log/$0.log"
 
 private_key=`cat pk.bootstrap`
 
@@ -58,7 +58,7 @@ tail -f $LOGFILE|sed -e '/Making a transition to Running state./q'
 echo "$ME: Stopping $ME rnode process"
 sleep 3 && kill $PID && sleep 3
 
-echo "$0: Creating $ME checkpoint"
-./create-checkpoint.sh $ME
+echo "$0: Creating $ME snapshot"
+./create-snapshot $ME
 
 stty echo

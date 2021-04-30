@@ -1,17 +1,17 @@
 #!/bin/bash
 
-[ -z "$1" ] && echo "Please specify checkpoint name" && exit 1
+[ -z "$1" ] && echo "Please specify snapshot name" && exit 1
 
-[ ! -d ~/.rnode ] && echo "$HOME/.rnode does not exist for checkpointing" && exit 2
+[ ! -d ~/.rnode ] && echo "Cannot snapshot: $HOME/.rnode does not exist" && exit 2
 
 cd `dirname $0`
 
 ./stop-rnode
 if [ $? -ne 0 ] ; then exit $?; fi
 
-mkdir -p checkpoint
+mkdir -p snapshot
 
-TARGET=$PWD/checkpoint/$1.tgz
+TARGET=$PWD/snapshot/$1.tgz
 
 [ -f $TARGET ] && while read -p "$TARGET already exists. Replace [y]? " response;do
    if [ "$response" == 'y' ] || [ -z "$response" ]; then
@@ -23,4 +23,4 @@ TARGET=$PWD/checkpoint/$1.tgz
 done
 
 (cd ~; tar czf $TARGET .rnode)
-echo "Checkpoint created: $TARGET"
+echo "snapshot created: $TARGET"

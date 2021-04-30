@@ -8,7 +8,6 @@ match [\`$1\`] { [URI] => {
 }}
 EOF
 
-./deploy $TMPFILE | grep "DeployId is:"
-./propose | tail -n 0 -f run-rnode.log | sed '/URI/q' | grep URI
+./deploy $TMPFILE | grep "DeployId is:" && ./propose | tail -n 0 -f log/run-rnode.log | sed '/URI/q' | grep URI
 
 rm $TMPFILE
