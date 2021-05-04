@@ -75,14 +75,13 @@ export const actions = {
     },
     filename: 'actions/addVoterToIssue.rho',
   },
-  addGroupToIsse: {
+  addGroupToIssue: {
     fields: {
       lockerTag: { value: 'inbox', type: 'string' },
-      toInboxURI: { value: '', type: 'uri' },
       group: { value: '', type: 'string' },
       issue: { value: '', type: 'string' },
     },
-    filename: 'actions/addGrouprToIssue.rho',
+    filename: 'actions/addGroupToIssue.rho',
   },
   castVote: {
     fields: {
@@ -140,19 +139,20 @@ export const actions = {
   __________________________: {
     fields: {},
   },
-  joinGroup: {
-    fields: {
-      name: { value: '', type: 'string' },
-      lockerTag: { value: 'inbox', type: 'string' },
-    },
-    filename: 'actions/joinGroup.rho',
-  },
   newGroup: {
     fields: {
       name: { value: '', type: 'string' },
       lockerTag: { value: 'inbox', type: 'string' },
     },
     filename: 'actions/newGroup.rho',
+  },
+  joinGroup: {
+    fields: {
+      group: { value: '', type: 'string' },
+      userid: { value: '', type: 'string' },
+      lockerTag: { value: 'inbox', type: 'string' },
+    },
+    filename: 'actions/joinGroup.rho',
   },
   addMember: {
     fields: {

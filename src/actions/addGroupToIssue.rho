@@ -1,17 +1,15 @@
 match ["inbox", "", ""] {
   [lockerTag, group, issue] => {
     new
-    //                 type and subtype are optional
-    
+    stdout(`rho:io:stdout`),
     deployId(`rho:rchain:deployId`),
     deployerId(`rho:rchain:deployerId`),
     ch
     in {
       for(@{"peek": *peek, "URI": uri ..._} <<- @[*deployerId, lockerTag]) {
         deployId!({"URI": uri}) |
-        peek!(type,subtype,*deployId)
-        new lockerCh, ret, ret1, ret2, ret3, loop, $stdout, $lookup in {     lookup!($locker_%%$myusername, *lockerCh) |
-        peek!("member", group, *ret) |
+        new lockerCh, ret, ret1, ret2, ret3, loop in { 
+        peek!("Group", group, *ret) |
         peek!("issue", issue, *ret1) |
         for ( @[{"read": *read, ..._}, ..._] <- ret;  @[{"admin": *admin, ..._}, ..._] <- ret1 ) {
           stdout!("adding users") |
@@ -23,7 +21,7 @@ match ["inbox", "", ""] {
                 admin!("giveRightToVote", username, *ret2) |
                 for (@vote <- ret2) {
                   stdout!([username, "added"]) |
-                  inbox!(["vote", $ballot, vote], *stdout) |
+                  inbox!(["vote", issue, vote], *stdout) |
                   @vote!("delegate",delegate, *stdout)
                 }|
                 loop!(tail)
