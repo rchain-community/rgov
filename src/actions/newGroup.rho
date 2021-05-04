@@ -10,13 +10,13 @@ new
    ret2
 in {
    for (@{"read": *MCA, ..._} <<- @[*deployerId, "dictionary"]) {
-      trace!({"MCA": MCA}) |
-      MCA("Group", ret)
+      trace!({"MCA": *MCA}) |
+      MCA!("Group", *ret)
    } |
    for ( Group <- ret) {
       for(@{"inbox": *inbox, ..._} <<- @{[*deployerId, lockerTag]}) {
-         Group!("new", name, *inbox, *ret)|
-         for (caps <- ret) {
+         Group!("new", name, *inbox, *ret2)|
+         for (caps <- ret2) {
             if (*caps != Nil) {
                inbox!(["Group", name, *caps], *deployId)
             } else {
