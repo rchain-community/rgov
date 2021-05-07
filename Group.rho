@@ -33,7 +33,7 @@ in {
     }
   } |
   deployerRevAddr!(*deployId) |
-  
+
   contract Group (@"test", memberDeployerId, return) = {
     deployerRevAddr!(*memberDeployerId,*return)
   } |
@@ -148,7 +148,6 @@ in {
         Group!("lookup","test",*stdout) |
         Group!("lookup","test2",*stdout) |
         Group!("lookup",*stdout) |
-        //Group!("new","test", Nil, *stdout) |
         admin|("add user","jim","xxxxx", *ret) |
         for ( _ <- ret ) {
           Group!("lookup","test",*stdout) |

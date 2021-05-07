@@ -66,7 +66,9 @@ for(@{"read": *read, "write": *write, ..._} <<- @[*deployerId, "MasterContractAd
 }}}}
 EOF3
 
-$DEPLOY generated.$ME.$CLASS.update-directory.rho
+if ! $DEPLOY generated.$ME.$CLASS.update-directory.rho;then
+   exit 1
+fi
 
 echo "Proposing master directory update...." |tee -a $LOGFILE
 rnode --grpc-port 40402 propose 2>&1 | tail -n 0 -F ./run-rnode.log | sed '/Blocks ready to be added/q' 2>&1
