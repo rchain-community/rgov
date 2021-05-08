@@ -72,7 +72,7 @@ EOF2
 }
 
 get_classes() {
-egrep '^\["#define [^"][^"]*", `[^`]*`]|^\["Log contract created at"' deploy-all.log | sort -u|sed '
+egrep '^\["#define [^"][^"]*", `[^`]*`]|^\["Log contract created at"' log/deploy-all.log | sort -u|sed '
    s/\["Log contract created at"/["#define $Log"/
    ' |
    cut -d' ' -f2,3 | sed 's/[$",`\]]*//g'

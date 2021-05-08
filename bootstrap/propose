@@ -1,4 +1,4 @@
 #!/bin/bash
-rnode --grpc-port 40402 propose 2>&1 | 
-	tail -n 0 -F run-rnode.log | 
+rnode --grpc-port 40402 propose 2>&1 |
+	tail -n 0 -F log/run-rnode.log |
 	sed '/Blocks ready to be added/q;/Error while creating block: NoNewDeploys/q;/^[0-9][0-9]:[0-9][0-9]:[0-9]/d'

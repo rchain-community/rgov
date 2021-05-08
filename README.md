@@ -8,6 +8,9 @@ _image credit: [Liquid Democracy, Ethereum, and the slow path to revolution\. \|
 
 ## Progress
 
+ - 2021-04: [2021\-04\-22 RGov liquid democracy on RChain demo \- YouTube](https://www.youtube.com/watch?v=JC5RP7IeG5g)
+   - [Community Debrief 227 \- RVote / liquid democracy demo \- RChain Blog](https://blog.rchain.coop/2021/04/23/debrief-227/)
+ 
  - 2020-10: [RChain Annual General Meeting Oct 24 2020 \- RChain Blog](https://blog.rchain.coop/2020/10/27/rchain-annual-general-meeting-oct24-2020/) demo at RChain Annual Meeting
 
  - 2020-04: [Liquid (superfluid) Democracy + Trust Metric](https://docs.google.com/document/d/14JJPWtrFxkxzHa1NAmwzhTmeQO1vJtKDOJgBB_MPyfY/edit) 1st prize winner of RChain dApp idea workshop
