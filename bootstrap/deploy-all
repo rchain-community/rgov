@@ -29,6 +29,7 @@ LOGFILE="log/$ME.log"
 rm -f $ERRORLOG
 DEPLOY="./deploy --error $ERRORLOG"
 
+mkdir -p generated
 javascript_file=generated/generated.rhoid.bootstrap.js
 json_file=generated/generated.rhoid.bootstrap.json
 

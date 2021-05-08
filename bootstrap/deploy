@@ -7,7 +7,6 @@ errorfile=""
 if [ "$1" = "--error" ]; then
    errorfile=$2;
    shift 2;
-   echo "Logs Errors to $errorfile";
 fi
 
 private_key=`cat pk.bootstrap`
