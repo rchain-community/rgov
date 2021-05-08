@@ -3,8 +3,6 @@
 new Issue,
 deployId(`rho:rchain:deployId`),
 trace(`rho:rchain:deployId`),
-// deployId(`rho:io:stdout`),
-// trace(`rho:io:stdout`),
 stdout(`rho:io:stdout`)
 in {
   new insertArbitrary(`rho:registry:insertArbitrary`), uriCh in {
@@ -16,8 +14,6 @@ in {
   }
   |
 
-  // See example / demo below.
-  //contract Issue(@{proposalNames /\ Set(hd, ...tail)}, return) = {
     contract Issue(@proposalNames , return, log) = {
       new admin, tally, voterCh in {
         log!("creating ballot") |
@@ -38,14 +34,11 @@ in {
                 voterCh!(voters) |
                 return!(bundle+{voters.get(name)})
               } else {
-                //trace!(voters.union({name: *voter}).keys()) |
                 return!(bundle+{*voter}) |
                 voterCh!(voters.union({name: *voter}))
               }
             } |
             contract voter(@"vote", @proposal, return, log) = {
-              //log!({ "for": proposal}) |
-              //log!(proposalNames.contains(proposal)) |
               if((proposalNames.union(Set(Nil))).contains(proposal) == true)
               {
                 log!("valid proposal") |
@@ -111,7 +104,7 @@ in {
                     for ( counts <- countCh ) {
                       log!(["counts", *counts])  |
                       return!(["counts",*counts]) |
-                      return!("done") //prior return was giving error: https://github.com/rchain-community/rchain-api/issues/86
+                      return!("done")
                     }
                   }
                   {name: *voter, ...tail} => {
