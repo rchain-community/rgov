@@ -23,137 +23,155 @@ in {
       stdout!(" getting deployer rev address") |
       DeployerIdOps!("pubKeyBytes", *memberDeployerId, *deployerPubKeyBytesCh) |
       for (@deployerPubKeyBytes <- deployerPubKeyBytesCh) {
-        stdout!(["got pub key",deployerPubKeyBytes]) |
+        // stdout!(["got pub key",deployerPubKeyBytes]) |
         RevAddress!("fromPublicKey", deployerPubKeyBytes, *revAddrCh) |
         for (@deployerRevAddr <- revAddrCh) {
-          stdout!({ "deployer REV address": deployerRevAddr, "pubKeyBytes": deployerPubKeyBytes, "deployerId": *deployerId }) |
+          stdout!({ "deployer REV address": deployerRevAddr, "pubKeyBytes": deployerPubKeyBytes }) |
           return!(deployerRevAddr)
         }
       }
     }
   } |
-  deployerRevAddr!(*deployId) |
+  // Group!("test", *deployerId,*stdout) |
 
-  contract Group (@"test", memberDeployerId, return) = {
-    deployerRevAddr!(*memberDeployerId,*return)
-  } |
-  contract Group (@"new", @name, inbox, return) = {
-    new
-    admin,
-    inboxURIsCh,
-    revAddrsCh,
-    usernamesCh,
-    userlistCh,
-    allowedRevAddrsCh,
-    memberRevAddrsCh,
-    ret,
-    dirCh
-    in {
-      userlistCh!([]) | usernamesCh!({}) /* needed? */ | inboxURIsCh!({}) | allowedRevAddrsCh!({}) | revAddrsCh!({}) |
-      stdout!("creating Group.") |
-      for (@groups <- groupMapCh ) {
-        if ( groups.get(name) != Nil ) {
-          stdout!("error: Group with that name already exists") |
-          groupMapCh!(groups) |
-          return!(Nil)
-        } else {
-          for(@{"read": *masterRead, ..._} <<- @[*deployerId, "dictionary"]) {
-            stdout!({"read": *masterRead}) |
-            masterRead!("Directory", *ret)
-          } |
-          for ( Directory <- ret ) {
-            stdout!(["got directory", *Directory]) |
-            // Create Group user directory
-            Directory!(*dirCh) |
-            // Create member directory
-            Directory!(*ret) |
-            for ( @{"read": *read, "write": *write, "grant": *grant, ..._ } <- ret ) {
-              groupMapCh!(groups.set(name, { "info": {"request": *inbox },
-              "admin": *admin, "read": *read, "write": *write, "grant": *grant})) |
-              return!({"admin": *admin, "read": *read, "write": *write, "grant": *grant}) |
-              contract admin(@"add info", @key, @value, return) = {
-                for (@{"info": *info, ...rest} <- groupMapCh) {
-                  groupMapCh!({"info": *info.set(key, value)} ++ rest)
-                }
-              } |
-              contract admin(@"add user", @username, revAddr,  @inbox, return) = {
-                //TODO see if already a member
-                for ( @list <- userlistCh) {
-                  if ( list.length() == 0 ) { userlistCh!([username]) |
-                  write!(username, {"inbox": inbox, "delegate": Nil, "revAddr": *revAddr}, *stdout) |
-                  stdout!("first user being added")
-                } else {
-                  userlistCh!(list.slice(1,list.length()) ++ [ username, list.nth(0)]) |
-                  write!(username, {"inbox": inbox, "revaddr": *revAddr, "delegate": list.nth(0)}, *stdout) |
-                  stdout!(list.slice(1,list.length()) ++ [username, list.nth(0)]) |
-                  for (map <- revAddrsCh) {
-                    revAddrsCh!(*map.set(*revAddr,username))
+  // contract Group (@"test", memberDeployerId, return) = {
+    //   deployerRevAddr!(*memberDeployerId,*return)
+    // } |
+    // stdout!("new") |
+    contract Group (@"new", @name, inbox, return) = {
+      new
+      admin,
+      inboxURIsCh,
+      revAddrsCh,
+      usernamesCh,
+      userlistCh,
+      allowedRevAddrsCh,
+      memberRevAddrsCh,
+      ret,
+      dirCh
+      in {
+        userlistCh!([]) | usernamesCh!({}) /* needed? */ | inboxURIsCh!({}) | allowedRevAddrsCh!(Set()) | revAddrsCh!({}) |
+        stdout!("creating Group.") |
+        for (@groups <- groupMapCh ) {
+          if ( groups.get(name) != Nil ) {
+            stdout!("error: Group with that name already exists") |
+            groupMapCh!(groups) |
+            return!(Nil)
+          } else {
+            for(@{"read": *masterRead, ..._} <<- @[*deployerId, "MasterContractAdmin"]) {
+              stdout!({"read": *masterRead}) |
+              masterRead!("Directory", *ret)
+            } |
+            for ( Directory <- ret ) {
+              stdout!(["got directory", *Directory]) |
+              // Create Group member directory
+              Directory!(*dirCh) |
+              for ( @{"read": *read, "write": *write, "grant": *grant, ..._ } <- dirCh ) {
+                groupMapCh!(groups.set(name, { "info": {"request": *inbox },
+                "admin": *admin, "read": *read, "write": *write, "grant": *grant})) |
+                return!({"admin": *admin, "read": *read, "write": *write, "grant": *grant}) |
+                contract admin(@"add info", @key, @value, return) = {
+                  for (@{"info": *info, ...rest} <- groupMapCh) {
+                    groupMapCh!({"info": *info.set(key, value)} ++ rest)
+                  }
+                } |
+                contract admin(@"add user", @username, revAddr,  @inbox, return, log) = {
+                  //TODO see if already a member
+                  for ( @list <- userlistCh) {
+                    if ( list.contains(username) ) {
+                      log!("Sorry usernsme " ++ username ++ " already exists.")  |
+                      return!(Nil)
+                    } else {
+                      if ( list.length() == 0 ) { userlistCh!([username]) |
+                      write!(username, {"inbox": inbox, "delegate": Nil, "revAddr": *revAddr}, *stdout) |
+                      stdout!("first user being added")
+                    } else {
+                      userlistCh!(list.slice(1,list.length()) ++ [ username, list.nth(0)]) |
+                      write!(username, {"inbox": inbox, "revaddr": *revAddr, "delegate": list.nth(0)}, *stdout) |
+                      stdout!(list.slice(1,list.length()) ++ [username, list.nth(0)]) |
+                      for (map <- revAddrsCh) {
+                        revAddrsCh!(*map.set(*revAddr,username))
+                      }
+                    } |
+                    grant!(username, *ret) |
+                    for ( updateself <- ret ) {
+                      return!({"selfupdate": *updateself})
+                    }
                   }
                 }
-              } |
-              grant!(username, *ret) |
-              for ( updateself <- ret ) {
-                return!({"selfupdate": *updateself})
+              }
+            } |
+            contract admin(@"registerSet", revaddrset, log) = {
+              for ( allowed <- allowedRevAddrsCh) {
+                log!("adding") |
+                allowedRevAddrsCh!(*allowed.union(*revaddrset))
+              }
+            } |
+            contract admin(@"unregister", revaddr, log) = {
+              for ( allowed <- allowedRevAddrsCh) {
+                log!("removing") |
+                allowedRevAddrsCh!(*allowed.delete(*revaddr))
               }
             } |
             contract admin(@"request", @name, @userid, memberInbox, @deployerId, return, log) = {
               new ch, ch1 in {
+                stdout!("adding " ++ userid ++ " to " ++ name) |
                 deployerRevAddr!(deployerId,*ch) |
                 for ( revAddr <<- ch) {
                   for ( allowed <<- allowedRevAddrsCh) {
-                    if (*allowed.contain(*revAddr)) {
+                    stdout!({"allowed": *allowed.contains(*revAddr), "all": *allowed.toList()}) |
+                    if (*allowed.contains(*revAddr)) {
                       log!(["revAddr is registered, adding.", *revAddr])
                     } else {
                       log!(["revAddr not registered, adding anyway for now.", *revAddr])
                     }
                   } |
-                  admin!("add user",*revAddr, *memberInbox, *return)
+                  admin!("add user",*revAddr, *memberInbox, *return, *log)
                 }
               }
             }
           }
         }
-      } |
-      contract Group (@"request", @name, @userid, memberInbox, @deployerId, return, log) = {
-        new ch, ch1 in {
-          deployerRevAddr!(deployerId,*ch) |
-          // call request methos for group
-          // TODO: get the deployers rev address and add if allowed
-          for ( @{map /\  {=name: {"info": {"request": *inbox, ..._}, "admin": *admin, ..._}, ..._}} <<- groupMapCh ) {
-            log!(["map",map]) |
-            inbox!(["GroupRequest", name, {"username": userid, "inbox": *memberInbox}],*log)|
-            admin!("request", name, userid, *memberInbox, deployerId, *return, *log)
-          }
-        }
-      } |
-      contract Group (@"lookup", @name, return) = {
-        for ( @{map /\  {=name: *infoCh, ..._}} <<- groupMapCh ) {
-          for ( info <<- infoCh ) {
-            //stdout!(*info) |
-            return!(*info)
-          }
-        }
-      } |
-      contract Group (@"lookup", return) = {
-        for ( @map <<- groupMapCh ) {
-          //stdout!(map) |
-          return!(map)
-        }
-      } |
-      Group!("new","test", Nil, *ret) |
-      Group!("new","test2", Nil, *ret) |
-      for (_ <- ret) { Nil } |
-      for ( @{"admin": admin, "read": read, "write": write, "grant": grant} <- ret ) {
-        stdout!("got em") |
-        Group!("lookup","test",*stdout) |
-        Group!("lookup","test2",*stdout) |
-        Group!("lookup",*stdout) |
-        admin|("add user","jim","xxxxx", *ret) |
-        for ( _ <- ret ) {
-          Group!("lookup","test",*stdout) |
-          Group!("lookup","test2",*stdout)
-        }
       }
     }
+  }    |
+  stdout!("request") |
+  contract Group (@"request", @name, @userid, memberInbox, @deployerId, return, log) = {
+    stdout!("adding " ++ userid) |
+    // call request methos for group
+    // TODO: get the deployers rev address and add if allowed
+    for ( @{map /\  {=name: {"info": {"request": *inbox, ..._}, "admin": *admin, ..._}, ..._}} <<- groupMapCh ) {
+      log!(["map",map]) |
+      inbox!(["GroupRequest", name, {"username": userid,   "inbox": *memberInbox}],*log)|
+      admin!("request", name, userid, *memberInbox, deployerId, *return, *log)
+    }
+  } |
+  // stdout!("lookup") |
+  contract Group (@"lookup", @name, return) = {
+    for ( @{map /\  {=name: *infoCh, ..._}} <<- groupMapCh ) {
+      for ( info <<- infoCh ) {
+        //stdout!(*info) |
+        return!(*info)
+      }
+    }
+  } |
+  // stdout!("lookup2") |
+  contract Group (@"lookup", return) = {
+    for ( @map <<- groupMapCh ) {
+      //stdout!(map) |
+      return!(map)
+    }
+  } |
+  new  return(`rho:io:stdout`), ret, ret2 in {
+    stdout!("testing,") |
+    Group!("new","test", Nil, *ret) |
+    Group!("new","test2", Nil, *ret2) |
+    for ( @{"admin": admin, "read": read, "write": write, "grant": grant} <- ret; _ <- ret2 ) {
+      stdout!("got em") |
+      Group!("lookup","test",*stdout) |
+      Group!("lookup","test2",*stdout) |
+      Group!("lookup",*stdout) |
+      Group!("request", "test", "zorro", `rho:id:xxxxxxx`, *deployerId, *stdout, *stdout)
+    }
   }
-}}
+}
