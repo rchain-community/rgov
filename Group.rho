@@ -58,7 +58,7 @@ in {
             groupMapCh!(groups) |
             return!(Nil)
           } else {
-            for(@{"read": *masterRead, ..._} <<- @[*deployerId, "dictionary"]) {
+            for(@{"read": *masterRead, ..._} <<- @[*deployerId, "MasterContractAdmin"]) {
               stdout!({"read": *masterRead}) |
               masterRead!("Directory", *ret)
             } |
@@ -137,16 +137,13 @@ in {
   }    |
   stdout!("request") |
   contract Group (@"request", @name, @userid, memberInbox, @deployerId, return, log) = {
-    new ch, ch1 in {
-      stdout!("adding " ++ userid) |
-      deployerRevAddr!(deployerId,*ch) |
-      // call request methos for group
-      // TODO: get the deployers rev address and add if allowed
-      for ( @{map /\  {=name: {"info": {"request": *inbox, ..._}, "admin": *admin, ..._}, ..._}} <<- groupMapCh ) {
-        log!(["map",map]) |
-        inbox!(["GroupRequest", name, {"username": userid, "inbox": *memberInbox}],*log)|
-        admin!("request", name, userid, *memberInbox, deployerId, *return, *log)
-      }
+    stdout!("adding " ++ userid) |
+    // call request methos for group
+    // TODO: get the deployers rev address and add if allowed
+    for ( @{map /\  {=name: {"info": {"request": *inbox, ..._}, "admin": *admin, ..._}, ..._}} <<- groupMapCh ) {
+      log!(["map",map]) |
+      inbox!(["GroupRequest", name, {"username": userid,   "inbox": *memberInbox}],*log)|
+      admin!("request", name, userid, *memberInbox, deployerId, *return, *log)
     }
   } |
   // stdout!("lookup") |
