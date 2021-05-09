@@ -12,7 +12,7 @@ match ["inbox", "", ""] {
         peek!("Group", group, *ret) |
         peek!("issue", issue, *ret1) |
         for ( @[{"read": *read, ..._}, ..._] <- ret;  @[{"admin": *admin, ..._}, ..._] <- ret1 ) {
-          stdout!("adding users") |
+          stdout!(["adding users") |
           contract loop ( @map ) = {
             match  map {
               {} => Nil
