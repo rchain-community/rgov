@@ -1,5 +1,5 @@
-match ["?", "?", "?", "?", "inbox"] {
-[name, revAddress, themBoxReg, group, lockerTag] => {
+match ["?", "?", "?", "inbox"] {
+[name, themBoxReg, community, lockerTag] => {
 new
    deployId(`rho:rchain:deployId`),
    deployerId(`rho:rchain:deployerId`),
@@ -10,13 +10,13 @@ new
 in {
    for(@{"peek": *peek, "inbox": *inbox, ..._} <<- @{[*deployerId, lockerTag]}) {
       lookup!(themBoxReg, *boxCh) |
-      peek!("Community", group, *ret)|
+      peek!("Community", community, *ret)|
       for ( @[{"admin": *admin, "read": *read, "write": *write, "grant": *grant}] <- ret; themBox <- boxCh ) {
          //stdout!("adding user")|
-         admin!("add user", name, revAddresx, *inbox, *ret, *deployId) |
+         admin!("add user", name, *inbox, *ret) |
          for (selfmod <- ret) {
             //stdout!("user added") |
-            themBox!(["member", group, {"read": *read, "selfmod": *selfmod}], *deployId)
+            themBox!(["member", community, {"read": *read, "selfmod": *selfmod}], *deployId)
          }
       }
    }
