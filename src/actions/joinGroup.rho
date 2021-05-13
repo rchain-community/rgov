@@ -5,6 +5,7 @@ new
    deployId(`rho:rchain:deployId`),
    deployerId(`rho:rchain:deployerId`),
    lookup(`rho:registry:lookup`),
+   stdout(`rho:io:stdout`),
    trace(`rho:io:stdout`),
    ret,
    ret2
@@ -14,7 +15,7 @@ in {
       MCA!("Group", *ret) |
       for ( Group <- ret) {
          for(@{"inbox": *inbox, "URI": *URI, ..._} <<- @{[*deployerId, lockerTag]}) {
-            Group!("request", group, userid, *URI, *deployerId, *ret, *deployId)|
+            Group!("request", group, userid, *URI, *deployerId, *ret, *stdout)|
             for (caps <- ret) {
                if (*caps != Nil) {
                   inbox!(["Group", group, *caps], *deployId)

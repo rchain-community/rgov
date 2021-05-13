@@ -62,38 +62,39 @@ in {
             // Create Group member directory
             Directory!(*dirCh) |
             for ( @{"read": *read, "write": *write, "grant": *grant, ..._ } <- dirCh ) {
-              stdout!(groups.set(name, { "info": {"request": *inbox },
-              "admin": *admin, "read": *read, "write": *write, "grant": *grant})) |
-              groupMapCh!(groups.set(name, { "info": {"request": *inbox },
-              "admin": *admin, "read": *read, "write": *write, "grant": *grant})) |
+              stdout!(groups.set(name, { "info": {"request": *inbox }, "admin": *admin, "read": *read, "write": *write, "grant": *grant})) |
+              groupMapCh!(groups.set(name, { "info": {"request": *inbox }, "admin": *admin, "read": *read, "write": *write, "grant": *grant})) |
               return!({"admin": *admin, "read": *read, "write": *write, "grant": *grant}) |
               contract admin(@"add info", @key, @value, return) = {
                 for (@{"info": *info, ...rest} <- groupMapCh) {
+                  stdout!(["info", *info, "rest", rest]) |
                   groupMapCh!({"info": *info.set(key, value)} ++ rest)
                 }
               } |
               contract admin(@"add user", @username, revAddr,  @inbox, return, log) = {
                 //TODO see if already a member
                 for ( @list <- userlistCh) {
+                  log!(["userlist", list]) |
                   if ( list.contains(username) ) {
-                    log!("Sorry usernsme " ++ username ++ " already exists.")  |
+                    log!("Sorry, username " ++ username ++ " already exists.")  |
                     return!(Nil)
                   } else {
                     if ( list.length() == 0 ) {
+                      log!("first user being added", [username]) |
                       userlistCh!([username]) |
-                      write!(username, {"inbox": inbox, "delegate": Nil, "revAddr": *revAddr}, *stdout) |
-                      stdout!("first user being added")
+                      write!(username, {"inbox": inbox, "delegate": Nil, "revAddr": *revAddr}, *log)
                     } else {
+                      log!("adding one more user", [list.slice(1,list.length()) ++ [ username, list.nth(0)]]) |
                       userlistCh!(list.slice(1,list.length()) ++ [ username, list.nth(0)]) |
-                      write!(username, {"inbox": inbox, "revaddr": *revAddr, "delegate": list.nth(0)}, *stdout) |
-                      stdout!("adding one more user")
+                      write!(username, {"inbox": inbox, "revaddr": *revAddr, "delegate": list.nth(0)}, *log)
                     } |
-                    stdout!(list.slice(1,list.length()) ++ [username, list.nth(0)]) |
                     for (map <- revAddrsCh) {
+                      log!(["revAddrs", map]) |
                       revAddrsCh!(*map.set(*revAddr,username))
                     } |
                     grant!(username, *ret) |
                     for ( updateself <- ret ) {
+                      log!(["grant", updateself]) |
                       return!({"selfupdate": *updateself})
                     }
                   }
@@ -113,11 +114,11 @@ in {
               } |
               contract admin(@"request", @name, @userid, memberInbox, @deployerId, return, log) = {
                 new ch, ch1 in {
-                  stdout!("adding " ++ userid ++ " to " ++ name) |
+                  log!("adding " ++ userid ++ " to " ++ name) |
                   deployerRevAddr!(deployerId,*ch) |
                   for ( revAddr <<- ch) {
                     for ( allowed <<- allowedRevAddrsCh) {
-                      stdout!({"allowed": *allowed.contains(*revAddr), "all": *allowed.toList()}) |
+                      log!({"allowed": *allowed.contains(*revAddr), "all": *allowed.toList()}) |
                       if (*allowed.contains(*revAddr)) {
                         log!(["revAddr is registered, adding.", *revAddr])
                       } else {
@@ -136,7 +137,7 @@ in {
   } |
   stdout!("request") |
   contract Group (@"request", @name, @userid, memberInbox, @deployerId, return, log) = {
-    stdout!("adding " ++ userid) |
+    log!("adding " ++ userid) |
     // call request methos for group
     // TODO: get the deployers rev address and add if allowed
     for ( @{map /\  {=name: {"info": {"request": *inbox, ..._}, "admin": *admin, ..._}, ..._}} <<- groupMapCh ) {
