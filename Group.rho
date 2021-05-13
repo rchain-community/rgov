@@ -72,29 +72,29 @@ in {
                 }
               } |
               contract admin(@"add user", @username, revAddr,  @inbox, return, log) = {
+                log!(["entering add user", username, *revAddr, inbox]) |
                 //TODO see if already a member
-                for ( @list <- userlistCh) {
-                  log!(["userlist", list]) |
-                  if ( list.contains(username) ) {
+                for ( @list <- userlistCh; @map <- revAddrsCh) {
+                  log!(["userlist", list, "revmap", map]) |
+                  if ( map.contains(*revAddr)) {
                     log!("Sorry, username " ++ username ++ " already exists.")  |
+                    revAddrsCh!(map) |
+                    userlistCh!(list) |
                     return!(Nil)
                   } else {
                     if ( list.length() == 0 ) {
-                      log!("first user being added", [username]) |
+                      log!(["first user being added", [username]]) |
                       userlistCh!([username]) |
                       write!(username, {"inbox": inbox, "delegate": Nil, "revAddr": *revAddr}, *log)
                     } else {
-                      log!("adding one more user", [list.slice(1,list.length()) ++ [ username, list.nth(0)]]) |
+                      log!(["adding one more user", [list.slice(1,list.length()) ++ [ username, list.nth(0)]]]) |
                       userlistCh!(list.slice(1,list.length()) ++ [ username, list.nth(0)]) |
                       write!(username, {"inbox": inbox, "revaddr": *revAddr, "delegate": list.nth(0)}, *log)
                     } |
-                    for (map <- revAddrsCh) {
-                      log!(["revAddrs", map]) |
-                      revAddrsCh!(*map.set(*revAddr,username))
-                    } |
+                    revAddrsCh!(map.set(*revAddr,username)) |
                     grant!(username, *ret) |
                     for ( updateself <- ret ) {
-                      log!(["grant", updateself]) |
+                      log!(["grant", *updateself]) |
                       return!({"selfupdate": *updateself})
                     }
                   }
@@ -125,7 +125,7 @@ in {
                         log!(["revAddr not registered, adding anyway for now.", *revAddr])
                       }
                     } |
-                    admin!("add user",*revAddr, *memberInbox, *return, *log)
+                    admin!("add user", userid, *revAddr, *memberInbox, *return, *log)
                   }
                 }
               }
