@@ -45,7 +45,7 @@ in {
     ret,
     dirCh
     in {
-      userlistCh!([]) | usernamesCh!({}) /* needed? */ | inboxURIsCh!({}) | allowedRevAddrsCh!(Set()) | revAddrsCh!({}) |
+      userlistCh!([]) /* | usernamesCh!({}) /* needed? */ | inboxURIsCh!({}) | allowedRevAddrsCh!(Set()) | revAddrsCh!({}) |
       stdout!("creating Group.") |
       for (@groups <- groupMapCh ) {
         if ( groups.get(name) != Nil ) {
@@ -74,9 +74,10 @@ in {
               contract admin(@"add user", @username, revAddr,  @inbox, return, log) = {
                 log!(["entering add user", username, *revAddr, inbox]) |
                 //TODO see if already a member
-                for ( @list <- userlistCh; @map <- revAddrsCh) {
-                  log!(["userlist", list, "revmap", map]) |
-                  if ( map.contains(*revAddr)) {
+                read!(username, *ret) |
+                for ( @list <- userlistCh; @map <- revAddrsCh; isThere <- ret) {
+                  log!(["userlist", list, "revmap", map, "isThere", *isThere]) |
+                  if ( map.contains(*revAddr) or *isThere != Nil) {
                     log!("Sorry, username " ++ username ++ " already exists.")  |
                     revAddrsCh!(map) |
                     userlistCh!(list) |
