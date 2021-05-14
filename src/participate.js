@@ -605,7 +605,7 @@ function runControl(
   return freeze({
     view() {
       return html`<button
-          id="explore"
+          id="explore" class="btn"
           disabled=${state.term === null}
           onclick=${async (/** @type {Event} */ event) => {
             event.preventDefault();
@@ -615,7 +615,7 @@ function runControl(
           Explore
         </button>
         <button
-          id="deploy"
+          id="deploy" class="btn" style="margin-left: 10px"
           disabled=${state.term === null}
           onclick=${async (/** @type {Event} */ event) => {
             event.preventDefault();

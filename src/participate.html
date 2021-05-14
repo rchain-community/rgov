@@ -3,20 +3,19 @@
 
 <head>
   <title>Liquid Democracy Participation Experiment</title>
-  <style>
-    .card {
-      display: inline-block;
-      border: 1px solid black;
-      border-radius: 10px;
-      background-color: pink;
-      padding: 4px;
-      margin: 2px;
-    }
+  <link rel="stylesheet" href="participate.css">
   </style>
 </head>
 
 <body>
-  <div>
+  <nav>
+    <ul>
+      <li class="nav-item img"><img src="./assets/rchain black.png"></li>
+      <!-- <li class="nav-item loading-bar">loading bar</li> -->
+      <li class="nav-item sign-in-btn"><button type="btn" class="btn">sign in</button></li>
+    </ul>
+  </nav>
+  <div class="main-content">
     <h1>Liquid Democracy Participation Experiment</h1>
 
     <ul>
@@ -45,7 +44,7 @@
             <option name="network" value="localhost" selected>localhost</option>
             <option name="network" value="rhobot" selected>rhobot</option> -->
           </select>
-        </div>
+        </div><br>
         <div id="runControl">
           <button id="run">Run</button>
           <section id="resultSection" style="display: none">
@@ -72,11 +71,11 @@
     </div>
   </div>
   <hr />
-  <address>
+  <footer>
     by Dan Connolly, Jim Whitescarver, Bill Keuntje
     <br />
     and the <a href="https://github.com/rchain-community/">RChain Community</a>
-  </address>
+  </footer>
 
 </body>
 
