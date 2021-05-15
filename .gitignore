@@ -5,3 +5,4 @@ rhoid.js
 .vscode/
 dist/
 yarn.lock
+pyrgov/__pycache__/rgov.cpython-38.pyc
