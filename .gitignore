@@ -6,3 +6,4 @@ rhoid.js
 dist/
 yarn.lock
 pyrgov/__pycache__/
+testing/__pycache__/
