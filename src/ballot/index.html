@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <title>RChain Voting</title>
+  <link rel="stylesheet" href="style.css">
+  </style>
+</head>
+
+<body>
+  <nav>
+    <ul>
+      <li class="nav-item img"><img src="../assets/rchain black.png"></li>
+      <!-- <li class="nav-item loading-bar">loading bar</li> -->
+      <li class="nav-item sign-in-btn"><button type="btn" class="btn">sign in</button></li>
+    </ul>
+  </nav>
+  <div class="main-content">
+    <h2>RChain Annual Meeting 2021 Voting</h2>
+
+    <ul>
+      <li>Select an <a href="https://us02web.zoom.us/j/6853551826?pwd=NG1BdDFpSUZBQndQRnZvUUtLRG1BUT09">
+        account in metamask</a> which owns REV in the selected network.</li>
+    </ul>
+    <div class="table">
+        <table class="styled-table">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th class="desc">Short Description</th>
+                    <th>Oppose</th>
+                    <th>Abstain</th>
+                    <th>Support</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>1</td>
+                    <td>Test Vote</td>
+                    <td type='radio'><label class="container">
+                        <input type="radio" checked="checked" name="radio">
+                        <span class="checkmark"></span>
+                      </label></td>
+                      <td type='radio'><label class="container">
+                        <input type="radio" checked="checked" name="radio">
+                        <span class="checkmark"></span>
+                      </label></td>
+                      <td type='radio'><label class="container">
+                        <input type="radio" checked="checked" name="radio">
+                        <span class="checkmark"></span>
+                      </label></td>
+                </tr>
+            </tbody>
+        </table>        
+    </div>
+    <form>
+      <fieldset>
+        <div id="actionControl" class="mount">
+            </span>
+          </label>
+          <br />
+          <!-- prettier-ignore -->
+          <textarea id='rholang-term' cols="80" rows="16"></textarea>
+        </div>
+        <div id="netControl">
+          Network:
+          <select id="netControlSelect">
+            <!-- <option name="network" value="mainnet">mainnet</option>
+            <option name="network" value="testnet" selected>testnet</option>
+            <option name="network" value="localhost" selected>localhost</option>
+            <option name="network" value="rhobot" selected>rhobot</option> -->
+          </select>
+        </div><br>
+        <div id="runControl">
+          <button id="run" class="btn">Run</button>
+          <section id="resultSection" style="display: none">
+            <h2>Result</h2>
+            <pre id ="deployId"></pre>
+            <pre id="result"></pre>
+            <h2>Block Info</h2>
+            <small>
+              <pre id="blockInfo"></pre>
+            </small>
+          </section>
+          <section id="problemSection" style="display: none">
+            <h3>Problem</h3>
+            <pre id="problem"></pre>
+          </section>
+        </div>
+      </fieldset>
+    </form>
+    <p>idea: show avatars for members; give emoji kudos <a href="https://emojipedia.org/red-heart/">❤️</a></p>
+    <h3>ToDo</h3>
+    <p><em>See <a href="https://github.com/rchain-community/rgov/issues">rgov issues</a></em></p>
+    <div id="groupControl">
+      <h3>Members...</h3>
+    </div>
+  </div>
+  <hr />
+  <footer>
+    by Dan Connolly, Jim Whitescarver, Bill Keuntje
+    <br />
+    and the <a href="https://github.com/rchain-community/">RChain Community</a>
+  </footer>
+
+</body>
+
+</html>
