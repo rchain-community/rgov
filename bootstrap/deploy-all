@@ -1,30 +1,17 @@
 #!/bin/bash
 
-ALREADY=`ps -fu |grep " java .*rnode"|grep -v grep |sed 's/[ \t][ \t]*/ /g'|cut -d' ' -f 1`
-[ -n "$ALREADY" ] && echo "
-$0: rnode is currently running
-Use 'kill $ALREADY' to fix.
-" && while read -p "$0: Execute 'kill $ALREADY' [n]? " response;do
-	if [ "$response" == "y" ] || [ -z "$response" ];then
-      set -x
-		kill $ALREADY
-      set +x
-		break
-	else
-		echo "$0: exiting"
-		exit 1
-	fi
-done
-
 [ ! -d ~/.rnode ] && echo "
 $0: $HOME/.rnode does not exist. Use 'bootstrap' to fix.
 " && exit 1
 
 cd `dirname $0`
 
-./list-checkpoints.sh|grep "rgov" && echo "$0: checkpoint rgov already exists." && while read -p "Use it instead of re-running deploy [y]? " response;do
+./stop-rnode
+if [ $? -ne 0 ] ; then exit $?; fi
+
+./list-snapshot|grep "rgov" && echo "$0: snapshot rgov already exists." && while read -p "Use it instead of re-running deploy [y]? " response;do
    if [ "$response" == 'y' ] || [ -z "$response" ];then
-      ./restore-checkpoint.sh "rgov"
+      ./restore-snapshot "rgov"
       exit 0
    else
       echo "$0: Re-running deploy"
@@ -36,11 +23,15 @@ set -x
 
 private_key=`cat pk.bootstrap`
 
-DEPLOY="./deploy"
-LOGFILE="$0.log"
+ME=`basename $0`
+ERRORLOG="$(mktemp /tmp/$ME.XXXXXX)"
+LOGFILE="log/$ME.log"
+rm -f $ERRORLOG
+DEPLOY="./deploy --error $ERRORLOG"
 
-javascript_file=generated.rhoid.bootstrap.js
-json_file=generated.rhoid.bootstrap.json
+mkdir -p generated
+javascript_file=generated/generated.rhoid.bootstrap.js
+json_file=generated/generated.rhoid.bootstrap.json
 
 # Get everything, including system classes
 git clone https://github.com/rchain/rchain.git || (cd rchain && git pull)
@@ -66,13 +57,20 @@ deployFiles() {
    while read t;do
       $DEPLOY $t &
       WAITPID="$WAITPID $!"
-   done |tee -a deployment.log 2>&1
+   done |tee -a log/deployment.log 2>&1
    wait $WAITPID
+   echo "deployFiles done status $?"
 }
 
 # deploy rchain code
 find rchain -name "*.rho"|grep -v "test"|grep -v "tests" |grep -v "examples" | deployFiles
 
+if [ -f "$ERRORLOG" ]; then
+   echo "$0 DeployFiles error:";
+   cat $ERRORLOG;
+   rm -f $ERRORLOG;
+   exit 2;
+fi
 
 # deploy rgov
 # ../Community.rho \
@@ -89,9 +87,16 @@ ls -1 \
 ./voter-insertion.rho \
 | deployFiles
 
+if [ -f "$ERRORLOG" ]; then
+   echo "$0 DeployFiles error:";
+   cat $ERRORLOG;
+   rm -f $ERRORLOG;
+   exit 2;
+fi
+
 # Finalize the rnode
-echo "$0: Proposing...." | tee -a deployment.log
-rnode --grpc-port 40402 propose 2>&1 | tee -a deployment.log
+echo "$0: Proposing...." | tee -a log/deployment.log
+rnode --grpc-port 40402 propose 2>&1 | tee -a log/deployment.log
 echo "$0: Propose finished."
 
 # generate javascript
@@ -132,12 +137,12 @@ echo '    "NecessaryInvalidPlaceholder": ""
 # gen_json < $LOGFILE > $json_file
 
 # generate and create the master contract directory
-echo "$0: Generating generated.create-master-contract-directory.rho"
-./master-contract-directory.sh > generated.create-master-contract-directory.rho
+echo "$0: Generating generated/generated.create-master-contract-directory.rho"
+./master-contract-directory > generated/generated.create-master-contract-directory.rho
 
-echo "generated.create-master-contract-directory.rho"| deployFiles | tee -a create-master-directory.log
-echo "$0: Proposing generated.create-master-contract-directory.rho" |tee -a create-master-directory.log
-rnode --grpc-port 40402 propose 2>&1 | tee -a deployment.log
+echo "generated/generated.create-master-contract-directory.rho"| deployFiles | tee -a log/create-master-directory.log
+echo "$0: Proposing generated/generated.create-master-contract-directory.rho" |tee -a log/create-master-directory.log
+rnode --grpc-port 40402 propose 2>&1 | tee -a log/deployment.log
 
 echo "Creating ../src/MasterURI.localhost.json"
 echo "{\"MasterURI\": { \"rhoid\":" > ../src/MasterURI.localhost.json
@@ -149,11 +154,11 @@ echo "}}" >> ../src/MasterURI.localhost.json
 
 echo "$0: listing master directory"
 ./deploy listMasterURI.rho
-rnode --grpc-port 40402 propose 2>&1 | tee -a deployment.log
+rnode --grpc-port 40402 propose 2>&1 | tee -a log/deployment.log
 echo "Waiting for rnode to finish (10s)" && sleep 10 && echo "$0: Stopping deployment rnode"
 kill $PID && sleep 2
 
-echo "$0: Creating rgov checkpoint"
-./create-checkpoint.sh rgov
-grep '{"ReadcapURI" : `' deploy-all.log|tail -1|sed 's-`-"-g' > ../ReadcapURI.json
+echo "$0: Creating rgov snapshot"
+./create-snapshot rgov
+grep '{"ReadcapURI" : `' $LOGFILE|tail -1|sed 's-`-"-g' > ../ReadcapURI.json
 stty echo

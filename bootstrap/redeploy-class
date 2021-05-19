@@ -7,32 +7,37 @@ Use 'bootstrap' to fix.
 
 CLASS=`basename $1|sed 's/.rho$//'`
 ME=`basename $0`
-
+LOGFILE="log/$ME.$1.log"
 DEPLOY="./deploy"
+mkdir -p generated
 
 set -x
 
 cd `dirname $0`
 
-if ! ps -fu | grep "java.*rnode" |grep -v grep > /dev/null 2>&1 ;then
-   echo "rnode not running. Use ./run-rnode to fix." && exit 1
-fi
+./check-rnode
+if [ $? -ne 0 ] ; then exit $?; fi
 
 set +x
 
 $DEPLOY $1 |tee -a $LOGFILE
+if [ $? -ne 0 ] ; then
+   status=$?;
+   echo "$0 deploy $1 failed with status $status"
+   exit $status;
+fi
 
 # Finalize the rnode
 echo "Proposing...." |tee -a $LOGFILE
-rnode --grpc-port 40402 propose 2>&1 | tail -n 0 -F ./run-rnode.log | sed '/Blocks ready to be added/q' 2>&1
+rnode --grpc-port 40402 propose 2>&1 | tail -n 0 -F log/run-rnode.log | sed '/Blocks ready to be added/q' 2>&1
 echo "Propose finished." |tee -a $LOGFILE
 
-URI=`grep \#define ./run-rnode.log|tail -1|cut -d' ' -f3|sed 's/]//'`
+URI=`grep \#define log/run-rnode.log|tail -1|cut -d' ' -f3|sed 's/]//'`
 
 echo "Generating master directory update."
-echo "match [$URI]{[newURI] => {" > generated.$ME.$CLASS.update-directory.rho
+echo "match [$URI]{[newURI] => {" > generated/generated.$ME.$CLASS.update-directory.rho
 
-cat - >> generated.$ME.$CLASS.update-directory.rho << EOF
+cat - >> generated/generated.$ME.$CLASS.update-directory.rho << EOF
 new
    lookup(\`rho:registry:lookup\`),
    stdout(\`rho:io:stdout\`),
@@ -43,8 +48,8 @@ new
    lookCh,
    masterChLookup
 EOF
-echo "in {" >> generated.$ME.$CLASS.update-directory.rho
-cat - >> generated.$ME.$CLASS.update-directory.rho << EOF3
+echo "in {" >> generated/generated.$ME.$CLASS.update-directory.rho
+cat - >> generated/generated.$ME.$CLASS.update-directory.rho << EOF3
 for(@{"read": *read, "write": *write, ..._} <<- @[*deployerId, "MasterContractAdmin"]) {
    stdout!(["read", *read, "write", *write]) |
    read!("$CLASS", *ch) |
@@ -66,9 +71,13 @@ for(@{"read": *read, "write": *write, ..._} <<- @[*deployerId, "MasterContractAd
 }}}}
 EOF3
 
-$DEPLOY generated.$ME.$CLASS.update-directory.rho
-
+$DEPLOY generated/generated.$ME.$CLASS.update-directory.rho
+if [ $? -ne 0 ] ; then
+   status=$?;
+   echo "$0 deploy generated.$ME.$CLASS.update-directory.rho failed with status $status"
+   exit $status;
+fi
 echo "Proposing master directory update...." |tee -a $LOGFILE
-rnode --grpc-port 40402 propose 2>&1 | tail -n 0 -F ./run-rnode.log | sed '/Blocks ready to be added/q' 2>&1
+rnode --grpc-port 40402 propose 2>&1 | tail -n 0 -F log/run-rnode.log | sed '/Blocks ready to be added/q' 2>&1
 
 echo "Waiting for rnode to complete (10s)" && sleep 10
