@@ -38,14 +38,13 @@ in {
     admin,
     inboxURIsCh,
     revAddrsCh,
-    usernamesCh,
     userlistCh,
     allowedRevAddrsCh,
     memberRevAddrsCh,
     ret,
     dirCh
     in {
-      userlistCh!([]) /* | usernamesCh!({}) /* needed? */ | inboxURIsCh!({}) | allowedRevAddrsCh!(Set()) | revAddrsCh!({}) |
+      userlistCh!([]) | inboxURIsCh!({}) | allowedRevAddrsCh!(Set()) | revAddrsCh!({}) |
       stdout!("creating Group.") |
       for (@groups <- groupMapCh ) {
         if ( groups.get(name) != Nil ) {
@@ -113,22 +112,17 @@ in {
                   allowedRevAddrsCh!(*allowed.delete(*revaddr))
                 }
               } |
-              contract admin(@"request", @name, @userid, memberInbox, @deployerId, return, log) = {
-                new ch, ch1 in {
-                  log!("adding " ++ userid ++ " to " ++ name) |
-                  deployerRevAddr!(deployerId,*ch) |
-                  for ( revAddr <<- ch) {
-                    for ( allowed <<- allowedRevAddrsCh) {
-                      log!({"allowed": *allowed.contains(*revAddr), "all": *allowed.toList()}) |
-                      if (*allowed.contains(*revAddr)) {
-                        log!(["revAddr is registered, adding.", *revAddr])
-                      } else {
-                        log!(["revAddr not registered, adding anyway for now.", *revAddr])
-                      }
-                    } |
-                    admin!("add user", userid, *revAddr, *memberInbox, *return, *log)
+              contract admin(@"request", @name, @userid, memberInbox, revAddr, return, log) = {
+                log!("adding " ++ userid ++ " to " ++ name) |
+                for ( allowed <<- allowedRevAddrsCh) {
+                  log!({"allowed": *allowed.contains(*revAddr), "all": *allowed.toList()}) |
+                  if (*allowed.contains(*revAddr)) {
+                    log!(["revAddr is registered, adding.", *revAddr])
+                  } else {
+                    log!(["revAddr not registered, adding anyway for now.", *revAddr])
                   }
-                }
+                } |
+                admin!("add user", userid, *revAddr, *memberInbox, *return, *log)
               }
             }
           }
@@ -138,13 +132,16 @@ in {
   } |
   stdout!("request") |
   contract Group (@"request", @name, @userid, memberInbox, @deployerId, return, log) = {
-    log!("adding " ++ userid) |
-    // call request methos for group
-    // TODO: get the deployers rev address and add if allowed
-    for ( @{map /\  {=name: {"info": {"request": *inbox, ..._}, "admin": *admin, ..._}, ..._}} <<- groupMapCh ) {
-      log!(["map",map]) |
-      inbox!(["GroupRequest", name, {"username": userid,   "inbox": *memberInbox}],*log)|
-      admin!("request", name, userid, *memberInbox, deployerId, *return, *log)
+    new ch in {
+      log!("adding " ++ userid) |
+      // call request methos for group
+      // TODO: get the deployers rev address and add if allowed
+      deployerRevAddr!(deployerId,*ch) |
+      for ( revAddr <<- ch; @{map /\  {=name: {"info": {"request": *inbox, ..._}, "admin": *admin, ..._}, ..._}} <<- groupMapCh ) {
+        log!(["map",map]) |
+        inbox!(["GroupRequest", name, {"username": userid, "revAddress": *revAddr,  "inbox": *memberInbox}],*log)|
+        admin!("request", name, userid, *memberInbox, *revAddr, *return, *log)
+      }
     }
   } |
   // stdout!("lookup") |

@@ -13,7 +13,7 @@ in {
       peek!("Community", group, *ret)|
       for ( @[{"admin": *admin, "read": *read, "write": *write, "grant": *grant}] <- ret; themBox <- boxCh ) {
          //stdout!("adding user")|
-         admin!("add user", name, revAddresx, *inbox, *ret, *deployId) |
+         admin!("add user", name, userid, *thembox, revAddres, *ret, *deployId) |
          for (selfmod <- ret) {
             //stdout!("user added") |
             themBox!(["member", group, {"read": *read, "selfmod": *selfmod}], *deployId)
