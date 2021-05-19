@@ -19,7 +19,7 @@ $0: $HOME/.rnode exists. Use 'rm -rf $HOME/.rnode' to fix.
 	fi
 done
 
-mkdir -p snapshot log 2>/dev/null
+mkdir -p snapshot log generated 2>/dev/null
 
 ME=`basename $0`
 
