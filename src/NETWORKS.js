@@ -4,8 +4,9 @@
  * @typedef { import('rchain-api').Observer } Observer
  * @typedef { import('rchain-api').Validator } Validator
  * @typedef { import('rchain-api/src/rnode').RNodeAdmin } RNodeAdmin
- * @typedef { { observerBase: string, validatorBase: string, adminBase: string } } shardBase
- * @typedef {{ hostPattern: hostname, shardBase: shardBase }} net
+ * @typedef {{ observerBase: Observer, validatorBase: Validator, adminBase: import('rchain-api/src/rnode').RNodeAdmin }} 
+ shardBase
+ * @typedef {{ hostPattern: hostname, shard: Object }} net
 */
 
 /**
@@ -19,7 +20,7 @@
 function makeNetwork(pattern, obs, val, adm) {
    return Object.freeze({
       hostPattern: pattern,
-      shardBase: {
+      shard: {
       observerBase: obs,
       validatorBase: val,
       adminBase:adm
@@ -81,7 +82,8 @@ export function netFromHost(hostname) {
       ([_name, net]) => {
           if (hostname.indexOf(net.hostPattern) >= 0) return net;
          })
-
+   if (NETWORKS[hostname] === undefined ) return NETWORKS.mainnet;
+         
    return NETWORKS[hostname];
 }
 

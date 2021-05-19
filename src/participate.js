@@ -50,6 +50,8 @@ const ROLL = `11112fZEixuoKqrGH6BxAPayFD8LWq9KRVFwcLvA5gg6GAaNEZvcKL
 
 let deployId = '';
 
+const rnode = RNode(fetch);
+
 /**
  * TODO: expect rather than unwrap (better diagnostics)
  *
@@ -172,11 +174,11 @@ function buildUI({
     fetch,
     hostname,
   }) {
-  const rnode = RNode(fetch);
+
   let action = '_select_an_action_';
-  let tmp = netFromHost(hostname)
+  let tmp = netFromHost(hostname);
   let network = tmp.hostPattern;
-  let shard = tmp.shardBase;
+  let shard = tmp.shard;
   let matchBody = '';
   /** @type {string?} */
   let term = '';
@@ -203,7 +205,11 @@ function buildUI({
       const net = netFromHost(value);
       if (!net) return;
       network = value;
-      shard = net.shardBase;
+      shard = {
+        observerBase: rnode.observer(net.shard.observerBase),
+        validatorBase: rnode.validator(net.shard.validatorBase),
+        adminBase: rnode.admin(net.shard.adminBase),
+      };
       state.bindings = bindings[network];
       console.log({ network, net });
     },
@@ -473,7 +479,8 @@ function runControl(
     if (!term) {
       return;
     }
-    const obs = state.shard.observer;
+    //const obs = state.shard.observer;
+    const obs = state.shard.observerBase;
     state.problem = undefined;
     state.results = [];
     try {
@@ -499,7 +506,7 @@ function runControl(
     async sign(/** @type { string } */ term) {
       const [timestamp, [recent]] = await Promise.all([
         clock(),
-        state.shard.observer.getBlocks(1),
+        state.shard.observerBase.getBlocks(1),
       ]);
       const ethereum = await getEthProvider();
       return signMetaMask(
@@ -532,7 +539,7 @@ function runControl(
           onclick=${async (/** @type {Event} */ event) => {
             event.preventDefault();
           console.log('@@DEBUG', state.term, { 'log message': 'string' });
-          setTimeout(propose, 10000, state.shard.admin);
+          setTimeout(propose, 10000, state.shard.adminBase);
           console.log('@@DEBUG', state.term, { 'log message': 'propose' });
           let tmp = await deploy(state.term, state.shard, account);
           state.problem = tmp.problem;

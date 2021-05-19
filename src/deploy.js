@@ -28,7 +28,7 @@ import {
 /**
  *
  * @param {string?} term
- * @param {{ observer: Observer, validator: Validator, admin: import('rchain-api/src/rnode').RNodeAdmin }} shard
+ * @param {{ observerBase: Observer, validatorBase: Validator, adminBase: import('rchain-api/src/rnode').RNodeAdmin }} shard
  * @param { import('rchain-api/src/proxy').Account } account
  * @returns {Promise<{problem: any|string, results: RhoExpr[]}>}
  */
@@ -37,9 +37,9 @@ export async function deploy(term, shard, account) {
       return { problem: "No rholang", results: []}
    }
 
-   const obs = shard.observer;
-   const val = shard.validator;
-   const adm = shard.admin;
+   const obs = shard.observerBase;
+   const val = shard.validatorBase;
+   const adm = shard.adminBase;
 
    try {
       // await busy(
@@ -57,4 +57,8 @@ export async function deploy(term, shard, account) {
    } catch (err) {
       return {problem: err.message, results: []}
    }
+
+
 }
+
+
