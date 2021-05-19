@@ -1,0 +1,83 @@
+match ["private_key", "public_key", "timestamp", "n", "dirURI"] {
+   [private, public, timestamp, nonce, directoryURI] => {
+new
+   rgov,
+   lookup(`rho:registry:lookup`)
+in {
+   new
+      inboxDirectory,
+      masterDirectory,
+      inboxCaps,
+      claim_inbox,
+      create_inbox
+   in { Nil
+   |  new inboxCh in { Nil
+      |  contract claim_inbox(@revAddr, ret, log) = { Nil
+         |  new
+               boxCh,
+               boxCaps,
+               insertArbitrary(`rho:registry:insertArbitrary`),
+               dirCh,
+               dirCaps
+            in { Nil
+            |  contract create_inbox(@revAddr, ret, log) = { Nil
+               |  masterDirectory!("read", "Inbox", *inboxCh)
+               |  masterDirectory!("read", "Directory", *dirCh)
+               |  for (boxC <- boxCh; dirC <- dirCh) { Nil
+                  |  boxC!(*boxCaps) // create member inbox
+                  |  dirC!(*masterDirectory, *dirCaps) // create member directory
+                  |  for (boxCaps <<- inboxCaps) {  Nil
+                     |  log!(["inboxCaps", *boxCaps])
+                     }
+                  |  for (read, write, peek <- boxCaps) { Nil
+                     |  insertArbitrary!(*write, *ret)
+                     |  for (@uri <- ret) { Nil
+                        |  inboxDirectory!(*inboxDirectory.set(revAddr,{"receive": *read, "inbox": *write, "peek": *peek, "URI": uri, "dict": *dirCaps.get("read")}))
+                        |  ret!(uri)
+                        }
+                     }
+                  }
+               }
+            }
+            | contract claim_inbox(@revAddr, ret, log) = { Nil
+            |  if (*inboxDirectory.contains(revAddr) == false) { Nil
+               |  log!(["no inbox: creating", revAddr])
+               |  create_inbox!(revAddr, *inboxCh)
+               } else  { Nil
+               |  inboxCh!(*inboxDirectory.get(revAddr))
+               }
+            |  for (inbox <- inboxCh) { Nil
+               |  log!(["returning inbox", *inbox, revAddr])
+               |  ret!(*inbox)
+               }
+            }
+         }
+      }
+      |  new
+            dirClass,
+            THM(`rho:lang:treeHashMap`)
+         in {
+            contract rgov(@"create singleton", @directoryURI, ret, log) = { Nil
+            |  lookup!(directoryURI, *dirClass)
+            |  for (dirC <- dirClass) { Nil
+               |  log!(["dirC", *dirC])
+               |  dirC!(*masterDirectory)
+               |  dirC!(*inboxDirectory) // TODO: This should be a THM, not a dirC
+               }
+            }
+            | contract rgov(@"claim inbox", @revAddr, ret, log) = { Nil
+            |  claim_inbox!(revAddr, *ret, *log)
+            }
+         }
+      }
+   }
+   | new
+      stdout(`rho:io:stdout`),
+      insertSigned(`rho:registry:insertSigned`),
+      blah,
+      uri
+   in {
+      insertSigned!(*blah, *uri)
+   }
+
+}} // end of match
