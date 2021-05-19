@@ -203,9 +203,9 @@ function buildUI({
       const net = netFromHost(value);
       if (!net) return;
       network = value;
-      console.log({ network, net });
       shard = net.shardBase;
       state.bindings = bindings[network];
+      console.log({ network, net });
     },
     get action() {
       return action;
@@ -578,7 +578,7 @@ function networkControl(state, { html }) {
           value=${state.network}
           onchange=${/** @type {Event} */ event => {
             state.network = ckControl(event.target).value
-            state.shard = netFromHost(state.network).shardBase
+            //state.shard = netFromHost(state.network).shardBase 
           }}
         >
         ${networkNames().map(/** @param {string} network */ network => {

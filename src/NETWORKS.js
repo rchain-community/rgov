@@ -76,9 +76,13 @@ const NETWORKS = Object.freeze({
  * @returns {net}
  */
 export function netFromHost(hostname) {
+
    Object.entries(NETWORKS).find(
-      ([_name, net]) => { if (hostname.indexOf(net.hostPattern) >= 0) return net;})
-   return NETWORKS.mainnet;
+      ([_name, net]) => {
+          if (hostname.indexOf(net.hostPattern) >= 0) return net;
+         })
+
+   return NETWORKS[hostname];
 }
 
 /**
