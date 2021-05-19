@@ -157,7 +157,7 @@ in {
   contract Group (@"lookup", return) = {
     for ( @map <<- groupMapCh ) {
       //stdout!(map) |
-      return!(map)
+      return!(map.keys())
     }
   } |
   new return(`rho:io:stdout`), ret, ret2 in {
