@@ -538,12 +538,14 @@ function runControl(
           disabled=${state.term === null}
           onclick=${async (/** @type {Event} */ event) => {
             event.preventDefault();
-          console.log('@@DEBUG', state.term, { 'log message': 'string' });
+          //console.log('@@DEBUG', state.term, { 'log message': 'string' });
           setTimeout(propose, 10000, state.shard.adminBase);
-          console.log('@@DEBUG', state.term, { 'log message': 'propose' });
+          //console.log('@@DEBUG', state.term, { 'log message': 'propose' });
           let tmp = await deploy(state.term, state.shard, account);
+          console.log(tmp);
           state.problem = tmp.problem;
           state.results = tmp.results;
+          console.log(state.problem);
           }}
         >
           Deploy
