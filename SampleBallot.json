@@ -10,28 +10,28 @@
       "label": "Board: DaD"
       "shortDesc": "Daffy Duck for Board Member",
       "docLink": "https://gist.github.com/dckc/ca240e5336d0ee3e4f5cf31c4f629a30#board-dad",
-      "proposals": ["Oppose","Abstain","Support"],
+      "proposals": Set(["Oppose","Abstain","Support"),
       "issue": {}
     },
     {
       "label": "Board: DoD",
       "shortDesc": "Donald Duck for Board Member",
       "docLink": "https://gist.github.com/dckc/ca240e5336d0ee3e4f5cf31c4f629a30#board-dod",
-      "proposals": ["Oppose","Abstain","Support"],
+      "proposals": Set(["Oppose","Abstain","Support"),
       "issue": {}
     },
     {
       "label": "Board: WEC",
       "shortDesc": "Wile E. Coyote for Board Member",
       "docLink": "https://gist.github.com/dckc/ca240e5336d0ee3e4f5cf31c4f629a30#board-wec",
-      "proposals": ["Oppose","Abstain","Support"],
+      "proposals": Set(["Oppose","Abstain","Support"),
       "issue": {}
     },
     {
       "label": "Board: RR",
       "shortDesc": "Road Runner for Board Member",
       "docLink": "https://gist.github.com/dckc/ca240e5336d0ee3e4f5cf31c4f629a30#board-rr",
-      "proposals": ["Oppose","Abstain","Support"],
+      "proposals": Set(["Oppose","Abstain","Support"),
       "issue": {}
     }
 ]
