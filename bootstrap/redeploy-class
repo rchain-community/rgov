@@ -9,7 +9,7 @@ CLASS=`basename $1|sed 's/.rho$//'`
 ME=`basename $0`
 LOGFILE="log/$ME.`basename $1`.log"
 DEPLOY="./deploy"
-mkdir -p generated
+mkdir -p generated log
 
 set -x
 
