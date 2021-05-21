@@ -3,7 +3,7 @@
       "label": "Member Swag",
       "shortDesc": "The Item of Business I want to propose is to provide all new members with stickers and t-shirts with the RChain logo on it as part of their membership onboarding package.",
       "docLink": "https://gist.github.com/dckc/ca240e5336d0ee3e4f5cf31c4f629a30#member-swag",
-      "proposals": Set(["Oppose","Abstain","Support"),
+      "proposals": ["Oppose","Abstain","Support"],
       "issue": {}
     },
     {
