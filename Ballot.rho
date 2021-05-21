@@ -1,0 +1,61 @@
+new
+   Ballot
+in {
+   new
+      issueList
+      , ballotName
+      , getIssues
+      , getName
+   in { Nil
+   |  contract Ballot(@"new", @name, @list, retCap, log) = { Nil
+      |  log!(["creating ballot", name, list])
+      |  issueList!(list)
+      |  ballotName!(name)
+      |  contract getIssues(ret, log) = { Nil
+         |  for (issues <<- issueList) { Nil
+            |  log!(*issues)
+            |  ret!((true, *issues))
+            }
+         }
+      |  contract getName(ret, log) = { Nil
+         |  for (n <<- ballotName) { Nil
+            |  log!(["n", *n])
+            |  ret!((true, *n))
+            }
+         }
+      |  log!(["new ballot", *getIssues])
+      |  retCap!((true, {"getIssues": *getIssues, "getName": *getName}))
+      }
+   }
+|  new
+      retCap
+      , retIssues
+      , stdout(`rho:io:stdout`)
+      , insertArbitrary(`rho:registry:insertArbitrary`)
+      , createUri
+      , issueRet
+      , nameRet
+   in { Nil
+   |  stdout!("Creating Ballot")
+   |  insertArbitrary!(bundle+{*Ballot}, *createUri)
+   |  for (uri <- createUri) { Nil
+      |  stdout!(["#define $Ballot", *uri])
+      }
+   |  Ballot!("new", "test ballot", [], *retCap, *stdout)
+   |  for (caps <- retCap) { Nil
+      |  stdout!(["caps", *caps])
+      |  caps!(*retIssues, *stdout)
+      |  for (@{"getIssues": issues, "getName": name} <- retIssues) { Nil
+         |  stdout!(["issueCap", issues, "nameCap", name])
+         |  @issues!(*issueRet, *stdout)
+         |  for (i <- issueRet) { Nil
+            |  stdout!(["issue", *i])
+            }
+         |  @name!(*nameRet, *stdout)
+         |  for (n <- nameRet) { Nil
+            |  stdout!(["issue", *n])
+            }
+         }
+      }
+   }
+}
