@@ -7,3 +7,4 @@ snapshot/
 generated.*
 generated/
 log/
+*.tgz
