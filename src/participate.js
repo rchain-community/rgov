@@ -12,8 +12,6 @@ import {
   MetaMaskAccount,
   getAddrFromEth,
   signMetaMask,
-  startTerm,
-  listenAtDeployId,
 } from 'rchain-api';
 import { actions } from './actions.js';
 
@@ -22,50 +20,13 @@ const { freeze, keys, entries, fromEntries } = Object;
 // TODO: UI for phloLimit
 const maxFee = { phloPrice: 1, phloLimit: 0.05 * 100000000 };
 
-// TODO: ISSUE: are networks really const? i.e. design-time data?
-const NETWORKS = {
-  localhost: {
-    hostPattern: 'localhost',
-    observerBase: 'http://localhost:40403',
-    validatorBase: 'http://localhost:40403',
-    adminBase: 'http://localhost:40405',
-  },
-  testnet: {
-    hostPattern: 'test',
-    observerBase: 'https://observer.testnet.rchain.coop',
-    // TODO: rotate validators
-    validatorBase: 'https://node1.testnet.rchain-dev.tk',
-    adminBase: '',
-  },
-  demo: {
-    hostPattern: 'demo',
-    observerBase: 'https://demoapi.rhobot.net',
-    // TODO: rotate validators
-    validatorBase: 'https://demoapi.rhobot.net',
-    adminBase: 'https://demoadmin.rhobot.net',
-  },
-  rhobot: {
-    hostPattern: 'rhobot',
-    observerBase: 'https://rnodeapi.rhobot.net',
-    // TODO: rotate validators
-    validatorBase: 'https://rnodeapi.rhobot.net',
-    adminBase: 'https://rnodeadmin.rhobot.net',
-  },
-  mainnet: {
-    observerBase: 'https://observer.services.mainnet.rchain.coop',
-    validatorBase: 'https://node12.root-shard.mainnet.rchain.coop',
-    adminBase: '',
-  },
-};
 /**
- * @param {string} hostname
- * @returns {string}
- */
-function netFromHost(hostname) {
-  return (Object.entries(NETWORKS).find(
-    ([_name, { hostPattern }]) => hostname.indexOf(hostPattern) >= 0,
-  ) || ['mainnet'])[0];
-}
+ * @typedef { import('./NETWORKS').shardBase } shardBase
+*/
+import { netFromHost, networkNames } from './NETWORKS.js';
+
+import { propose } from './propose.js';
+import { deploy } from './deploy.js';
 
 // rnode.js:63 POST https://observer.services.mainnet.rchain.coop/api/explore-deploy 400 (Bad Request)
 // rnode.js:73 Uncaught (in promise) Error: File write failed: No space left on device
@@ -88,6 +49,8 @@ const ROLL = `11112fZEixuoKqrGH6BxAPayFD8LWq9KRVFwcLvA5gg6GAaNEZvcKL
   .split('\n');
 
 let deployId = '';
+
+const rnode = RNode(fetch);
 
 /**
  * TODO: expect rather than unwrap (better diagnostics)
@@ -211,11 +174,11 @@ function buildUI({
   fetch,
   hostname,
 }) {
-  const rnode = RNode(fetch);
+
   let action = '_select_an_action_';
-  let network = netFromHost(hostname);
-  /** @type {{ observer: Observer, validator: Validator, admin: import('rchain-api/src/rnode').RNodeAdmin }} shard */
-  let shard;
+  let tmp = netFromHost(hostname);
+  let network = tmp.hostPattern;
+  let shard = tmp.shard;
   let matchBody = '';
   /** @type {string?} */
   let term = '';
@@ -239,21 +202,23 @@ function buildUI({
       return network;
     },
     set network(value) {
-      const net = NETWORKS[value];
+      const net = netFromHost(value);
       if (!net) return;
       network = value;
-      console.log({ network, net });
       shard = {
-        observer: rnode.observer(net.observerBase),
-        validator: rnode.validator(net.validatorBase),
-        admin: rnode.admin(net.adminBase),
+        observerBase: rnode.observer(net.shard.observerBase),
+        validatorBase: rnode.validator(net.shard.validatorBase),
+        adminBase: rnode.admin(net.shard.adminBase),
       };
       state.bindings = bindings[network];
+      console.log({ network, net });
     },
     get action() {
       return action;
     },
-    /** @param { string } value */
+    /** @param { string } value
+     * @returns { Promise<void> }
+     */
     async setAction(value) {
       if (typeof value !== 'string') return;
       action = value;
@@ -440,11 +405,11 @@ function actionControl(state, { html, getEthProvider }) {
               name=${name}
               value=${value}
               onchange=${(/** @type {Event} */ event) => {
-                const current = { [name]: ckControl(event.target).value };
-                const old = state.fields;
-                state.fields = { ...old, ...current };
-                return false;
-              }}
+            const current = { [name]: ckControl(event.target).value };
+            const old = state.fields;
+            state.fields = { ...old, ...current };
+            return false;
+          }}
           /></label>
           ${fty(action, name) === 'walletRevAddr' ? connectButton(name) : ''}
         </div>`,
@@ -460,10 +425,10 @@ function actionControl(state, { html, getEthProvider }) {
           <select
             name="action"
             onchange=${(/** @type {Event} */ event) => {
-              state.setAction(ckControl(event.target).value);
-              deployId = '';
-              return false;
-            }}
+          state.setAction(ckControl(event.target).value);
+          deployId = '';
+          return false;
+        }}
           >
             ${options(keys(actions))}
           </select>
@@ -473,8 +438,8 @@ function actionControl(state, { html, getEthProvider }) {
           cols="80"
           rows="16"
           onchange=${(event) => {
-            state.term = ckControl(event.target).value;
-          }}
+          state.term = ckControl(event.target).value;
+        }}
         >
 ${state.term || ''}</textarea
         >
@@ -485,17 +450,17 @@ ${state.term || ''}</textarea
 
 /**
  * @param {{
- *   shard: { observer: Observer, validator: Validator, admin: import('rchain-api/src/rnode').RNodeAdmin },
+ *   shard: shardBase,
  *   term: string?,
  *   results: RhoExpr[],
  *   problem?: string,
- *   action: any
+ *   action: any,
  * }} state
  * @param {HTMLBuilder & FormAccess<any> & EthSignAccess & ScheduleAccess} io
  *
  * @param { number } period
  *
- * @typedef {import('rchain-api').RhoExpr} RhoExpr
+ * @typedef { import('rchain-api').RhoExpr} RhoExpr
  * @typedef {import('rchain-api').Observer} Observer
  * @typedef {import('rchain-api').Validator} Validator
  * @typedef {import('rchain-api').DeployData} DeployData
@@ -514,7 +479,8 @@ function runControl(
     if (!term) {
       return;
     }
-    const obs = state.shard.observer;
+    //const obs = state.shard.observer;
+    const obs = state.shard.observerBase;
     state.problem = undefined;
     state.results = [];
     try {
@@ -531,76 +497,29 @@ function runControl(
     }
   }
 
-  let proposeCount = 0;
-  async function propose() {
-    proposeCount += 1;
-    const adm = state.shard.admin;
-    adm
-      .propose()
-      .then((x) => {
-        console.log(x);
-        proposeCount = 0;
-      })
-      .catch((err) => {
-        console.log(proposeCount, err);
-        if (proposeCount < 7) {
-          setTimeout(propose, 10000);
-        }
-      });
-  }
-
-  async function deploy(/** @type {string?} */ term) {
-    if (!term) {
-      return;
-    }
-    const obs = state.shard.observer;
-    const val = state.shard.validator;
-    state.problem = undefined;
-    state.results = [];
-    const account = freeze({
-      polling: () =>
-        // TODO: UI to cancel
-        new Promise((resolve) => {
-          setTimeout(resolve, period);
-        }),
-      async sign(/** @type { string } */ term) {
-        const [timestamp, [recent]] = await Promise.all([
-          clock(),
-          obs.getBlocks(1),
-        ]);
-        const ethereum = await getEthProvider();
-        return signMetaMask(
-          {
-            term,
-            ...maxFee,
-            timestamp,
-            validAfterBlockNumber: recent.blockNumber,
-          },
-          ethereum,
-        );
-      },
-    });
-
-    try {
-      await busy(
-        '#deploy',
-        (async () => {
-          console.log('@@DEBUG', state.action, { 'log message': 'string' });
-          setTimeout(propose, 10000);
-          console.log('@@DEBUG', state.action, { 'log message': 'propose' });
-          const deploy = await startTerm(term, val, obs, account);
-          console.log('@@DEBUG', state.action, { deploy });
-          deployId = deploy.sig;
-          const { expr } = await listenAtDeployId(obs, deploy);
-          console.log('@@DEBUG', state.action, { expr });
-          state.results = [expr];
-        })(),
+  const account = Object.freeze({
+    polling: () =>
+      // TODO: UI to cancel
+      new Promise((resolve) => {
+        setTimeout(resolve, period);
+      }),
+    async sign(/** @type { string } */ term) {
+      const [timestamp, [recent]] = await Promise.all([
+        clock(),
+        state.shard.observerBase.getBlocks(1),
+      ]);
+      const ethereum = await getEthProvider();
+      return signMetaMask(
+        {
+          term,
+          ...maxFee,
+          timestamp,
+          validAfterBlockNumber: recent.blockNumber,
+        },
+        ethereum,
       );
-      // TODO? $('#blockInfo').textContent = pprint(block);
-    } catch (err) {
-      state.problem = err.message;
-    }
-  }
+    },
+  });
 
   return freeze({
     view() {
@@ -608,9 +527,9 @@ function runControl(
           id="explore"
           disabled=${state.term === null}
           onclick=${async (/** @type {Event} */ event) => {
-            event.preventDefault();
-            explore(state.term);
-          }}
+          event.preventDefault();
+          explore(state.term);
+        }}
         >
           Explore
         </button>
@@ -618,9 +537,16 @@ function runControl(
           id="deploy"
           disabled=${state.term === null}
           onclick=${async (/** @type {Event} */ event) => {
-            event.preventDefault();
-            deploy(state.term);
-          }}
+          event.preventDefault();
+          //console.log('@@DEBUG', state.term, { 'log message': 'string' });
+          setTimeout(propose, 10000, state.shard.adminBase);
+          //console.log('@@DEBUG', state.term, { 'log message': 'propose' });
+          let tmp = await deploy(state.term, state.shard, account);
+          console.log(tmp);
+          state.problem = tmp.problem;
+          state.results = tmp.results;
+          console.log(state.problem);
+        }}
         >
           Deploy
         </button>
@@ -644,7 +570,13 @@ ${state.results ? pprint(state.results.map(RhoExpr.parse)) : ''}</pre
     },
   });
 }
-
+/**
+ * @param {{
+ *   shard: shardBase,
+ *   network: string
+ * }} state
+ * @param { HTMLBuilder} html
+ */
 function networkControl(state, { html }) {
   return freeze({
     view() {
@@ -653,14 +585,17 @@ function networkControl(state, { html }) {
         <select
           id="netControlSelect"
           value=${state.network}
-          onchange=${(event) => (state.network = ckControl(event.target).value)}
+          onchange=${/** @type {Event} */ event => {
+          state.network = ckControl(event.target).value
+          //state.shard = netFromHost(state.network).shardBase
+        }}
         >
-          ${keys(NETWORKS).map(
-            (network) =>
-              html`<option ...${{ name: 'network', value: network }}>
-                ${network}
-              </option>`,
-          )}
+        ${networkNames().map(/** @param {string} network */ network => {
+          var tmp = html`<option ${{ name: network, value: network }}>
+            ${network}
+          </option>`
+          return tmp;
+        })}
         </select>
       </div>`;
     },
@@ -691,8 +626,8 @@ function groupControl(state, { html }) {
       return html` <h3>Members</h3>
         <div>
           ${roll.map(
-            (revAddr) =>
-              html`
+        (revAddr) =>
+          html`
                 <div
                   id="${revAddr}"
                   data-revAddr=${revAddr}
@@ -702,9 +637,9 @@ function groupControl(state, { html }) {
                   <button
                     class="like"
                     onclick=${() => {
-                      state.action = 'awardKudos';
-                      state.fields = { ...state.fields, them: revAddr };
-                    }}
+              state.action = 'awardKudos';
+              state.fields = { ...state.fields, them: revAddr };
+            }}
                   >
                     ❤️ ${score(revAddr) || ''}
                   </button>
@@ -712,7 +647,7 @@ function groupControl(state, { html }) {
                   <strong class="name">${nick(revAddr)}</strong>
                 </div>
               `,
-          )}
+      )}
         </div>`;
     },
   });
