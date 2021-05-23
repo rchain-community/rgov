@@ -1,8 +1,8 @@
 // @title Voting with liquid delegation.
 // originally from https://github.com/rchain-community/rchain-api/blob/master/examples/voting-locker/chairRole.rho
 new Ballot,
-deployId(`rho:rchain:deployId`),
-trace(`rho:rchain:deployId`),
+deployId(`rho:io:stdout`),
+trace(`rho:io:stdout`),
 stdout(`rho:io:stdout`)
 in {
   new insertArbitrary(`rho:registry:insertArbitrary`), uriCh in {
@@ -14,7 +14,7 @@ in {
   }
   |
 
-    contract Ballot(@ballots , return, log) = {
+    contract Ballot(@ballot , return, log) = {
       new admin, tally, voterCh in {
         log!("creating ballot") |
         return!(bundle+{*admin}, bundle+{*tally}) |
@@ -42,14 +42,14 @@ in {
                 // TODO check for valid votes?
                 log!(["oldvotes were",oldvotes]) |
                 log!(["newvotes are",votes]) |
-                return!(["oldvotes were",oldvote]) |
+                return!(["oldvotes were",oldvotes]) |
                 return!(["newvotes are",votes]) |
                 voteCh!(votes)
               }
             } |
             contract voter(@"choices", @priorDelegates, return, log) = {
               for ( @votes <<- voteCh ) {
-                log!(["vote",vote])|
+                log!(["vote",votes])|
                 if ( votes == Nil ) {
                   for ( @delegate <<- delegateCh) {
                     for ( @voters <<- voterCh ) {
@@ -58,7 +58,7 @@ in {
                         return!(Nil)
                       } else {
                         log!([name,  " -> ", delegate, voters.get(delegate)]) |
-                        @{voters.get(delegate)}!("choice", priorDelegates.add(delegate), *return, *log)
+                        @{voters.get(delegate)}!("choices", priorDelegates.add(delegate), *return, *log)
                       }
                     }
                   }
@@ -80,36 +80,61 @@ in {
           }
         } |
         contract tally(return, log) = {
-          new countCh, loop in { countCh!({}) |
-          log!("tally") |
+          new countCh, eachVoter, voterack in { countCh!({}) |
+          log!("running tally") |
           for ( @voters <<- voterCh ) {
             log!(["voters", voters]) |
-            loop!(voters, *return) |
+            eachVoter!(voters) |
 
-            contract loop(@rest, ack) = {
-              new ret in {
-                log!("loop") |
+            contract eachVoter(@rest) = {
+              new ret, done in {
+                log!("eachVoter") |
                 match rest {
                   {} => {
-                    log!("end") |
-                    for ( counts <- countCh ) {
-                      log!(["counts", *counts])  |
-                      return!(["counts",*counts]) |
-                      return!("done")
-                    }
+                   // for (_ <- done) {
+                      log!("end") |
+                      for ( counts <<- countCh ) {
+                        log!(["counts", *counts])  |
+                        return!(["counts",*counts]) |
+                        return!("done")
+                      }
+                   // }
                   }
                   {name: *voter, ...tail} => {
-                    log!(["voter", name]) |
-                    voter!("choice", Set(), *ret, *log) |
-                    for (@vote <- ret; @counts <- countCh ) {
-                      trace!([name,vote]) |
-                      log!([name, vote]) |
-                      log!(["counts", counts]) |
-                      countCh!(counts.set(vote,counts.getOrElse(vote,0) + 1 ) ) |
-                      loop!(tail, *ack)
-                    }
+                    new eachIssue, ack, issueack in {
+                      log!(["voter", name]) |
+                      voter!("choices", Set(), *ret, *log) |
+                      for (@votes <- ret ) {
+                        eachIssue!(ballot.length()-1) |
+
+                        contract eachIssue (@n) = {
+                          if ( n >= 0) {
+                            log!(["eachIssue",n,ballot.nth(n).get("label"),name,votes.nth(n)])|
+                            for (@counts <- countCh) {
+                              trace!(["updating counts for",name, ballot.nth(n).get("label"), votes.nth(n),votes.nth(n)]) |
+                              log!(["current counts", counts]) |
+                              countCh!(counts.set(ballot.nth(n).get("label"),
+                                counts.getOrElse(ballot.nth(n).get("label"),{})
+                                  .set(votes.nth(n),
+                                  counts.getOrElse(ballot.nth(n).get("label"),{}).getOrElse(votes.nth(n),0) + 1 ))
+                              ) |
+                              ack!(Nil)
+                            } |
+                            for ( _ <- ack) {
+                              eachIssue!(n-1)
+                            }
+                          } else {
+                            log!("eachIssue done")|
+                            voterack!(Nil)
+                          }
+                        }
+                      }
+                    } |
+                    for ( _ <- voterack) {
+                      eachVoter!(tail)
+                    }                
                   }
-                  _ => log!(["junk",rest])
+                  _ => log!(["error",rest])
                 }
               }
             }
@@ -119,9 +144,32 @@ in {
     }
   }
   |
+  trace!("testing Ballot") |
   new bCh, v1Ch, v2Ch, v3Ch, v4Ch in {
     trace!("creating Ballot") |
-    Ballot!(Set("Lincoln", "Douglas"), *bCh, *trace) |
+    Ballot!([
+    {
+      "label": "Member Swag",
+      "shortDesc": "The Item of Business I want to propose is to provide all new members with stickers and t-shirts with the RChain logo on it as part of their membership onboarding package.",
+      "docLink": "https://gist.github.com/dckc/ca240e5336d0ee3e4f5cf31c4f629a30#member-swag",
+      "proposals": ["Oppose","Abstain","Support"],
+      "issue": {}
+    },
+    {
+      "label": "Board: DaD",
+      "shortDesc": "Daffy Duck for Board Member",
+      "docLink": "https://gist.github.com/dckc/ca240e5336d0ee3e4f5cf31c4f629a30#board-dad",
+      "proposals": ["Oppose","Abstain","Support"],
+      "issue": {}
+    },
+    {
+      "label": "Board: DoD",
+      "shortDesc": "Donald Duck for Board Member",
+      "docLink": "https://gist.github.com/dckc/ca240e5336d0ee3e4f5cf31c4f629a30#board-dod",
+      "proposals": ["Oppose","Abstain","Support"],
+      "issue": {}
+    }
+], *bCh, *trace) |
     for (admin, tally <- bCh) {
       trace!(["Ballot returned", *admin, *tally]) |
       admin!("giveRightToVote", "Owans", *v1Ch, *trace) |
@@ -134,10 +182,10 @@ in {
         v2!("delegate", "Owans", *v4Ch, *trace) |
         for(_ <- v2Ch; _ <- v1Ch; _ <- v4Ch) {
           trace!("voting.") |
-          v1!("vote", "Lincoln", *v1Ch, *trace) |
-          v1!("vote", "Douglas", *v2Ch, *trace) |
-          v1!("vote", "Abe Lincoln", *v3Ch, *trace) |
-          v4!("vote", "Lincoln", *v4Ch, *trace) |
+          v1!("vote", ["Oppose","Abstain","Support"], *v1Ch, *trace) |
+          v1!("vote", ["Abstain","Oppose","Support"], *v2Ch, *trace) |
+          v1!("vote", ["Support","Oppose","Abstain"], *v3Ch, *trace) |
+          v4!("vote", ["Oppose","Abstain","Support"], *v4Ch, *trace) |
           for(_ <- v1Ch; _ <- v2Ch; _ <- v3Ch; _ <- v4Ch) {
             trace!("votes done") |
             tally!(*bCh, *trace) |
