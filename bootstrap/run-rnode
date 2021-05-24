@@ -6,6 +6,8 @@ private_key=`cat pk.bootstrap`
 
 cd `dirname $0`
 
+mkdir -p log
+
 rnode run -s \
    --validator-private-key $private_key \
    --dev-mode \

@@ -29,7 +29,7 @@ LOGFILE="log/$ME.log"
 rm -f $ERRORLOG
 DEPLOY="./deploy --error $ERRORLOG"
 
-mkdir -p generated
+mkdir -p generated log
 javascript_file=generated/generated.rhoid.bootstrap.js
 json_file=generated/generated.rhoid.bootstrap.json
 
@@ -73,8 +73,9 @@ if [ -f "$ERRORLOG" ]; then
 fi
 
 # deploy rgov
-# ../Community.rho \
 ls -1 \
+../Ballot.rho \
+../Group.rho
 ../CrowdFund.rho \
 ../Directory.rho \
 ../Inbox.rho \
