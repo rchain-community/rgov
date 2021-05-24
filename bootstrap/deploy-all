@@ -75,6 +75,7 @@ fi
 # deploy rgov
 ls -1 \
 ../Ballot.rho \
+../Group.rho
 ../CrowdFund.rho \
 ../Directory.rho \
 ../Inbox.rho \
