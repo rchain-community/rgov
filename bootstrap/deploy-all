@@ -73,8 +73,8 @@ if [ -f "$ERRORLOG" ]; then
 fi
 
 # deploy rgov
-# ../Community.rho \
 ls -1 \
+../Ballot.rho \
 ../CrowdFund.rho \
 ../Directory.rho \
 ../Inbox.rho \
