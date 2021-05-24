@@ -96,7 +96,7 @@ in {
                       for ( counts <<- countCh ) {
                         log!(["counts", *counts])  |
                         return!(["counts",*counts]) |
-                        return!("done")
+                        log!("done")
                       }
                    // }
                   }
@@ -112,12 +112,15 @@ in {
                             log!(["eachIssue",n,ballot.nth(n).get("label"),name,votes.nth(n)])|
                             for (@counts <- countCh) {
                               trace!(["updating counts for",name, ballot.nth(n).get("label"), votes.nth(n),votes.nth(n)]) |
-                              log!(["current counts", counts]) |
+                              log!(["precount", name, ballot.nth(n).get("label"), counts]) |
                               countCh!(counts.set(ballot.nth(n).get("label"),
                                 counts.getOrElse(ballot.nth(n).get("label"),{})
                                   .set(votes.nth(n),
                                   counts.getOrElse(ballot.nth(n).get("label"),{}).getOrElse(votes.nth(n),0) + 1 ))
                               ) |
+                              for (post <<- countCh) {
+                                log!(["postcount", name, ballot.nth(n).get("label"), *post])
+                              } |
                               ack!(Nil)
                             } |
                             for ( _ <- ack) {
@@ -132,7 +135,7 @@ in {
                     } |
                     for ( _ <- voterack) {
                       eachVoter!(tail)
-                    }                
+                    }
                   }
                   _ => log!(["error",rest])
                 }
@@ -145,7 +148,7 @@ in {
   }
   |
   trace!("testing Ballot") |
-  new bCh, v1Ch, v2Ch, v3Ch, v4Ch in {
+  new bCh, OwansVoterCh, jimscarverVoterCh, aviation_hackerVoterCh, momchilovVoterCh in {
     trace!("creating Ballot") |
     Ballot!([
     {
@@ -172,25 +175,26 @@ in {
 ], *bCh, *trace) |
     for (admin, tally <- bCh) {
       trace!(["Ballot returned", *admin, *tally]) |
-      admin!("giveRightToVote", "Owans", *v1Ch, *trace) |
-      admin!("giveRightToVote", "jimscarver", *v2Ch, *trace) |
-      admin!("giveRightToVote", "aviation_hacker", *v3Ch, *trace) |
-      admin!("giveRightToVote", "momchilov", *v4Ch, *trace) |
-      for(v1 <- v1Ch; v2 <- v2Ch; v3 <- v3Ch; v4 <- v4Ch) {
-        v3!("delegate", "jimscarver", *v2Ch, *trace) |
-        v2!("delegate", "Owens", *v1Ch, *trace) |
-        v2!("delegate", "Owans", *v4Ch, *trace) |
-        for(_ <- v2Ch; _ <- v1Ch; _ <- v4Ch) {
+      admin!("giveRightToVote", "Owans", *OwansVoterCh, *trace) |
+      admin!("giveRightToVote", "jimscarver", *jimscarverVoterCh, *trace) |
+      admin!("giveRightToVote", "aviation_hacker", *aviation_hackerVoterCh, *trace) |
+      admin!("giveRightToVote", "momchilov", *momchilovVoterCh, *trace) |
+      for(Owans <- OwansVoterCh; jimscarver <- jimscarverVoterCh; aviation_hacker <- aviation_hackerVoterCh; momchilov <- momchilovVoterCh) {
+        aviation_hacker!("delegate", "jimscarver", *jimscarverVoterCh, *trace) |
+        jimscarver!("delegate", "Owans", *OwansVoterCh, *trace) |
+        jimscarver!("delegate", "momchilov", *momchilovVoterCh, *trace) |
+        for(_ <- jimscarverVoterCh; _ <- OwansVoterCh; _ <- momchilovVoterCh) {
           trace!("voting.") |
-          v1!("vote", ["Oppose","Abstain","Support"], *v1Ch, *trace) |
-          v1!("vote", ["Abstain","Oppose","Support"], *v2Ch, *trace) |
-          v1!("vote", ["Support","Oppose","Abstain"], *v3Ch, *trace) |
-          v4!("vote", ["Oppose","Abstain","Support"], *v4Ch, *trace) |
-          for(_ <- v1Ch; _ <- v2Ch; _ <- v3Ch; _ <- v4Ch) {
+          // TODO multiple tallies should be performed since the delegate is set above
+          Owans!("vote", ["Oppose","Abstain","Support"], *OwansVoterCh, *trace) |
+          jimscarver!("vote", ["Abstain","Oppose","Support"], *jimscarverVoterCh, *trace) |
+          aviation_hacker!("vote", ["Support","Oppose","Abstain"], *aviation_hackerVoterCh, *trace) |
+          momchilov!("vote", ["Oppose","Abstain","Support"], *momchilovVoterCh, *trace) |
+          for(_ <- OwansVoterCh; _ <- jimscarverVoterCh; _ <- aviation_hackerVoterCh; _ <- momchilovVoterCh) {
             trace!("votes done") |
             tally!(*bCh, *trace) |
             for(@w <- bCh) {
-              trace!({"tally": w}, *trace)
+              trace!({"tally": w})
             }
           }
         }
