@@ -6,8 +6,7 @@ body {
   font-weight: 400;
   line-height: 1.5;
   color: #212529;
-  display: grid;
-  grid-template-rows: 15% 85%;
+  background: #f7fbfb;
 }
 
 /* HEADER */
@@ -16,21 +15,33 @@ body {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  grid-row: 1;
 }
 
 .signin-button {
-  margin: 2% !important;
-}
-
-#main-title {
-  font-family: 'Fira Sans', sans-serif;
-  font-size: 2.5rem;
-  font-weight: 600;
+  margin-right: 4% !important;
 }
 
 #rchain-logo {
   margin: 2% !important;
+}
+
+/*MAIN CONTENT */
+
+#main-title {
+  font-family: 'Fira Sans', sans-serif;
+  font-size: 3rem;
+  font-weight: 500;
+  margin-bottom: 100px;
+}
+
+.main-content {
+  display: flex;
+  display: flex;
+  align-items: center;
+  flex-direction: column;
+  margin-top: 50px;
+  margin-left: 170px;
+  margin-right: 120px;
 }
 
 .btn {
@@ -55,12 +66,6 @@ body {
   color: #e9ecef;
   width: 500px;
   border-radius: 5px;
-}
-
-.main-content {
-  margin-top: 150px;
-  margin-left: 170px;
-  margin-right: 120px;
 }
 
 .styled-table {
