@@ -9,13 +9,13 @@
 </head>
 
 <body>
-  <nav>
-    <ul>
-      <li class="nav-item img"><img src="../assets/rchain black.png"></li>
-      <!-- <li class="nav-item loading-bar">loading bar</li> -->
-      <li class="nav-item sign-in-btn"><button type="btn" class="btn">sign in</button></li>
-    </ul>
-  </nav>
+  <div id = "header">
+    <img src="../assets/rchain black.png" id = "rchain-logo">
+    <div id = "main-title">RGov Voting Interface</div>
+    <button class="big ui green button signin-button">Sign In</button>
+    <!-- <li class="nav-item loading-bar">loading bar</li> -->
+  </div>
+
   <div class="main-content">
     <h2>RChain Annual Meeting 2021 Voting</h2>
 
@@ -103,11 +103,17 @@
     and the <a href="https://github.com/rchain-community/">RChain Community</a>
   </footer>
 
+  
   <script
   src="https://code.jquery.com/jquery-3.1.1.min.js"
   integrity="sha256-hVVnYaiADRTO2PzUGmuLJr8BLUSjGIZsDYGmIJLv2b8="
   crossorigin="anonymous"></script>
   <script src="Semantic-UI-CSS/semantic.min.js"></script>
+
+  <!-- FONTS -->
+  
+  <link rel="preconnect" href="https://fonts.gstatic.com">
+  <link href="https://fonts.googleapis.com/css2?family=Fira+Sans:wght@300&display=swap" rel="stylesheet">
 </body>
 
 </html>
