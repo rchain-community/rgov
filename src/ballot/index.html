@@ -11,7 +11,7 @@
 <body>
   <nav id = "header">
     <img src="../assets/rchain black.png" id = "rchain-logo">
-    <button class="medium ui teal button signin-button">Sign In</button>
+    <button class="medium ui button signin-button">Sign In</button>
     <!-- <li class="nav-item loading-bar">loading bar</li> -->
   </nav>
 
@@ -23,24 +23,25 @@
       <li>Select an <a href="https://us02web.zoom.us/j/6853551826?pwd=NG1BdDFpSUZBQndQRnZvUUtLRG1BUT09">
         account in metamask</a> which owns REV in the selected network.</li>
     </ul> -->
-    
+
     <div class="table">
         <table class="styled-table">
             <thead>
+              
                 <tr>
-                    <th>ID</th>
-                    <th class="desc">Short Description</th>
-                    <th>Oppose</th>
-                    <th>Abstain</th>
-                    <th>Support</th>
+                    <th><i class="envelope outline icon"></i></th>
+                    <th id ="table-title">Issues</th>
+                    <th></th>
+                    <th></th>
+                    <th></th>
                 </tr>
             </thead>
             <tbody>
                 <tr>
                     <td>1</td>
-                    <td>Test Vote</td>
-                    <td type='radio'><label class="container">
-                        <input type="radio" checked="checked" name="radio">
+                    <td class="desc">Test Vote</td>
+                    <!-- <td type='radio'><label class="container"> -->
+                        <!-- <input type="radio" checked="checked" name="radio">
                         <span class="checkmark"></span>
                       </label></td>
                       <td type='radio'><label class="container">
@@ -50,7 +51,14 @@
                       <td type='radio'><label class="container">
                         <input type="radio" checked="checked" name="radio">
                         <span class="checkmark"></span>
-                      </label></td>
+                      </label> -->
+                      
+
+                        <td class="item">Oppose</td>
+                        <td class="item">Abstain</td>
+                        <td class="item active">Support</td>
+
+                    </td>
                 </tr>
             </tbody>
         </table>

@@ -19,6 +19,8 @@ body {
 
 .signin-button {
   margin-right: 4% !important;
+  background: #009879 !important;
+  color: white !important;
 }
 
 #rchain-logo {
@@ -44,6 +46,28 @@ body {
   margin-right: 120px;
 }
 
+.styled-table {
+  border-collapse: collapse;
+  margin: 25px 0;
+  font-size: 0.9em;
+  min-width: 400px;
+  box-shadow: 0 0 20px rgba(0, 0, 0, 0.15);
+  font-family: 'Fira Sans', sans-serif;
+  font-weight: 300;
+}
+
+#table-title {
+  font-weight: 600;
+  font-size: 1.5em;
+}
+
+.envelope {
+  font-size: 2em !important;
+  display: flex !important;
+  justify-content: center !important;
+  align-items: center !important;
+}
+
 .btn {
   width: 80px;
   height: 30px;
@@ -66,14 +90,6 @@ body {
   color: #e9ecef;
   width: 500px;
   border-radius: 5px;
-}
-
-.styled-table {
-  border-collapse: collapse;
-  margin: 25px 0;
-  font-size: 0.9em;
-  min-width: 400px;
-  box-shadow: 0 0 20px rgba(0, 0, 0, 0.15);
 }
 
 .styled-table thead tr {
