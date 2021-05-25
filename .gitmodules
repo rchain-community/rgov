@@ -1,0 +1,3 @@
+[submodule "src/ballot/Semantic-UI-CSS"]
+	path = src/ballot/Semantic-UI-CSS
+	url = https://github.com/Semantic-Org/Semantic-UI-CSS.git
