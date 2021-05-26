@@ -1,4 +1,4 @@
-match [ "inbox", "", Set()] {
+match [ "$inboxURI", "$issue", Set($choices)] {
 [lockerTag, name, proposals] => {
 new
    trace,
