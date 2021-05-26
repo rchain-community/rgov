@@ -156,6 +156,11 @@ echo "}}" >> ../src/MasterURI.localhost.json
 echo "$0: listing master directory"
 ./deploy listMasterURI.rho
 rnode --grpc-port 40402 propose 2>&1 | tee -a log/deployment.log
+
+echo "$0: creating member directory"
+./deploy ../MemberDirectory.rho
+rnode --grpc-port 40402 propose 2>&1 | tee -a log/deployment.log
+
 echo "Waiting for rnode to finish (10s)" && sleep 10 && echo "$0: Stopping deployment rnode"
 kill $PID && sleep 2
 
