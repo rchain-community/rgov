@@ -6,6 +6,9 @@ Use 'bootstrap' to fix.
 " && exit 1
 
 CLASS=`basename $1|sed 's/.rho$//'`
+
+[ "$CLASS" = "MemberDirectory.rho" ] && echo "$0: redeploy of MemberDirectory.rho is not allowed" && exit 1
+
 ME=`basename $0`
 LOGFILE="log/$ME.`basename $1`.log"
 DEPLOY="./deploy"
