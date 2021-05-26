@@ -46,26 +46,51 @@ body {
   margin-right: 120px;
 }
 
+.table {
+  width: 90%;
+}
 .styled-table {
   border-collapse: collapse;
   margin: 25px 0;
   font-size: 0.9em;
-  min-width: 400px;
+  min-width: 700px;
   box-shadow: 0 0 20px rgba(0, 0, 0, 0.15);
   font-family: 'Fira Sans', sans-serif;
   font-weight: 300;
+  width: 100%;
 }
 
-#table-title {
+.table-title {
   font-weight: 600;
   font-size: 1.5em;
+  /* display: flex;
+  justify-content: flex-start;
+  align-items: center; */
+  /*width: 700px;*/
+}
+
+.styled-table thead th {
+  border-left: none !important;
+  border-right: none !important;
+  background: #009879 !important;
+  color: white !important;
+}
+
+.voting-link {
+  text-align: center;
 }
 
 .envelope {
-  font-size: 2em !important;
+  font-size: 1.5em !important;
   display: flex !important;
   justify-content: center !important;
   align-items: center !important;
+  margin-right: 5% !important;
+}
+
+.issue-description {
+  width: 65%;
+  word-break: break-all;
 }
 
 .btn {
@@ -92,11 +117,11 @@ body {
   border-radius: 5px;
 }
 
-.styled-table thead tr {
+/* .styled-table thead tr {
   background-color: #009879;
   color: #ffffff;
   text-align: left;
-}
+} */
 
 .styled-table th,
 .styled-table td {
@@ -119,10 +144,6 @@ body {
     font-weight: bold;
     color: #009879;
 } */
-
-.desc {
-  width: 700px;
-}
 
 fieldset {
   border-radius: 5px;
