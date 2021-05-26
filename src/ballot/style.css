@@ -33,17 +33,21 @@ body {
   font-family: 'Fira Sans', sans-serif;
   font-size: 3rem;
   font-weight: 500;
-  margin-bottom: 100px;
+  margin-bottom: 4vw;
+  margin-top: 5vw;
+}
+
+#ballot-icon {
+  width: 14vw;
+  margin-bottom: 20vw;
 }
 
 .main-content {
   display: flex;
-  display: flex;
   align-items: center;
   flex-direction: column;
-  margin-top: 50px;
-  margin-left: 170px;
-  margin-right: 120px;
+  margin: auto;
+  width: 75%;
 }
 
 .table {
@@ -63,15 +67,20 @@ body {
 .table-title {
   font-weight: 600;
   font-size: 1.5em;
-  /* display: flex;
-  justify-content: flex-start;
-  align-items: center; */
-  /*width: 700px;*/
+}
+
+.table-icon {
+  font-weight: 600;
+  font-size: 1.5em;
+  margin-right: auto !important;
+  margin-left: auto !important;
 }
 
 .styled-table thead th {
-  border-left: none !important;
-  border-right: none !important;
+  /* border-left: none;
+  border-right: none; */
+  border: none;
+  /* margin: 3px !important; */
   background: #009879 !important;
   color: white !important;
 }
@@ -86,11 +95,23 @@ body {
   justify-content: center !important;
   align-items: center !important;
   margin-right: 5% !important;
+  text-align: center !important;
 }
 
+.id-cell {
+  text-align: center !important;
+  font-size: 1.3em;
+}
 .issue-description {
   width: 65%;
-  word-break: break-all;
+  word-break: break-word;
+  font-size: 1.3em;
+}
+
+/*Even rows*/
+
+.styled-table tbody tr:nth-of-type(even) {
+  background-color: #f7fbfb;
 }
 
 .btn {
@@ -130,10 +151,6 @@ body {
 
 .styled-table tbody tr {
   border-bottom: 1px solid #dddddd;
-}
-
-.styled-table tbody tr:nth-of-type(even) {
-  background-color: #f3f3f3;
 }
 
 .styled-table tbody tr:last-of-type {
