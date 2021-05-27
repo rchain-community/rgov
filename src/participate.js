@@ -34,7 +34,7 @@ const NETWORKS = {
     hostPattern: 'test',
     observerBase: 'https://observer.testnet.rchain.coop',
     // TODO: rotate validators
-    validatorBase: 'https://node1.testnet.rchain-dev.tk',
+    validatorBase: 'https://node0.testnet.rchain-dev.tk',
     adminBase: '',
   },
   demo: {
