@@ -42,7 +42,7 @@ body {
   margin-bottom: 20vw;
 }
 
-.main-content {
+#main-content {
   display: flex;
   align-items: center;
   flex-direction: column;
@@ -85,13 +85,14 @@ body {
   color: white !important;
 }
 
-/* .voting-link {
+.voting-link {
   text-align: center;
   display: flex !important;
   align-items: center !important;
   justify-content: center !important;
-  font-size: 1.2em !important;
-} */
+  font-size: 1em !important;
+  width: 100%;
+}
 
 .envelope {
   display: flex !important;
@@ -102,6 +103,18 @@ body {
   margin-right: auto !important;
   margin-left: auto !important;
   font-size: 1.8em !important;
+}
+
+.selected.support {
+  color: #009879 !important;
+}
+
+.selected.abstain {
+  color: rgb(216, 163, 18);
+}
+
+.selected.oppose {
+  color: rgb(180, 22, 22);
 }
 
 .id-cell {
