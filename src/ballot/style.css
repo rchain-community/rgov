@@ -85,17 +85,23 @@ body {
   color: white !important;
 }
 
-.voting-link {
+/* .voting-link {
   text-align: center;
-}
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  font-size: 1.2em !important;
+} */
 
 .envelope {
-  font-size: 1.5em !important;
   display: flex !important;
   justify-content: center !important;
   align-items: center !important;
-  margin-right: 5% !important;
   text-align: center !important;
+
+  margin-right: auto !important;
+  margin-left: auto !important;
+  font-size: 1.8em !important;
 }
 
 .id-cell {

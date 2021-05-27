@@ -11,7 +11,7 @@
 <body>
   <nav id = "header">
     <img src="../assets/rchain black.png" id = "rchain-logo">
-    <button class="big ui button signin-button">Sign In</button>
+    <button class="medium ui button signin-button">Sign In</button>
     <!-- <li class="nav-item loading-bar">loading bar</li> -->
   </nav>
 
@@ -63,9 +63,9 @@
             <tr>
               <th class ="table-icon"><i class="envelope outline icon"></i></th>
               <th class ="table-title">Issues</th>
-              <th></th>
-              <th></th>
-              <th></th>
+              <th>Support</th>
+              <th>Abstain</th>
+              <th>Oppose</th>
             </tr>
           </thead>
           <tbody>
@@ -73,13 +73,13 @@
               <td class = "id-cell">1</td>
               <td class = "issue-description">This is a very long issue in order to make sure that the table won't overflow so does it ? I think It's just fine but who knows what happens with css sometimes</td>
               <td class="selectable">
-                <a class = "voting-link" href = "#">Support</a>
+                <i class="envelope outline icon"></i>
               </td>
               <td class="selectable">
-                <a class = "voting-link" href = "#">Abstain</a>
+                <i class="envelope outline icon"></i>
               </td>
               <td class="selectable">
-                <a class = "voting-link" href = "#">Oppose</a>
+                <i class="envelope outline icon"></i>
               </td>
             </tr>
 
@@ -87,13 +87,13 @@
               <td class = "id-cell">2</td>
               <td class = "issue-description">More cycle lanes in the world</td>
               <td class="selectable">
-                <a class = "voting-link" href = "#">Support</a>
+                <i class="envelope outline icon"></i>
               </td>
               <td class="selectable">
-                <a class = "voting-link" href = "#">Abstain</a>
+                <i class="envelope outline icon"></i>
               </td>
               <td class="selectable">
-                <a class = "voting-link" href = "#">Oppose</a>
+                <i class="envelope outline icon"></i>
               </td>
             </tr>
 
@@ -101,13 +101,13 @@
               <td class = "id-cell">3</td>
               <td class = "issue-description">More music classes at school</td>
               <td class="selectable">
-                <a class = "voting-link" href = "#">Support</a>
+                <i class="envelope outline icon"></i>
               </td>
               <td class="selectable">
-                <a class = "voting-link" href = "#">Abstain</a>
+                <i class="envelope outline icon"></i>
               </td>
               <td class="selectable">
-                <a class = "voting-link" href = "#">Oppose</a>
+                <i class="envelope outline icon"></i>
               </td>
             </tr>
 
@@ -171,11 +171,14 @@
   integrity="sha256-hVVnYaiADRTO2PzUGmuLJr8BLUSjGIZsDYGmIJLv2b8="
   crossorigin="anonymous"></script>
   <script src="Semantic-UI-CSS/semantic.min.js"></script>
+  <script src="https://unpkg.com/mithril/mithril.js"></script>
+  <script src ="ballot.js"></script>
 
   <!-- FONTS -->
 
   <link rel="preconnect" href="https://fonts.gstatic.com">
   <link href="https://fonts.googleapis.com/css2?family=Fira+Sans:wght@300&display=swap" rel="stylesheet">
+
 </body>
 
 </html>
