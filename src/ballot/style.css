@@ -103,6 +103,7 @@ body {
   margin-right: auto !important;
   margin-left: auto !important;
   font-size: 1.8em !important;
+  color: black;
 }
 
 .selected.support {

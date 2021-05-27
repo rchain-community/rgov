@@ -4,10 +4,10 @@
 //     element.onclick = setEnvelopeColor;
 // });
 
-var mainContent = document.getElementById('main-content');
+var tableDiv = document.getElementById('table');
 
 let state = {
-    number: 0
+    issues:[]
 }
 
 const issues = [
@@ -15,50 +15,53 @@ const issues = [
     {id:1,desc:"Blabla"}
 ];
 
-const incr = () => {
-    state = { ...state, number: state.number + 1 }
-}
 
-const header = m("thead", [
+const tableHeader = m("thead", [
                     m("tr",[
                         m("th", {class: "table-icon"}),
                         m("th", {class: "table-title"}, "Issues"),
-                        m("th"),
-                        m("th"),
-                        m("th")
+                        m("th","Support"),
+                        m("th","Abstain"),
+                        m("th","Oppose")
                         
                     ])
                 ])
 
-const body = m("tbody", issues.map(issue => {
+const tableBody = m("tbody", issues.map(issue => {
 
    return m("tr",[
-        m("th", {class : "id-cell"}, issue.id),
-        m("th", {class: "issue-description"}, issue.desc),
-        m("th"),
-        m("th"),
-        m("th")
+        m("td", {class : "id-cell"}, issue.id),
+        m("td", {class: "issue-description"}, issue.desc),
+        m("td", {class:"selectable"}, [
+            m("a", {class:"voting-link"},[
+                m("i",{class:"envelope outline icon support"})
+            ])
+        ]),
+        m("td", {class:"selectable"}, [
+            m("a", {class:"voting-link"},[
+                m("i",{class:"envelope outline icon abstain"})
+            ])
+        ]),
+        m("td", {class:"selectable"}, [
+            m("a", {class:"voting-link"},[
+                m("i",{class:"envelope outline icon oppose"})
+            ])
+        ])
         
     ])
 }))
 
                 
-            
-    
-
-
-
-
-
-const Root = { 
+        
+const Table = { 
     view: () => {
         return m("table", {class: "ui celled table styled-table"}, [
-            header,
-            body
+            tableHeader,
+            tableBody
         ])
     }
 }
-m.mount(mainContent, Root);
+m.mount(tableDiv, Table);
 
 
 function setEnvelopeColor(e){
