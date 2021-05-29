@@ -7,3 +7,5 @@ dist/
 yarn.lock
 pyrgov/__pycache__/
 testing/__pycache__/
+testing/unit_test/__pycache__/
+testing/unit_test/.pytest_cache/
