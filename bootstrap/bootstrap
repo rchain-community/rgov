@@ -39,7 +39,7 @@ done
 
 LOGFILE="log/$0.log"
 
-private_key=`cat pk.bootstrap`
+private_key=`cat PrivateKeys/pk.bootstrap`
 
 mkdir -p ~/.rnode || exit 3
 tar cf - genesis|(cd ~/.rnode; tar xvf -) || exit 3

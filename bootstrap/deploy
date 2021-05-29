@@ -9,7 +9,7 @@ if [ "$1" = "--error" ]; then
    shift 2;
 fi
 
-private_key=`cat pk.bootstrap`
+private_key=`cat PrivateKeys/pk.bootstrap`
 lastblock=$(curl -s 'http://localhost:40403/api/blocks/1'|jq '.[].blockNumber')
 for t in $@;do
    echo "Deploying $t after block ${lastblock:-0}"

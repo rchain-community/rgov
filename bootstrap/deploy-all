@@ -21,7 +21,7 @@ done
 
 set -x
 
-private_key=`cat pk.bootstrap`
+private_key=`cat PrivateKeys/pk.bootstrap`
 
 ME=`basename $0`
 ERRORLOG="$(mktemp /tmp/$ME.XXXXXX)"

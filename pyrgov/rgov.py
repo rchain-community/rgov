@@ -30,6 +30,8 @@ CASTVOTE_RHO_TPL = BASEPATH + '/../src/actions/castVote.rho'
 DELEGATEVOTE_RHO_TPL = BASEPATH + '/../src/actions/delegateVote.rho'
 TALLYVOTES_RHO_TPL = BASEPATH + '/../src/actions/tallyVotes.rho'
 
+MASTERURI = BASEPATH + '/../src/MasterURI.'
+
 LOCALHOST = {
     'observerBase': {'url': 'http://', 'host': 'localhost', 'port': 40402},
     'validatorBase': {'url': 'http://', 'host': 'localhost', 'port': 40403, 'num': 1},
@@ -74,7 +76,7 @@ class rgovAPI:
 
     def __init__(self, net_name: str):
         if net_name in NETWORKS:
-            print('Using ', net_name)
+            #print('Using ', net_name)
             network = NETWORKS[net_name]
             self.client = RClient(network['observerBase']['host'], network['observerBase']['port'])
             self.network = network
@@ -182,13 +184,16 @@ class rgovAPI:
             {'from': from_addr, 'to': to_addr, 'amount': amount},
         )
         deployId = self.client.deploy_with_vabn_filled(key, contract, TRANSFER_PHLO_PRICE, TRANSFER_PHLO_LIMIT)
-        print("transfer ", deployId)
+        #print("transfer ", deployId)
         self.propose()
         result = self.client.get_data_at_deploy_id(deployId, 5)
-        return result
+        result = result.blockInfo[0].postBlockData[0].exprs[0].e_tuple_body
+        status = result.ps[0].exprs[0].g_bool
+        msg = result.ps[1].exprs[0].g_string
+        return [status, msg]
 
     def newInbox(self, key: PrivateKey) -> str:
-        fname = '../src/MasterURI.' + self.net_name + '.json'
+        fname = MASTERURI + self.net_name + '.json'
         file = open(fname)
         masterstr = file.read()
         file.close()
@@ -208,23 +213,22 @@ class rgovAPI:
         result = self.propose()
         print("Propose ", result)
         result = self.client.get_data_at_deploy_id(deployId, 5)
-        print('NewInbox: ', result)
-        return result
+        result = result.blockInfo[0].postBlockData[0].exprs[0].e_list_body
+        return [result.ps[0].exprs[0].g_string, result.ps[1].exprs[0].g_string, result.ps[2].exprs[0].g_uri]
 
     def newIssue(self, key: PrivateKey, inbox: str, issue: str, options: list) -> str:
         if len(options) < 2:
             raise Exception("newIssue: options must have at least 2 choices")
 
         choices = '"' + '", "'.join(options) + '"'
-        print(options, choices)
         contract = render_contract_template(
             NEWISSUE_RHO_TPL,
             {'inboxURI': inbox, 'issue': issue, 'choices': choices},
         )
         deployId = self.client.deploy_with_vabn_filled(key, contract, TRANSFER_PHLO_PRICE, TRANSFER_PHLO_LIMIT)
         print("newIssue ", deployId);
-        result = self.client.get_data_at_deploy_id(deployId)
         self.propose()
+        result = self.client.get_data_at_deploy_id(deployId, 5)
         return result
 
     def addVoterToIssue(self, key: PrivateKey, locker: str, voter: str, issue: str) -> str:
@@ -232,11 +236,10 @@ class rgovAPI:
             ADDVOTER_RHO_TPL,
             {'inbox': locker, 'voterURI': voter, 'issue': issue},
         )
-        print("addVoter ", locker, " URI ", voter, " issue ", issue)
         deployId = self.client.deploy_with_vabn_filled(key, contract, TRANSFER_PHLO_PRICE, TRANSFER_PHLO_LIMIT)
         print("addVoterToIssue ", deployId);
-        result = self.client.get_data_at_deploy_id(deployId)
         self.propose()
+        result = self.client.get_data_at_deploy_id(deployId)
         return result
 
     def peekInbox(self, key: PrivateKey, inbox: str, type: str, subtype: str):
@@ -245,7 +248,7 @@ class rgovAPI:
             {'inbox': inbox, 'type': type, 'subtype': subtype},
         )
         deployId = self.client.deploy_with_vabn_filled(key, contract, TRANSFER_PHLO_PRICE, TRANSFER_PHLO_LIMIT)
-        #print("peekInbox ", deployId);
+        print("peekInbox ", deployId);
         self.propose()
         result = self.getDeployData(deployId)
         if result["length"] == 0:
@@ -281,9 +284,30 @@ class rgovAPI:
         )
         deployId = self.client.deploy_with_vabn_filled(key, contract, TRANSFER_PHLO_PRICE, TRANSFER_PHLO_LIMIT)
         print("castVote ", deployId);
-        result = self.client.get_data_at_deploy_id(deployId)
         self.propose()
-        return
+        result = self.client.get_data_at_deploy_id(deployId)
+        oldvote = ""
+        newvote = ""
+        if result.blockInfo[0].postBlockData[0].exprs[0].HasField("e_list_body"):
+            if result.blockInfo[0].postBlockData[0].exprs[0].e_list_body.ps[0].exprs[0].g_string == "oldvote was":
+                if len(result.blockInfo[0].postBlockData[0].exprs[0].e_list_body.ps) > 1:
+                    if len(result.blockInfo[0].postBlockData[0].exprs[0].e_list_body.ps[1].exprs) > 0:
+                        oldvote = result.blockInfo[0].postBlockData[0].exprs[0].e_list_body.ps[1].exprs[0].g_string
+                if len(result.blockInfo[0].postBlockData[1].exprs[0].e_list_body.ps) > 1:
+                    if len(result.blockInfo[0].postBlockData[1].exprs[0].e_list_body.ps[1].exprs) > 0:
+                        newvote = result.blockInfo[0].postBlockData[1].exprs[0].e_list_body.ps[1].exprs[0].g_string
+            else:
+                if len(result.blockInfo[0].postBlockData[0].exprs[0].e_list_body.ps) > 1:
+                    if len(result.blockInfo[0].postBlockData[0].exprs[0].e_list_body.ps[1].exprs) > 0:
+                        newvote = result.blockInfo[0].postBlockData[0].exprs[0].e_list_body.ps[1].exprs[0].g_string
+                if len(result.blockInfo[0].postBlockData[1].exprs[0].e_list_body.ps) > 1:
+                    if len(result.blockInfo[0].postBlockData[1].exprs[0].e_list_body.ps[1].exprs) > 0:
+                        oldvote = result.blockInfo[0].postBlockData[1].exprs[0].e_list_body.ps[1].exprs[0].g_string
+            return [True, [oldvote, newvote]]
+        if result.blockInfo[0].postBlockData[0].exprs[0].HasField("e_map_body"):
+            result = result.blockInfo[0].postBlockData[0].exprs[0].e_map_body
+            return [False, result]
+        return [False, ]
 
     def delegateVote(self, key: PrivateKey, inbox: str, issue: str, delegate: str) -> str:
         contract = render_contract_template(
@@ -292,9 +316,9 @@ class rgovAPI:
         )
         deployId = self.client.deploy_with_vabn_filled(key, contract, TRANSFER_PHLO_PRICE, TRANSFER_PHLO_LIMIT)
         print("delegateVote ", deployId);
-        #result = self.client.get_data_at_deploy_id(deployId)
         self.propose()
-        return
+        result = self.client.get_data_at_deploy_id(deployId)
+        return result
 
     def tallyVotes(self, key: PrivateKey, inbox: str, issue: str) -> str:
         contract = render_contract_template(

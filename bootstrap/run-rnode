@@ -2,7 +2,7 @@
 ./stop-rnode
 if [ $? -ne 0 ] ; then exit $?; fi
 
-private_key=`cat pk.bootstrap`
+private_key=`cat PrivateKeys/pk.bootstrap`
 
 cd `dirname $0`
 
