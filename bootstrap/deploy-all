@@ -81,7 +81,6 @@ ls -1 \
 ../Inbox.rho \
 ../Issue.rho \
 ../Kudos.rho \
-../Log.rho \
 ../memberIdGovRev.rho \
 ../RevIssuer.rho \
 ../Echo.rho \
