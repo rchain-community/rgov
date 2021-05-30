@@ -1,5 +1,5 @@
 match ["inbox", "", ""] {
-[lockerTag, type, subtype] => {
+[lockerTag, type, subtype, capability, method, arg] => {
 new
 //                 type and subtype are optional
 
@@ -14,7 +14,10 @@ in {
       } else if (subtype == "" ) {
          peek!(type,*deployId)
       }  else {
-         peek!(type,subtype,*deployId)
+         peek!(type,subtype,*ch)
+         for ( @(capability: *cap, ..._) <- ch ) {
+            cap!(method,arg,deployId)
+         }
       }
    }
 }

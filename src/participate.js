@@ -17,6 +17,14 @@ import {
 } from 'rchain-api';
 import { actions } from './actions.js';
 
+// gives ts error but works correctly. https://mariusschulz.com/blog/importing-json-modules-in-typescript
+// TODO vscode suggests: Consider using '--resolveJsonModule' to import module with '.json' extension.
+import { localhostNETWORK } from './MasterURI.localhost.json';
+import { mainnetNETWORK } from './MasterURI.mainnet.json';
+import { testnetNETWORK } from './MasterURI.testnet.json';
+import { rhobotNETWORK } from './MasterURI.rhobot.json';
+import { demoNETWORK } from './MasterURI.demo.json';
+
 const { freeze, keys, entries, fromEntries } = Object;
 
 // TODO: UI for phloLimit
@@ -29,13 +37,15 @@ const NETWORKS = {
     observerBase: 'http://localhost:40403',
     validatorBase: 'http://localhost:40403',
     adminBase: 'http://localhost:40405',
+    MasterURI: localhostNETWORK.MasterURI,
   },
   testnet: {
     hostPattern: 'test',
     observerBase: 'https://observer.testnet.rchain.coop',
     // TODO: rotate validators
-    validatorBase: 'https://node1.testnet.rchain-dev.tk',
+    validatorBase: 'https://node0.testnet.rchain-dev.tk',
     adminBase: '',
+    MasterURI: testnetNETWORK.MasterURI,
   },
   demo: {
     hostPattern: 'demo',
@@ -43,6 +53,7 @@ const NETWORKS = {
     // TODO: rotate validators
     validatorBase: 'https://demoapi.rhobot.net',
     adminBase: 'https://demoadmin.rhobot.net',
+    MasterURI: demoNETWORK.MasterURI,
   },
   rhobot: {
     hostPattern: 'rhobot',
@@ -50,11 +61,13 @@ const NETWORKS = {
     // TODO: rotate validators
     validatorBase: 'https://rnodeapi.rhobot.net',
     adminBase: 'https://rnodeadmin.rhobot.net',
+    MasterURI: rhobotNETWORK.MasterURI,
   },
   mainnet: {
     observerBase: 'https://observer.services.mainnet.rchain.coop',
     validatorBase: 'https://node12.root-shard.mainnet.rchain.coop',
     adminBase: '',
+    MasterURI: mainnetNETWORK.MasterURI,
   },
 };
 /**
@@ -214,7 +227,7 @@ function buildUI({
   const rnode = RNode(fetch);
   let action = '_select_an_action_';
   let network = netFromHost(hostname);
-  /** @type {{ observer: Observer, validator: Validator, admin: import('rchain-api/src/rnode').RNodeAdmin }} shard */
+  /** @type {{ MasterURI: string, observer: Observer, validator: Validator, admin: import('rchain-api/src/rnode').RNodeAdmin }} shard */
   let shard;
   let matchBody = '';
   /** @type {string?} */
@@ -247,6 +260,7 @@ function buildUI({
         observer: rnode.observer(net.observerBase),
         validator: rnode.validator(net.validatorBase),
         admin: rnode.admin(net.adminBase),
+        MasterURI: net.MasterURI,
       };
       state.bindings = bindings[network];
     },
@@ -388,6 +402,7 @@ function fixIndent(code) {
  *   setAction: (a: string) => Promise<void>,
  *   fields: Record<string, string>,
  *   term: string?,
+ *   shard: { MasterURI: string },
  * }} state
  * @param {HTMLBuilder & EthSignAccess} io
  */
@@ -438,7 +453,8 @@ function actionControl(state, { html, getEthProvider }) {
             >${name}:
             <input
               name=${name}
-              value=${value}
+              disabled=${fty(action,name) === 'MasterURI'}
+              value=${fty(action,name) === 'MasterURI' ? state.shard.MasterURI : value}
               onchange=${(/** @type {Event} */ event) => {
                 const current = { [name]: ckControl(event.target).value };
                 const old = state.fields;

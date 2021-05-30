@@ -2,9 +2,11 @@
 ./stop-rnode
 if [ $? -ne 0 ] ; then exit $?; fi
 
-private_key=`cat PrivateKeys/pk.bootstrap`
+private_key=`cat pk.bootstrap`
 
 cd `dirname $0`
+
+mkdir -p log
 
 rnode run -s \
    --validator-private-key $private_key \
