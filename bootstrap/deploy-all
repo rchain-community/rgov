@@ -21,7 +21,7 @@ done
 
 set -x
 
-private_key=`cat pk.bootstrap`
+private_key=`cat PrivateKeys/pk.bootstrap`
 
 ME=`basename $0`
 ERRORLOG="$(mktemp /tmp/$ME.XXXXXX)"
@@ -29,7 +29,7 @@ LOGFILE="log/$ME.log"
 rm -f $ERRORLOG
 DEPLOY="./deploy --error $ERRORLOG"
 
-mkdir -p generated log
+mkdir -p generated
 javascript_file=generated/generated.rhoid.bootstrap.js
 json_file=generated/generated.rhoid.bootstrap.json
 
@@ -73,14 +73,14 @@ if [ -f "$ERRORLOG" ]; then
 fi
 
 # deploy rgov
+# ../Community.rho \
 ls -1 \
-../Ballot.rho \
-../Group.rho \
 ../CrowdFund.rho \
 ../Directory.rho \
 ../Inbox.rho \
 ../Issue.rho \
 ../Kudos.rho \
+../Log.rho \
 ../memberIdGovRev.rho \
 ../RevIssuer.rho \
 ../Echo.rho \
@@ -145,7 +145,7 @@ echo "$0: Proposing generated/generated.create-master-contract-directory.rho" |t
 rnode --grpc-port 40402 propose 2>&1 | tee -a log/deployment.log
 
 echo "Creating ../src/MasterURI.localhost.json"
-echo "{\"localhostNETWORK\": { \"MasterURI\":" > ../src/MasterURI.localhost.json
+echo "{\"MasterURI\": { \"rhoid\":" > ../src/MasterURI.localhost.json
 grep "ReadcapURI" $LOGFILE |tail -1 | cut -d' ' -f3|sed '
 s/\}/"/
 s/^/"/
@@ -155,14 +155,10 @@ echo "}}" >> ../src/MasterURI.localhost.json
 echo "$0: listing master directory"
 ./deploy listMasterURI.rho
 rnode --grpc-port 40402 propose 2>&1 | tee -a log/deployment.log
-
-echo "$0: creating member directory"
-./deploy ../MemberDirectory.rho
-rnode --grpc-port 40402 propose 2>&1 | tee -a log/deployment.log
-
-echo "Waiting for rnode to finalize (10s)" && sleep 10 && echo "$0: Stopping deployment rnode"
+echo "Waiting for rnode to finish (10s)" && sleep 10 && echo "$0: Stopping deployment rnode"
 kill $PID && sleep 2
 
 echo "$0: Creating rgov snapshot"
 ./create-snapshot rgov
+grep '{"ReadcapURI" : `' $LOGFILE|tail -1|sed 's-`-"-g' > ../ReadcapURI.json
 stty echo

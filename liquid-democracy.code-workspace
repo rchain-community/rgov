@@ -11,8 +11,7 @@
 		},
 		"files.watcherExclude": {
 			"**/bootstrap/rchain": true,
-			"**/dist": true,
-			"node_modules": true
+			"**/dist": true
 		}
 	}
 }

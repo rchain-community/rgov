@@ -1,30 +1,45 @@
-match ["URI-value-for-master-dictionary"] {
+match [`$masterURI`] {
 [ReadcapURI] => {
 new
   stdout(`rho:io:stdout`),
+  lookup(`rho:registry:lookup`),
+  insertArbitrary(`rho:registry:insertArbitrary`),
   deployId(`rho:rchain:deployId`),
   deployerId(`rho:rchain:deployerId`),
   masterLookupCh,
+  lookupCh_DirInbox,
+  lookupCh_DirDirectory,
   inboxCaps,
   directoryCaps,
-  lookupCh,
-  lookup(`rho:registry:lookup`),
   ret
 in {
   lookup!(ReadcapURI, *masterLookupCh) |
   for (lookup_Master <- masterLookupCh) {
     stdout!({"master-dictionary dictionary unforgeable": *lookup_Master}) |
-    lookup_Master!("GetMe", *lookupCh) |
-    for (GetMe <- lookupCh) {
-      stdout!({"master-dictionary GetMe unforgeable": *GetMe}) |
-      GetMe!(*deployerId, *ret, *stdout) |
-      for (@(success, (claimed, mystuff)) <- ret) {
-        stdout!(["getme returns", success, claimed, mystuff]) |
-        if (claimed == false) {
-          @[*deployerId, "dictionary"]!(mystuff.get("dictionary")) |
-          @[*deployerId, "inbox"]!(mystuff.get("inbox"))
-        } |
-        deployId!(["mystuff", mystuff])
+    lookup_Master!("Inbox", *lookupCh_DirInbox) |
+    for (master_Inbox <- lookupCh_DirInbox) {
+      stdout!({"master-dictionary Inbox unforgeable": *master_Inbox}) |
+      master_Inbox!(*inboxCaps)|
+      for (x <<- inboxCaps) {
+        stdout!(["x", *x])
+      } |
+      for (read, write, peek  <- inboxCaps) {
+        stdout!(["read", *read, "write", *write, "peek", *peek]) |
+        insertArbitrary!(*write, *ret)|
+        for (@uri <- ret) {
+          stdout!(["#define", "$inbox", uri]) |
+          deployId!(["#define", "$inbox", uri]) |
+          lookup_Master!("Directory", *lookupCh_DirDirectory) |
+          for ( Directory <- lookupCh_DirDirectory ) {
+            stdout!("Directory",*Directory) |
+            Directory!(*lookup_Master,*directoryCaps) |
+            for (dircaps <- directoryCaps ) {
+              @[*deployerId, "dictionary"]!(*dircaps) |
+              stdout!(["added personal directory", *dircaps]) |
+              @[*deployerId, "inbox"]!({"receive": *read, "inbox": *write, "peek": *peek, "URI": uri, "dict": *dircaps.get("read")})
+            }
+          }
+        }
       }
     }
   }
