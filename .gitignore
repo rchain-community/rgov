@@ -5,3 +5,4 @@ rhoid.js
 .vscode/
 dist/
 yarn.lock
+ReadcapURI.json

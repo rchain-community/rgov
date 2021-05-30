@@ -1,12 +1,8 @@
 // @ts-check
-// gives error but works correctly. https://mariusschulz.com/blog/importing-json-modules-in-typescript
-import uris from '../ReadcapURI.json';
-
-console.log(uris.ReadcapURI);
 
 /**
  * @typedef {{ filename?: string, fields?: Record<string, FieldSpec> }} ActionSpec
- * @typedef {{ type: 'number' | 'string' | 'set' | 'uri' | 'walletRevAddr', value?: string }} FieldSpec
+ * @typedef {{ type: 'number' | 'string' | 'set' | 'uri' | 'walletRevAddr' | 'MasterURI', value?: string }} FieldSpec
  * @type {Record<string, ActionSpec>}
  */
 export const actions = {
@@ -32,7 +28,7 @@ export const actions = {
   },
   newInbox: {
     fields: {
-      ReadcapURI: { value: uris.ReadcapURI, type: 'uri' },
+      ReadcapURI: { value: '', type: 'MasterURI' },
     },
     filename: 'actions/newinbox.rho',
   },
@@ -171,7 +167,7 @@ export const actions = {
     fields: {},
     filename: 'actions/newMemberDirectory.rho',
   },
-  
+
   makeMint: {
     fields: {
       name: { value: 'myTokenMint', type: 'string' },
