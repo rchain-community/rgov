@@ -327,8 +327,21 @@ class rgovAPI:
         )
         deployId = self.client.deploy_with_vabn_filled(key, contract, TRANSFER_PHLO_PRICE, TRANSFER_PHLO_LIMIT)
         print("tallyVotes ", deployId);
-        #result = self.client.get_data_at_deploy_id(deployId)
         self.propose()
-        result = self.getDeployData(deployId)
-        print(result)
-        return result
+        #result = self.getDeployData(deployId)
+        result = self.client.get_data_at_deploy_id(deployId)
+        votes = {}
+        found_counts = False
+        found_done = False
+        for BData in result.blockInfo[0].postBlockData:
+            if BData.exprs[0].HasField("g_string"):
+                found_done = True
+            if BData.exprs[0].HasField("e_list_body"):
+                for BList in BData.exprs[0].e_list_body.ps:
+                    if BList.exprs[0].HasField("g_string"):
+                        if BList.exprs[0].g_string == "counts":
+                            found_counts = True
+                    if BList.exprs[0].HasField("e_map_body"):
+                        for voted in BList.exprs[0].e_map_body.kvs:
+                            votes[voted.key.exprs[0].g_string] = voted.value.exprs[0].g_int
+        return [found_counts and found_done, votes]
