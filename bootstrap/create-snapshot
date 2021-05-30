@@ -12,8 +12,8 @@ if [ $? -ne 0 ] ; then exit $?; fi
 mkdir -p snapshot
 
 TARGET=$PWD/snapshot/$1.tgz
-
-[ -f $TARGET ] && while read -p "$TARGET already exists. Replace [y]? " response;do
+echo $TARGET TARGET
+[ -f "$TARGET" ] && while read -p "$TARGET already exists. Replace [y]? " response;do
    if [ "$response" == 'y' ] || [ -z "$response" ]; then
       break
    else
@@ -22,5 +22,5 @@ TARGET=$PWD/snapshot/$1.tgz
    fi
 done
 
-(cd ~; tar czf $TARGET .rnode)
+(cd ~; tar czf "$TARGET" .rnode)
 echo "snapshot created: $TARGET"
