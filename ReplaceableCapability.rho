@@ -1,0 +1,48 @@
+new return(`rho:io:stdout`), // return(`rho:rchain:deployId`),
+  insertArbitrary(`rho:registry:insertArbitrary`),   ReplaceableCapability in {
+   new uriCh, valueCh in {
+    insertArbitrary!(bundle+{*ReplaceableCapability}, *uriCh) |
+    for (@uri <- uriCh) {
+      return!(("URI", uri))
+    }
+  } |
+ contract ReplaceableCapability(capability, ret) = {
+  new capCh, invoke, replace, revoked in {
+   capCh!(*capability) |
+   contract revoked(return) = {
+     for ( curr <<- capCh ) {
+       return!(cur == Nil)
+     }
+   }} |
+   contract invoke(arg) = {
+    for ( curr <<- capCh ) {
+     curr!(*arg)
+   }}|
+   contract invoke(arg1, arg2) = {
+    for ( curr <<- capCh ) {
+     curr!(*arg1, *arg2)
+   }}|
+   contract invoke(arg1, arg2, arg3) = {
+    for ( curr <<- capCh ) {
+     curr!(*arg1, *arg2, *arg3)
+   }}|
+   contract replace(newcapability, ret) = {
+    for ( curr <- capCh ) {
+     capCh!(*newcapability) |
+     ret!(*invoke)
+   }}|
+   ret!(*invoke,*replace)
+ }} |
+new stdout(`rho:io:stdout`), myChan, ret, kickme in {
+ ReplaceableCapability!(*myChan,*ret) |
+ for ( thiscap, thisrep <- ret ) {
+  thiscap!("hello world.") |
+  for ( x <- myChan) {
+    stdout!(["x", *x]) |
+    thisrep!(*stdout, *kickme) |
+    for ( k <- kickme) {
+      stdout!(["k", *k]) |
+      thiscap!("goodbye world!")
+    }
+  }
+}}}

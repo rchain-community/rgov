@@ -19,7 +19,7 @@ $0: $HOME/.rnode exists. Use 'rm -rf $HOME/.rnode' to fix.
 	fi
 done
 
-mkdir -p snapshot log 2>/dev/null
+mkdir -p snapshot log generated 2>/dev/null
 
 ME=`basename $0`
 
@@ -39,7 +39,7 @@ done
 
 LOGFILE="log/$0.log"
 
-private_key=`cat PrivateKeys/pk.bootstrap`
+private_key=`cat pk.bootstrap`
 
 mkdir -p ~/.rnode || exit 3
 tar cf - genesis|(cd ~/.rnode; tar xvf -) || exit 3

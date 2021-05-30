@@ -1,4 +1,4 @@
-match["$from", "$to", $amount] {
+match["", "", 1] {
 [revAddrFrom, revAddrTo, amount] => {
 new rl(`rho:registry:lookup`), RevVaultCh in {
   rl!(`rho:rchain:revVault`, *RevVaultCh) |

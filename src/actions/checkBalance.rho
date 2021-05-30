@@ -1,4 +1,4 @@
-match ["$addr"] {
+match [""] {
 [myGovRevAddr] => {
 new    // use Explore to see result at return
    return,
