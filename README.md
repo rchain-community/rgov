@@ -8,6 +8,8 @@ _image credit: [Liquid Democracy, Ethereum, and the slow path to revolution\. \|
 
 ## Progress
 
+ - 2021-05: [RGov Localhost Setup Demo](https://www.youtube.com/watch?v=P1jxxElpKX0)
+
  - 2021-04: [2021\-04\-22 RGov liquid democracy on RChain demo \- YouTube](https://www.youtube.com/watch?v=JC5RP7IeG5g)
    - [Community Debrief 227 \- RVote / liquid democracy demo \- RChain Blog](https://blog.rchain.coop/2021/04/23/debrief-227/)
  
