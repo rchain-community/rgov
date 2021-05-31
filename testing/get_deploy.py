@@ -16,7 +16,7 @@ bravo = PrivateKey.from_hex('dd0dd23cd51460e6c42a154623df19372be332f0a61a5175560
 #bravo = PrivateKey.generate()
 charlie = PrivateKey.generate()
 
-deploy = '30440220177ee79e2e085dd654236919215352e5ccf2c6e50e5f2f875f340b1fe0dac941022033b00b69f6b4ebc3d344317d593f3415d8469c693761eb4fab6904c363dc1973'
+deploy = '3045022100978a1dc1cf1639845f952a0b4ac2f67e2e9c14aa17b56452623dd7c67693a05402201402bf831e7f535863248b1f2b542be6cf27be748619244b15346433fd288b88'
 
 def print_balances(rgov: rgovAPI):
     # get balance of vault

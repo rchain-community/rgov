@@ -19,7 +19,8 @@ BASEPATH = str(pathlib.Path(__file__).parent.absolute())
 TRANSFER_PHLO_LIMIT = 1000000
 TRANSFER_PHLO_PRICE = 1
 
-PRIVATE_KEYS = BASEPATH + '/../bootstrap/'
+print(BASEPATH)
+PRIVATE_KEYS = BASEPATH + '/../bootstrap/PrivateKeys/'
 CHECK_BALANCE_RHO_TPL = BASEPATH + '/../src/actions/checkBalance.rho'
 TRANSFER_RHO_TPL = BASEPATH + '/../src/actions/transfer.rho'
 NEWINBOX_RHO_TPL = BASEPATH + '/../src/actions/newinbox.rho'
@@ -204,10 +205,12 @@ class rgovAPI:
 
         masterURI = masterstr[start:end]
         print('MasterURI: ', masterURI)
+        print("Contract", NEWINBOX_RHO_TPL)
         contract = render_contract_template(
             NEWINBOX_RHO_TPL,
-            {'masterURI': masterURI, 'inbox': 'inboxURI'},
+            {'masterURI': masterURI}, #, 'inbox': 'inboxURI'},
         )
+        print("Contract", NEWINBOX_RHO_TPL, contract)
         deployId = self.client.deploy_with_vabn_filled(key, contract, TRANSFER_PHLO_PRICE, TRANSFER_PHLO_LIMIT)
         print("newInbox ", deployId)
         result = self.propose()
