@@ -3,17 +3,44 @@ new Inbox,
   lookup(`rho:registry:lookup`),
   stdout(`rho:io:stdout`) in {
 stdout!("begin") |
+
+/**
+ * Create an Inbox, i.e. a store of messages.
+ *
+ * A message conventionally matches [String, String, ...] representing
+ * a type such as "chat", a subtype such as "myusername". The type and
+ * subtype should clarify the structure of the remaining items in the list.
+ * For example, "chat" may indicate that ... is a String that is the
+ * body of the chat message.
+ *
+ * Note that messages are stored in a rholang par (parallel) structure, unordered.
+ *
+ * @returns {(read, write, peek)} a 3 tuple;
+ *   `write` may be shared widely; the holder can write (add) a message to the store
+ *   `peek` should be held closely; the holder can look at received messages
+ *   `read` should be held closely; the holder can look at and remove messages
+ */
 contract Inbox(capabilities) = {
   new read, write, peek, box in {
     stdout!(["Inbox returning", bundle+{*read}, bundle+{*write}, bundle+{*peek}]) |
     capabilities!(bundle+{*read}, bundle+{*write}, bundle+{*peek}) |
     box!(Nil) |
 
+    /**
+     * Read (and remove) all messages.
+     * @returns { msg1 | msg2 | msg3, ... }
+     */
     contract read(ret) = {
       for (items <- box) {
         ret!(*items)
       }
     } |
+    /**
+     * Read (and remove) one message by type.
+     *
+     * @param {*} type - value to be matched against the type of each item
+     * @returns { [type, ...rest] } a matching item, if there is one, or Nil
+     */
     contract read(type,ret) = {
       //stdout!(["type",*type]) |
       for (items <- box) {
@@ -27,6 +54,13 @@ contract Inbox(capabilities) = {
         }
       }
     } |
+    /**
+     * Read (and remove) one message by type and subtype.
+     *
+     * @param {*} type - value to be matched against the type of each item
+     * @param {*} subtype - value to be matched against the subtype of each item
+     * @returns { [type, subtype, ...rest] } a matching item, if there is one, or Nil
+     */
     contract read(type,subtype,ret) = {
       //stdout!(["type",*type]) |
       for (items <- box) {
@@ -42,12 +76,21 @@ contract Inbox(capabilities) = {
         }
       }
     } |
-
+    /**
+     * Peek at (read without removing) all messages.
+     * @returns { msg1 | msg2 | msg3, ... }
+     */
     contract peek(ret) = {
       for (items <<- box) {
         ret!(*items)
       }
     } |
+    /**
+     * Peek at (read without removing) one message by type.
+     *
+     * @param {*} type - value to be matched against the type of each item
+     * @returns { [type, ...rest] } a matching item, if there is one, or Nil
+     */
     contract peek(type,ret) = {
       //stdout!(["type",*type]) |
       for (items <<- box) {
@@ -61,6 +104,13 @@ contract Inbox(capabilities) = {
         }
       }
     } |
+    /**
+     * Peek at (read without removing) one message by type and subtype.
+     *
+     * @param {*} type - value to be matched against the type of each item
+     * @param {*} subtype - value to be matched against the subtype of each item
+     * @returns { [type, subtype, ...rest] } a matching item, if there is one, or Nil
+     */
     contract peek(type,subtype,ret) = {
       //stdout!(["type",*type]) |
       for (items <<- box) {
@@ -76,6 +126,15 @@ contract Inbox(capabilities) = {
       }
     } |
 
+    /**
+     * Write (add) a message to the store.
+     *
+     * @param {*} message - if message matches an existing message by type and subtype
+     * and its body is a map, the new and matched messages are merged. Otherwise,
+     * the new message is added to the store in parallel.
+     *
+     * @returns "added." in the merge case an "sent..." otherwise
+     */
     contract write(@message,ret) = {
        for (items <- box) {
          match message {
