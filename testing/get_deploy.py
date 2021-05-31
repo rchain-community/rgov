@@ -16,7 +16,7 @@ bravo = PrivateKey.from_hex('dd0dd23cd51460e6c42a154623df19372be332f0a61a5175560
 #bravo = PrivateKey.generate()
 charlie = PrivateKey.generate()
 
-deploy = '3044022078cd3d052837a813e7d2b79360c03ab3d4232340431e9dc737558da1baa8f04602201e989c496eea3811c45333b6d383bc39e17d09066725075f4f22b74ed9514ca0'
+deploy = '30440220177ee79e2e085dd654236919215352e5ccf2c6e50e5f2f875f340b1fe0dac941022033b00b69f6b4ebc3d344317d593f3415d8469c693761eb4fab6904c363dc1973'
 
 def print_balances(rgov: rgovAPI):
     # get balance of vault
@@ -31,10 +31,10 @@ result = rgov.client.get_data_at_deploy_id(deploy, 5)
 #result = result.blockInfo[0].postBlockData[0].exprs[0].e_list_body
 print(result)
 #print(dir(result.blockInfo[0].postBlockData[0].exprs[0].e_list_body))
-print(result.blockInfo[0].postBlockData[0].exprs[0].HasField("e_list_body"))
-result = result.blockInfo[0].postBlockData[0].exprs[0].e_map_body
+#print(result.blockInfo[0].postBlockData[0].exprs[0].HasField("e_list_body"))
+#result = result.blockInfo[0].postBlockData[0].exprs[0].e_map_body
 #print(result)
-print(result.kvs[0])
+#print(result.kvs[0])
 #print(result.kvs[0]{"unknown proposal"})
 #print(result.kvs[1]{"valid proposals"})
  #print(result.blockInfo[0].postBlockData[0].exprs[0].e_list_body.ps[0].exprs[0].g_string)

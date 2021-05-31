@@ -1,4 +1,4 @@
-match ["URI-value-for-master-dictionary"] {
+match ["$masterURI"] {
 [ReadcapURI] => {
 new
   stdout(`rho:io:stdout`),
@@ -22,7 +22,7 @@ in {
         stdout!(["getme returns", success, claimed, mystuff]) |
         if (claimed == false) {
           @[*deployerId, "dictionary"]!(mystuff.get("dictionary")) |
-          @[*deployerId, "inbox"]!(mystuff.get("inbox"))
+          @[*deployerId, "$inbox"]!(mystuff.get("inbox"))
         } |
         deployId!(["mystuff", mystuff])
       }

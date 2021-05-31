@@ -19,7 +19,7 @@ BASEPATH = str(pathlib.Path(__file__).parent.absolute())
 TRANSFER_PHLO_LIMIT = 1000000
 TRANSFER_PHLO_PRICE = 1
 
-PRIVATE_KEYS = BASEPATH + '/../bootstrap/PrivateKeys/'
+PRIVATE_KEYS = BASEPATH + '/../bootstrap/'
 CHECK_BALANCE_RHO_TPL = BASEPATH + '/../src/actions/checkBalance.rho'
 TRANSFER_RHO_TPL = BASEPATH + '/../src/actions/transfer.rho'
 NEWINBOX_RHO_TPL = BASEPATH + '/../src/actions/newinbox.rho'

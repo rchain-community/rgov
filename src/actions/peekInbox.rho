@@ -1,4 +1,4 @@
-match ["inbox", "", ""] {
+match ["$inbox", "$type", "$subtype"] {
 [lockerTag, type, subtype] => {
 new
 //                 type and subtype are optional
