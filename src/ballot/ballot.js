@@ -7,9 +7,9 @@ let state = {
   issues: [
     {
       id: 0,
-      desc: 'Who is president ?',
+      desc: 'More vegetables in school restaurants',
       type: 'choices',
-      choices: ['Donald Trump', 'Joe Biden', 'Michael Jordan'],
+      choices: ['support', 'abstain', 'oppose'],
     },
     {
       id: 1,
@@ -47,7 +47,7 @@ const initializeVotes = () => {
 };
 
 const vote = (e, issueId, vote) => {
-  console.log(e);
+  e.preventDefault();
 
   state = {
     ...state,
@@ -62,11 +62,9 @@ const vote = (e, issueId, vote) => {
 initializeVotes();
 
 const getIcon = (issueId, vote1) => {
-  console.log('getIcon');
-
-  if (state.votes[issueId].vote === vote1)
+  if (state.votes[issueId] === vote1)
     return m('i', {
-      class: 'envelope icon selected ' + vote,
+      class: 'envelope icon selected ' + vote1,
       row: issueId,
       role: vote1,
     });
@@ -75,7 +73,6 @@ const getIcon = (issueId, vote1) => {
       class: 'envelope outline icon',
       row: issueId,
       role: vote1,
-      onclick: (e) => vote(e, issueId, vote1),
     });
 };
 
@@ -97,7 +94,6 @@ m.mount(document.getElementById('table-header'), tableHeader);
 
 const tableBody = {
   view: () => {
-    console.log(state.votes);
     return state.issues.map((issue) => {
       if (issue.type === 'choices') {
         return m('tr', [
@@ -110,6 +106,7 @@ const tableBody = {
                 {
                   class: 'voting-link',
                   href: '#',
+                  onclick: (e) => vote(e, issue.id, choice),
                 },
                 [getIcon(issue.id, choice)],
               ),
