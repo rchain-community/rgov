@@ -61,19 +61,20 @@ const vote = (e, issueId, vote) => {
 
 initializeVotes();
 
-const getIcon = (issueId, vote1) => {
-  if (state.votes[issueId] === vote1)
+const getIcon = (issueId, choice) => {
+  if (state.votes[issueId] === choice) {
     return m('i', {
-      class: 'envelope icon selected ' + vote1,
+      class: 'envelope icon selected ' + choice,
       row: issueId,
-      role: vote1,
+      role: choice,
     });
-  else
+  } else {
     return m('i', {
       class: 'envelope outline icon',
       row: issueId,
-      role: vote1,
+      role: choice,
     });
+  }
 };
 
 const tableHeader = {
