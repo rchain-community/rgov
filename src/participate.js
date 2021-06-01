@@ -304,6 +304,8 @@ function buildUI({
             return `Set(${value})`;
           } else if (fields[name].type === 'number') {
             return value;
+          } else if (fields[name].type === 'MasterURI') {
+            return state.shard.MasterURI;
           } else {
             return JSON.stringify(value);
           }
