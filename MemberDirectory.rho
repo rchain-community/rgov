@@ -6,7 +6,8 @@ new
    insertArbitrary(`rho:registry:insertArbitrary`),
    stdout(`rho:io:stdout`),
    deployerId(`rho:rchain:deployerId`),
-   mcaUpdateRet,
+   mcaUpdateRet1,
+   mcaUpdateRet2,
    uriCh
 in { Nil
 |  everyoneMap!({}) // TODO treeHashMap
@@ -14,8 +15,11 @@ in { Nil
 |  insertArbitrary!(bundle+{*getMe}, *uriCh)
 |  for (uri <- uriCh) { Nil
    |  for (@{"write": *MCAwrite, ..._} <<- @[*deployerId, "MasterContractAdmin"]) { Nil
-      |  MCAwrite!("GetMe", bundle+{*getMe}, *mcaUpdateRet)
-      |  MCAwrite!("SendThem", bundle+{*sendThem}, *mcaUpdateRet)
+      |  MCAwrite!("GetMe", bundle+{*getMe}, *mcaUpdateRet1)
+      |  MCAwrite!("SendThem", bundle+{*sendThem}, *mcaUpdateRet2)
+      |  for (@one <- mcaUpdateRet1; @two <- mcaUpdateRet2) { Nil
+         |  stdout!(["one", one, "two", two])
+         }
       }
    }
 |  for (@{"read": *MCAread, ..._} <<- @[*deployerId, "MasterContractAdmin"]) { Nil
