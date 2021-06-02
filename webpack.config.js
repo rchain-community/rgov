@@ -9,7 +9,7 @@ module.exports = {
     contentBase: './src',
     hot: true,
   },
-  entry: './src/participate.js',
+  entry: './src/index.js',
   module: {
     rules: [
       {
