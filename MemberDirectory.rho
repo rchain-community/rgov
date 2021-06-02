@@ -12,16 +12,6 @@ new
 in { Nil
 |  everyoneMap!({}) // TODO treeHashMap
 // TODO migrate old member directory if it exists
-|  insertArbitrary!(bundle+{*getMe}, *uriCh)
-|  for (uri <- uriCh) { Nil
-   |  for (@{"write": *MCAwrite, ..._} <<- @[*deployerId, "MasterContractAdmin"]) { Nil
-      |  MCAwrite!("GetMe", bundle+{*getMe}, *mcaUpdateRet1)
-      |  MCAwrite!("SendThem", bundle+{*sendThem}, *mcaUpdateRet2)
-      |  for (@one <- mcaUpdateRet1; @two <- mcaUpdateRet2) { Nil
-         |  stdout!(["one", one, "two", two])
-         }
-      }
-   }
 |  for (@{"read": *MCAread, ..._} <<- @[*deployerId, "MasterContractAdmin"]) { Nil
    |  stdout!(["MCAread", *MCAread])
    |  contract createMe(you, yourStuff, retCh, logCh) = { Nil
@@ -169,13 +159,20 @@ in { Nil
       tmp1,
       ret2
    in { Nil
-   |  getMe!(*deployerId, *ret1, *stdout)
-   |  for (@(tf, {"inbox": inbox, "dictionary": dict}) <- ret1) { Nil
-      |  stdout!(["writing inbox and dictionary for bootstrap", inbox, dict])
-      |  @[*deployerId, "inbox"]!(inbox)
-      |  @[*deployerId, "dictionary"]!(dict)
+   |  for (@{"write": *MCAwrite, ..._} <<- @[*deployerId, "MasterContractAdmin"]) { Nil
+      |  MCAwrite!("GetMe", bundle+{*getMe}, *mcaUpdateRet1)
+      |  MCAwrite!("SendThem", bundle+{*sendThem}, *mcaUpdateRet2)
+      |  for (@one <- mcaUpdateRet1; @two <- mcaUpdateRet2) { Nil
+         |  stdout!(["one", one, "two", two])
+         |  getMe!(*deployerId, *ret1, *stdout)
+         |  for (@(tf, {"inbox": inbox, "dictionary": dict}) <- ret1) { Nil
+            |  stdout!(["writing inbox and dictionary for bootstrap", inbox, dict])
+            |  @[*deployerId, "inbox"]!(inbox)
+            |  @[*deployerId, "dictionary"]!(dict)
+            |  sendThem!(["1111NkGJcLb9UdKg27bE1MXhaXwd2Sdhssn3i3EcWnZy11VLyW3zH", "two", "three"], "something", *stdout)
+            }
+         }
       }
-   |  sendThem!(["1111NkGJcLb9UdKg27bE1MXhaXwd2Sdhssn3i3EcWnZy11VLyW3zH", "two", "three"], "something", *stdout)
    }
 }
 }
