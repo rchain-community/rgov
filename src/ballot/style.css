@@ -128,6 +128,12 @@ body {
   font-size: 1.3em;
 }
 
+.submit-button {
+  background: #009879 !important;
+  margin-top: 5vw !important;
+  margin-bottom: 5vw !important;
+}
+
 /*Even rows*/
 
 .styled-table tbody tr:nth-of-type(even) {

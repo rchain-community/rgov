@@ -56,7 +56,6 @@ const vote = (e, issueId, vote) => {
       [issueId]: vote,
     },
   };
-  console.log(state);
 };
 
 initializeVotes();
@@ -76,6 +75,12 @@ const getIcon = (issueId, choice) => {
     });
   }
 };
+
+const submit = () => {
+  console.log(state);
+};
+
+/* COMPONENTS */
 
 const tableHeader = {
   view: () => {
