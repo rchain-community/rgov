@@ -2,7 +2,7 @@ match [] {
   [] => {
     new
     stdout(`rho:io:stdout`),
-    deployId(`rho:rchain:deployId`),
+    deployId(`rho:io:stdout`),
     deployerId(`rho:rchain:deployerId`),
     insertArbitrary(`rho:registry:insertArbitrary`),
     ch, ch1,
@@ -12,7 +12,7 @@ match [] {
       for(caps <<- @[*deployerId, "MasterContractAdmin"]) {
         deployId!(["caps", *caps]) |
         stdout!(["caps", *caps]) |
-        
+
         @{*caps.get("read")}!(*ch) |
         for (map <- ch) {
           stdout!(["map",*map])

@@ -2,7 +2,7 @@
 
 /**
  * @typedef {{ filename?: string, fields?: Record<string, FieldSpec> }} ActionSpec
- * @typedef {{ type: 'number' | 'string' | 'set' | 'uri' | 'walletRevAddr' | 'MasterURI', value?: string }} FieldSpec
+ * @typedef {{ type: 'MasterURI' | 'number' | 'string' | 'set' | 'uri' | 'walletRevAddr' | 'MasterURI', value?: string }} FieldSpec
  * @type {Record<string, ActionSpec>}
  */
 export const actions = {
