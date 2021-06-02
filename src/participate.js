@@ -13,6 +13,11 @@ import {
 } from 'rchain-api';
 import { actions } from './actions.js';
 
+// TODO(#185): stop pretending MasterURI is a design-time constant.
+// Meanwhile, see bootstrap/deploy-all for MasterURI.localhost.json
+// and to tsc and eslint, we say "please excuse me" as follows:
+// @ts-ignore
+// eslint-disable-next-line import/no-unresolved
 import { localhostNETWORK } from './MasterURI.localhost.json';
 import { mainnetNETWORK } from './MasterURI.mainnet.json';
 import { testnetNETWORK } from './MasterURI.testnet.json';
