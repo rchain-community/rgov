@@ -163,7 +163,7 @@ in { Nil
       |  MCAwrite!("GetMe", bundle+{*getMe}, *mcaUpdateRet1)
       |  MCAwrite!("SendThem", bundle+{*sendThem}, *mcaUpdateRet2)
       |  for (@one <- mcaUpdateRet1; @two <- mcaUpdateRet2) { Nil
-         |  stdout!(["one", one, "two", two])
+         |  stdout!(["GetMe", one, "SendThem", two])
          |  getMe!(*deployerId, *ret1, *stdout)
          |  for (@(tf, {"inbox": inbox, "dictionary": dict}) <- ret1) { Nil
             |  stdout!(["writing inbox and dictionary for bootstrap", inbox, dict])
