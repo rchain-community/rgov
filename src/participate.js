@@ -429,8 +429,10 @@ function actionControl(state, { html, getEthProvider }) {
             >${name}:
             <input
               name=${name}
-              disabled=${fty(action,name) === 'MasterURI'}
-              value=${fty(action,name) === 'MasterURI' ? state.shard.MasterURI : value}
+              disabled=${fty(action, name) === 'MasterURI'}
+              value=${fty(action, name) === 'MasterURI'
+                ? state.shard.MasterURI
+                : value}
               onchange=${(/** @type {Event} */ event) => {
                 const current = { [name]: ckControl(event.target).value };
                 const old = state.fields;
