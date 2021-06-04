@@ -15,10 +15,12 @@
   */
     "strictNullChecks": true,
     "moduleResolution": "node",
+    "resolveJsonModule": true,
   },
   "include": [
     "Jakefile.js",
     "src/*.js",
+    "src/*.json",
     "exports.js"
   ],
 }

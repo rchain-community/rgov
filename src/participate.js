@@ -1,14 +1,10 @@
 /* eslint-disable no-use-before-define */
 /* eslint-disable no-shadow */
-/* global window, document, fetch, setTimeout */
 /* global HTMLInputElement, HTMLSelectElement, HTMLTextAreaElement, HTMLButtonElement */
 // @ts-check
-import htm from 'htm';
-import m from 'mithril';
 import {
   RNode,
   RhoExpr,
-  getEthProvider,
   MetaMaskAccount,
   getAddrFromEth,
   signMetaMask,
@@ -17,8 +13,11 @@ import {
 } from 'rchain-api';
 import { actions } from './actions.js';
 
-// gives ts error but works correctly. https://mariusschulz.com/blog/importing-json-modules-in-typescript
-// TODO vscode suggests: Consider using '--resolveJsonModule' to import module with '.json' extension.
+// TODO(#185): stop pretending MasterURI is a design-time constant.
+// Meanwhile, see bootstrap/deploy-all for MasterURI.localhost.json
+// and to tsc and eslint, we say "please excuse me" as follows:
+// @ts-ignore
+// eslint-disable-next-line import/no-unresolved
 import { localhostNETWORK } from './MasterURI.localhost.json';
 import { mainnetNETWORK } from './MasterURI.mainnet.json';
 import { testnetNETWORK } from './MasterURI.testnet.json';
@@ -109,30 +108,10 @@ let deployId = '';
  * @returns {T}
  * @template T
  */
-function unwrap(x) {
+export function unwrap(x) {
   if (!x) throw new TypeError('unexpected null / undefined');
   return x;
 }
-
-// WARNING: ambient access
-document.addEventListener('DOMContentLoaded', () => {
-  /** @type {(selector: string) => HTMLElement} */
-  const $ = (selector) => unwrap(document.querySelector(selector));
-
-  const html = htm.bind(m);
-
-  buildUI({
-    html,
-    busy: makeBusy($, m.redraw),
-    formValue: (selector) => ckControl($(selector)).value,
-    fetch,
-    setTimeout,
-    clock: () => Promise.resolve(Date.now()),
-    getEthProvider: () => getEthProvider({ window }),
-    mount: (selector, control) => m.mount($(selector), control),
-    hostname: document.location.hostname,
-  });
-});
 
 /**
  * @typedef {{
@@ -146,7 +125,7 @@ document.addEventListener('DOMContentLoaded', () => {
  * @param {(selector: string) => HTMLElement} $
  * @param { () => void } redraw
  */
-function makeBusy($, redraw) {
+export function makeBusy($, redraw) {
   /**
    * @param {string} selector
    * @param {Promise<T>} p
@@ -213,7 +192,7 @@ function rhoBody(tmp) {
  *
  * @typedef { import('rchain-api/src/ethProvider').MetaMaskProvider } MetaMaskProvider
  */
-function buildUI({
+export function buildUI({
   html,
   formValue,
   busy,
@@ -371,7 +350,7 @@ function buildUI({
  * @param {unknown} ctrl
  * @returns {HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement}
  */
-function ckControl(ctrl) {
+export function ckControl(ctrl) {
   if (
     !(ctrl instanceof HTMLInputElement) &&
     !(ctrl instanceof HTMLSelectElement) &&
@@ -455,8 +434,10 @@ function actionControl(state, { html, getEthProvider }) {
             >${name}:
             <input
               name=${name}
-              disabled=${fty(action,name) === 'MasterURI'}
-              value=${fty(action,name) === 'MasterURI' ? state.shard.MasterURI : value}
+              disabled=${fty(action, name) === 'MasterURI'}
+              value=${fty(action, name) === 'MasterURI'
+                ? state.shard.MasterURI
+                : value}
               onchange=${(/** @type {Event} */ event) => {
                 const current = { [name]: ckControl(event.target).value };
                 const old = state.fields;
@@ -520,7 +501,7 @@ ${state.term || ''}</textarea
  */
 function runControl(
   state,
-  { html, busy, getEthProvider, clock },
+  { html, busy, getEthProvider, clock, setTimeout },
   period = 5 * 1000,
 ) {
   const hide = (/** @type { boolean } */ flag) =>
