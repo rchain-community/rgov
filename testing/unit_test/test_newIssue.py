@@ -22,6 +22,7 @@ balance = rgov.checkBalance(new1.get_public_key().get_rev_address())
 assert balance == funds
 
 result = rgov.newInbox(new1)
+assert result[0]
 
 result = rgov.newIssue(new1, "inbox", "lunch", ["pizza", "tacos", "salad"])
-print(result)
+assert result[0]

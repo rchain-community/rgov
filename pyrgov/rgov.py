@@ -19,7 +19,6 @@ BASEPATH = str(pathlib.Path(__file__).parent.absolute())
 TRANSFER_PHLO_LIMIT = 1000000
 TRANSFER_PHLO_PRICE = 1
 
-print(BASEPATH)
 PRIVATE_KEYS = BASEPATH + '/../bootstrap/PrivateKeys/'
 CHECK_BALANCE_RHO_TPL = BASEPATH + '/../src/actions/checkBalance.rho'
 TRANSFER_RHO_TPL = BASEPATH + '/../src/actions/transfer.rho'
@@ -201,38 +200,66 @@ class rgovAPI:
         start = masterstr.find('rho:id:')
         end = masterstr.find('`', start)
         if start < 0 or end < 0:
-            raise Exception("masterURI file corrupt")
+            return [False, "masterURI file corrupt"]
 
         masterURI = masterstr[start:end]
-        print('MasterURI: ', masterURI)
-        print("Contract", NEWINBOX_RHO_TPL)
         contract = render_contract_template(
             NEWINBOX_RHO_TPL,
             {'masterURI': masterURI}, #, 'inbox': 'inboxURI'},
         )
-        print("Contract", NEWINBOX_RHO_TPL, contract)
         deployId = self.client.deploy_with_vabn_filled(key, contract, TRANSFER_PHLO_PRICE, TRANSFER_PHLO_LIMIT)
         print("newInbox ", deployId)
         result = self.propose()
-        print("Propose ", result)
         result = self.client.get_data_at_deploy_id(deployId, 5)
-        result = result.blockInfo[0].postBlockData[0].exprs[0].e_list_body
-        return [result.ps[0].exprs[0].g_string, result.ps[1].exprs[0].g_string, result.ps[2].exprs[0].g_uri]
+        if result is None:
+            return [False, "no deploy data"]
+        if len(result.blockInfo) == 0:
+            return [False, "no deploy data"]
+        if (len(result.blockInfo[0].postBlockData)) == 0:
+            return [False, "no deploy data"]
+
+        status = [False, "URI not found"]
+        if (len(result.blockInfo[0].postBlockData[0].exprs) > 0):
+            if (result.blockInfo[0].postBlockData[0].exprs[0].HasField('e_list_body')):
+                for data in result.blockInfo[0].postBlockData[0].exprs[0].e_list_body.ps:
+                    #if data.exprs[0].HasField("g_string"):
+                    #    print("Found (mystuff)", data.exprs[0].g_string)
+                    if data.exprs[0].HasField("e_map_body"):
+                        for kvs in data.exprs[0].e_map_body.kvs:
+                            if kvs.key.exprs[0].g_string == "inbox":
+                                if kvs.value.exprs[0].HasField("e_map_body"):
+                                    for inbox in kvs.value.exprs[0].e_map_body.kvs:
+                                        if inbox.key.exprs[0].g_string == "URI":
+                                            status = [True, inbox.value.exprs[0].g_uri]
+
+        return status
 
     def newIssue(self, key: PrivateKey, inbox: str, issue: str, options: list) -> str:
         if len(options) < 2:
-            raise Exception("newIssue: options must have at least 2 choices")
+            return [False, "newIssue: options must have at least 2 choices"]
 
         choices = '"' + '", "'.join(options) + '"'
         contract = render_contract_template(
             NEWISSUE_RHO_TPL,
-            {'inboxURI': inbox, 'issue': issue, 'choices': choices},
+            {'inbox': inbox, 'issue': issue, 'choices': choices},
         )
         deployId = self.client.deploy_with_vabn_filled(key, contract, TRANSFER_PHLO_PRICE, TRANSFER_PHLO_LIMIT)
         print("newIssue ", deployId);
         self.propose()
         result = self.client.get_data_at_deploy_id(deployId, 5)
-        return result
+        if result is None:
+            return [False, "no deploy data"]
+        msg = "No status messages found"
+        status = False
+        if (len(result.blockInfo[0].postBlockData) > 0):
+            for post in result.blockInfo[0].postBlockData:
+                if post.exprs[0].HasField("g_string"):
+                    if status:
+                        msg = msg + " " + post.exprs[0].g_string
+                    else:
+                        msg = post.exprs[0].g_string
+                    status = True
+        return [status, msg, result]
 
     def addVoterToIssue(self, key: PrivateKey, locker: str, voter: str, issue: str) -> str:
         contract = render_contract_template(
@@ -243,7 +270,9 @@ class rgovAPI:
         print("addVoterToIssue ", deployId);
         self.propose()
         result = self.client.get_data_at_deploy_id(deployId)
-        return result
+        if result is None:
+            return [False, "no deploy data"]
+        return [True, result]
 
     def peekInbox(self, key: PrivateKey, inbox: str, type: str, subtype: str):
         contract = render_contract_template(
@@ -253,32 +282,20 @@ class rgovAPI:
         deployId = self.client.deploy_with_vabn_filled(key, contract, TRANSFER_PHLO_PRICE, TRANSFER_PHLO_LIMIT)
         print("peekInbox ", deployId);
         self.propose()
-        result = self.getDeployData(deployId)
-        if result["length"] == 0:
-            return ""
-        if result["length"] == 1:
-            if "ExprMap" in result["exprs"][0]["expr"]:
-                return result["exprs"][0]["expr"]["ExprMap"]['data']['URI']['ExprUri']['data']
-
-        if "ExprMap" in result["exprs"][0]["expr"]["ExprPar"]["data"][0]:
-            return result["exprs"][0]["expr"]["ExprPar"]["data"][0]["ExprMap"]['data']['URI']['ExprUri']['data']
-        if "ExprMap" in result["exprs"][0]["expr"]["ExprPar"]["data"][1]:
-            return result["exprs"][0]["expr"]["ExprPar"]["data"][1]["ExprMap"]['data']['URI']['ExprUri']['data']
-        return ""
-        #result = self.client.get_data_at_deploy_id(deployId, 5)
-#        if result.length == 0:
-#            return ""
-#        print(result.blockInfo[0].postBlockData)
-#        print(len(result.blockInfo[0].postBlockData))
-#        print("postBlockData[0] Type ", len(result.blockInfo[0].postBlockData[0].exprs))
-#        print("postBlockData[0]", result.blockInfo[0].postBlockData[0].exprs[0])
-#        print("postBlockData[1] Type ", len(result.blockInfo[0].postBlockData[1].exprs))
-#        print("postBlockData[1]", result.blockInfo[0].postBlockData[1].exprs)
-#        if result.blockInfo[0].postBlockData[0].exprs[0].e_map_body != "":
-#            print("e_map_body0", result.blockInfo[0].postBlockData[0].exprs[0].e_map_body.kvs[0].value.exprs[0].g_uri)
-#        if result.blockInfo[0].postBlockData[1].exprs[0].e_map_body != "":
-#            print("e_map_body1", result.blockInfo[0].postBlockData[1].exprs[0].e_map_body.kvs[0].value.exprs[0].g_uri)
-#        return result.blockInfo[0].postBlockData[1].exprs[0].e_map_body.kvs[0].value.exprs[0].g_uri
+        result = self.client.get_data_at_deploy_id(deployId, 5)
+        if result is None:
+            return [False, "no deploy data"]
+        status = [False, "URI Not found"]
+        if len(result.blockInfo) > 0:
+            for post in result.blockInfo[0].postBlockData:
+                if len(post.exprs) > 0:
+                    if post.exprs[0].HasField("e_map_body"):
+                        for kvs in post.exprs[0].e_map_body.kvs:
+                            if kvs.key.exprs[0].HasField("g_string"):
+                                if kvs.key.exprs[0].g_string == "URI":
+                                    status = [True, kvs.value.exprs[0].g_uri]
+        
+        return status
 
     def castVote(self, key: PrivateKey, inbox: str, issue: str, choice: str):
         contract = render_contract_template(
@@ -289,28 +306,37 @@ class rgovAPI:
         print("castVote ", deployId);
         self.propose()
         result = self.client.get_data_at_deploy_id(deployId)
+        if result is None:
+            return [False, "no deploy data"]
         oldvote = ""
         newvote = ""
-        if result.blockInfo[0].postBlockData[0].exprs[0].HasField("e_list_body"):
-            if result.blockInfo[0].postBlockData[0].exprs[0].e_list_body.ps[0].exprs[0].g_string == "oldvote was":
-                if len(result.blockInfo[0].postBlockData[0].exprs[0].e_list_body.ps) > 1:
-                    if len(result.blockInfo[0].postBlockData[0].exprs[0].e_list_body.ps[1].exprs) > 0:
-                        oldvote = result.blockInfo[0].postBlockData[0].exprs[0].e_list_body.ps[1].exprs[0].g_string
-                if len(result.blockInfo[0].postBlockData[1].exprs[0].e_list_body.ps) > 1:
-                    if len(result.blockInfo[0].postBlockData[1].exprs[0].e_list_body.ps[1].exprs) > 0:
-                        newvote = result.blockInfo[0].postBlockData[1].exprs[0].e_list_body.ps[1].exprs[0].g_string
-            else:
-                if len(result.blockInfo[0].postBlockData[0].exprs[0].e_list_body.ps) > 1:
-                    if len(result.blockInfo[0].postBlockData[0].exprs[0].e_list_body.ps[1].exprs) > 0:
-                        newvote = result.blockInfo[0].postBlockData[0].exprs[0].e_list_body.ps[1].exprs[0].g_string
-                if len(result.blockInfo[0].postBlockData[1].exprs[0].e_list_body.ps) > 1:
-                    if len(result.blockInfo[0].postBlockData[1].exprs[0].e_list_body.ps[1].exprs) > 0:
-                        oldvote = result.blockInfo[0].postBlockData[1].exprs[0].e_list_body.ps[1].exprs[0].g_string
+        badvote = ""
+        choices = ""
+        if len(result.blockInfo) == 1:
+            for post in result.blockInfo[0].postBlockData:
+                if post.exprs[0].HasField("e_list_body"):
+                    if post.exprs[0].e_list_body.ps[0].exprs[0].g_string == "oldvote was":
+                        if len(post.exprs[0].e_list_body.ps) > 1:
+                            if len(post.exprs[0].e_list_body.ps[1].exprs) > 0:
+                                oldvote = post.exprs[0].e_list_body.ps[1].exprs[0].g_string
+                    if post.exprs[0].e_list_body.ps[0].exprs[0].g_string == "newvote is":
+                        if len(post.exprs[0].e_list_body.ps) > 1:
+                            if len(post.exprs[0].e_list_body.ps[1].exprs) > 0:
+                                newvote = post.exprs[0].e_list_body.ps[1].exprs[0].g_string
+                if post.exprs[0].HasField("e_map_body"):
+                    for kvs in post.exprs[0].e_map_body.kvs:
+                        if kvs.key.exprs[0].g_string == "unknown proposal":
+                            badvote = kvs.value.exprs[0].g_string
+                        if kvs.key.exprs[0].g_string == "valid proposals":
+                            for proposals in kvs.value.exprs[0].e_set_body.ps:
+                                if choices == "":
+                                    choices = proposals.exprs[0].g_string
+                                else:
+                                    choices = choices + ", " + proposals.exprs[0].g_string
+        if badvote != "":
+            return [False, [badvote, choices]]
+        else:
             return [True, [oldvote, newvote]]
-        if result.blockInfo[0].postBlockData[0].exprs[0].HasField("e_map_body"):
-            result = result.blockInfo[0].postBlockData[0].exprs[0].e_map_body
-            return [False, result]
-        return [False, ]
 
     def delegateVote(self, key: PrivateKey, inbox: str, issue: str, delegate: str) -> str:
         contract = render_contract_template(
@@ -337,6 +363,7 @@ class rgovAPI:
         found_counts = False
         found_done = False
         for BData in result.blockInfo[0].postBlockData:
+            print("BData", BData)
             if BData.exprs[0].HasField("g_string"):
                 found_done = True
             if BData.exprs[0].HasField("e_list_body"):

@@ -30,26 +30,34 @@ assert balance == funds
 
 # peek before any Inbox has been created
 result = rgov.peekInbox(new1, "inbox", "", "")
-assert len(result) == 0
+assert not result[0]
 
 result = rgov.newInbox(new1)
-new1URI = result[2]
+assert result[0]
+new1URI = result[1]
 
 result = rgov.peekInbox(new1, "inbox", "", "")
-
-assert result == new1URI
+assert result[0]
+assert result[1] == new1URI
 
 result = rgov.newInbox(new2)
-new2URI = result[2]
+assert result[0]
+new2URI = result[1]
 
 result = rgov.peekInbox(new2, "inbox", "", "")
-assert result == new2URI
+assert result[0]
+assert result[1] == new2URI
 
 result = rgov.newIssue(new1, "inbox", "lunch", ["pizza", "tacos", "salad"])
+assert result[0]
 
 result = rgov.peekInbox(new1, "inbox", "", "")
-assert result == new1URI
+assert result[0]
+assert result[1] == new1URI
 
 result = rgov.addVoterToIssue(new1, "inbox", new2URI, "lunch")
+assert result[0]
+
 result = rgov.peekInbox(new2, "inbox", "", "")
-assert result == new2URI
+assert result[0]
+assert result[1] == new2URI

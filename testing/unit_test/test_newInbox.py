@@ -23,8 +23,9 @@ assert balance == funds
 
 result = rgov.newInbox(new1)
 
-assert len(result) == 3
+assert len(result) == 2
+assert result[0]
 
-assert result[2][:7] == "rho:id:"
+assert result[1][:7] == "rho:id:"
 
 # I do not like that you can create a new Inbox more than once and not know/Tom

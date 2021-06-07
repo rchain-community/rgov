@@ -14,7 +14,7 @@ assert balance != 0
 balance = rgov.checkBalance(new1.get_public_key().get_rev_address())
 assert balance == 0
 
-balance = rgov.checkBalance(new1.get_public_key().get_rev_address())
+balance = rgov.checkBalance(new2.get_public_key().get_rev_address())
 assert balance == 0
 
 funds = 100000000
@@ -29,16 +29,29 @@ balance = rgov.checkBalance(new2.get_public_key().get_rev_address())
 assert balance == funds
 
 result = rgov.newInbox(new1)
-new1URI = result[2]
+assert result[0]
+new1URI = result[1]
 
 result = rgov.newInbox(new2)
-new2URI = result[2]
+assert result[0]
+new2URI = result[1]
 
 result = rgov.newIssue(new1, "inbox", "lunch", ["pizza", "tacos", "salad"])
+assert result[0]
 
 result = rgov.castVote(new1, "inbox", "lunch", "pizza")
+assert result[0]
+
+#result = rgov.delegateVote(new2, "inbox", "lunch", new1URI)
+#print(result)
+#if result is None:
+#    print("delagate returns None")
+
+result = rgov.addVoterToIssue(new1, "inbox", new2URI, "lunch")
+print("add Voter", result)
 
 result = rgov.delegateVote(new2, "inbox", "lunch", new1URI)
+print("Delegate Vote", result)
 
 result = rgov.tallyVotes(new1, "inbox", "lunch")
-print(result)
+print("Tally Votes", result)

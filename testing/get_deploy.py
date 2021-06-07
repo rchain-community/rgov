@@ -16,7 +16,7 @@ bravo = PrivateKey.from_hex('dd0dd23cd51460e6c42a154623df19372be332f0a61a5175560
 #bravo = PrivateKey.generate()
 charlie = PrivateKey.generate()
 
-deploy = '3045022100978a1dc1cf1639845f952a0b4ac2f67e2e9c14aa17b56452623dd7c67693a05402201402bf831e7f535863248b1f2b542be6cf27be748619244b15346433fd288b88'
+deploy = '3045022100954641415fe856dac335eac3cebb6de2f8a4fd2bb16c4f13d9c23c85ddd0d983022051145c935616cd7c5c9db65f9031ec2cdfe5963a6cd8b2d019fd343ae719bab5'
 
 def print_balances(rgov: rgovAPI):
     # get balance of vault
@@ -25,34 +25,31 @@ def print_balances(rgov: rgovAPI):
     charlie_balance = rgov.checkBalance(charlie.get_public_key().get_rev_address())
     print("charlie Balance ", charlie_balance, " REV ", charlie.get_public_key().get_rev_address())
 
+def parse(result):
+        if result is None:
+            return [False, "no deploy data"]
+        msg = "No status messages found"
+        status = False
+        if (len(result.blockInfo[0].postBlockData) > 0):
+            for post in result.blockInfo[0].postBlockData:
+                if post.exprs[0].HasField("g_string"):
+                    if status:
+                        msg = msg + " " + post.exprs[0].g_string
+                    else:
+                        msg = post.exprs[0].g_string
+        return [status, msg, result]
 
 rgov = rgovAPI(RCHAIN_SERVER[0])
 result = rgov.client.get_data_at_deploy_id(deploy, 5)
 #result = result.blockInfo[0].postBlockData[0].exprs[0].e_list_body
 print(result)
-#print(dir(result.blockInfo[0].postBlockData[0].exprs[0].e_list_body))
-#print(result.blockInfo[0].postBlockData[0].exprs[0].HasField("e_list_body"))
-#result = result.blockInfo[0].postBlockData[0].exprs[0].e_map_body
-#print(result)
-#print(result.kvs[0])
-#print(result.kvs[0]{"unknown proposal"})
-#print(result.kvs[1]{"valid proposals"})
- #print(result.blockInfo[0].postBlockData[0].exprs[0].e_list_body.ps[0].exprs[0].g_string)
-#if len(result.blockInfo[0].postBlockData[0].exprs[0].e_list_body.ps) > 1:
-#    if len(result.blockInfo[0].postBlockData[0].exprs[0].e_list_body.ps[1].exprs) > 0:
-#        print(result.blockInfo[0].postBlockData[0].exprs[0].e_list_body.ps[1].exprs[0].g_string)
-#print(result.blockInfo[0].postBlockData[1].exprs[0].e_list_body.ps[0].exprs[0].g_string)
-#print(result.blockInfo[0].postBlockData[1].exprs[0].e_list_body.ps[1].exprs[0].g_string)
-#print(result.ps[0].exprs[0].g_string)
-#print(result.ps[1].exprs[0].g_string)
-#print(result.ps[2].exprs[0].g_uri)
-#print(dir(result))
-#print(len(result))
-##print(result.blockInfo[0].postBlockData[1].exprs[0].e_map_body.kvs[0].value.exprs[0].g_uri)
-##print(dir(result.blockInfo[0].postBlockData[1].exprs[0].e_map_body.kvs[0].value.exprs[0].g_uri))
-
-#result = rgov.getDeployData(deploy)
-#print(result)
-#print(result['exprs'])
-#print(dir(result['exprs']))
+status = [False, "URI Not found"]
+for post in result.blockInfo[0].postBlockData:
+    if len(post.exprs) > 0:
+        if post.exprs[0].HasField("e_map_body"):
+            for kvs in post.exprs[0].e_map_body.kvs:
+                if kvs.key.exprs[0].HasField("g_string"):
+                    if kvs.key.exprs[0].g_string == "URI":
+                        status = [True, kvs.value.exprs[0].g_uri]
+print(status)
 rgov.close()
