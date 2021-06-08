@@ -3,7 +3,10 @@
 var tableDiv = document.getElementById('table');
 var tableBodyDiv = document.getElementById('table-body');
 
-let state = {
+const state = {
+  get issues() {
+    return issues;
+  },
   issues: [
     {
       id: 0,
@@ -31,7 +34,12 @@ let state = {
       choices: ['support', 'abstain', 'oppose'],
     },
   ],
-  votes: {},
+  get votes() {
+    return votes;
+  },
+  set votes(newVotes) {
+    votes = newVotes;
+  },
 };
 
 // REDUCERS
@@ -40,22 +48,21 @@ const initializeVotes = () => {
   state.issues.forEach((iss) => {
     newVotes[iss.id] = { vote: null };
   });
-  state = {
-    ...state,
-    votes: newVotes,
-  };
+  state.votes = newVotes;
 };
 
 const vote = (e, issueId, vote) => {
   e.preventDefault();
 
-  state = {
-    ...state,
-    votes: {
-      ...state.votes,
-      [issueId]: vote,
-    },
-  };
+  state.votes = { ...state.votes, [issueId]: vote };
+
+  // state = {
+  //   ...state,
+  //   votes: {
+  //     ...state.votes,
+  //     [issueId]: vote,
+  //   },
+  // };
 };
 
 initializeVotes();
