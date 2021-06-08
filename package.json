@@ -22,17 +22,17 @@
     "@agoric/eslint-plugin": "^0.2.3",
     "@types/babel__core": "^7.1.14",
     "@types/mithril": "^2.0.7",
-    "@typescript-eslint/eslint-plugin": "^4.21.0",
-    "@typescript-eslint/parser": "^4.21.0",
-    "eslint": "^7.9.0",
+    "@typescript-eslint/eslint-plugin": "^4.26.1",
+    "@typescript-eslint/parser": "^4.26.1",
+    "eslint": "^7.28.0",
     "eslint-config-airbnb": "^18.2.0",
     "eslint-config-airbnb-base": "^14.2.0",
     "eslint-config-prettier": "^6.11.0",
-    "eslint-plugin-import": "^2.22.0",
+    "eslint-plugin-import": "^2.23.4",
     "eslint-plugin-jsdoc": "^32.3.0",
-    "eslint-plugin-prettier": "^3.1.4",
+    "eslint-plugin-prettier": "^3.4.0",
     "html-webpack-plugin": "^4.5.0",
-    "prettier": "^2.1.1",
+    "prettier": "^2.3.1",
     "typescript": "^4.2.4",
     "webpack": "^4.44.2",
     "webpack-cli": "^3.3.12",
@@ -48,12 +48,15 @@
     "singleQuote": true
   },
   "dependencies": {
+    "css-loader": "^5.2.6",
     "esm": "^3.2.25",
     "file-system": "^2.2.2",
     "fs": "0.0.1-security",
     "htm": "^3.0.4",
     "jake": "^10.8.2",
     "mithril": "^2.0.4",
-    "rchain-api": "github:rchain-community/rchain-api#http-client"
+    "prismjs": "^1.23.0",
+    "rchain-api": "github:rchain-community/rchain-api#http-client",
+    "style-loader": "^2.0.0"
   }
 }

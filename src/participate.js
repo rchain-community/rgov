@@ -13,6 +13,21 @@ import {
 } from 'rchain-api';
 import { actions } from './actions.js';
 
+import Prism, { highlightAll } from 'prismjs';
+
+// Import Prism JS
+// import 'prismjs/plugins/line-numbers/prism-line-numbers.js';
+// import 'prismjs/plugins/line-numbers/prism-line-numbers.css';
+
+// Import rholang prism extensions
+import './prism-rholang.css';
+import { setRholangHighlight } from './prism-rholang.js'
+setRholangHighlight(Prism);
+
+Prism.hooks.add('before-sanity-check', function (env) {
+  env.code = env.element.innerText;
+});
+
 // TODO(#185): stop pretending MasterURI is a design-time constant.
 // Meanwhile, see bootstrap/deploy-all for MasterURI.localhost.json
 // and to tsc and eslint, we say "please excuse me" as follows:
@@ -304,6 +319,8 @@ export function buildUI({
       return term;
     },
     set term(value) {
+      // The browser puts in <br> or <br/> instead of newline. Fix that.
+      if (value !== null) value.replace(/<br\/?>/g, "\n");
       term = fixIndent(value);
       state.results = [];
       state.problem = undefined;
@@ -442,6 +459,7 @@ function actionControl(state, { html, getEthProvider }) {
                 const current = { [name]: ckControl(event.target).value };
                 const old = state.fields;
                 state.fields = { ...old, ...current };
+                updateHighlighting(state.term || '');
                 return false;
               }}
           /></label>
@@ -450,6 +468,34 @@ function actionControl(state, { html, getEthProvider }) {
     );
     return fragment;
   };
+
+  /**
+   *
+   * @param {String} text
+   */
+  function updateHighlighting(text) {
+    let result_element = document.querySelector("#highlighting-content");
+    if (result_element === null) return;
+    // Update code
+    result_element.innerText = text;
+    // Syntax Highlight
+    Prism.highlightElement(result_element);
+  }
+
+  /**
+   *
+   * @param {Event} event
+   */
+  function sync_scroll(event) {
+    let element = event.target;
+    if (element === null) return;
+    /* Scroll result to scroll coords of event - sync with textarea */
+    let result_element = document.querySelector("#highlighting");
+    if (result_element === null) return;
+    // Get and set x and y
+    result_element.scrollTop = element.scrollTop;
+    result_element.scrollLeft = element.scrollLeft;
+  }
 
   return freeze({
     view() {
@@ -468,15 +514,30 @@ function actionControl(state, { html, getEthProvider }) {
           </select>
         </label>
         <div class="fields">${fieldControls(state.action, state.fields)}</div>
+        <div id="editor">
+        <pre id="highlighting" aria-hidden="true">
+          <code class="language-rholang" id="highlighting-content">${state.term || ''}</code>
+        </pre>
         <textarea
+          spellcheck="false"
+          id="editing"
           cols="80"
           rows="16"
+          oninput=${(event) => {
+            state.term = ckControl(event.target).value;
+            updateHighlighting(state.term);
+            sync_scroll(event);
+          }}
           onchange=${(event) => {
             state.term = ckControl(event.target).value;
+            updateHighlighting(state.term);
+            sync_scroll(event);
           }}
+          onscroll=${(/* @type {Event} */ event) => {sync_scroll(event);}}
         >
 ${state.term || ''}</textarea
         >
+        </div>
       `;
     },
   });
