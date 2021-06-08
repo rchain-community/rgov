@@ -1,4 +1,4 @@
-match ["$inbox", "$voterURI", "$issue"] {
+match ["$inbox", `$voterURI`, "$issue"] {
 [lockerTag, toInboxURI, issue] => {
 new
    return(`rho:rchain:deployId`),
