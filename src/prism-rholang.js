@@ -1,8 +1,6 @@
 // following the instructions laid out in
 // https://prismjs.com/extending.html#language-definitions
 
-import Prism from 'prismjs';
-
 export function setRholangHighlight(Prism) {
    Prism.languages.rholang = {
       'comment': {
