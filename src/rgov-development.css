@@ -133,50 +133,58 @@ pre > code.diff-highlight.diff-highlight .token.inserted:not(.prefix) {
 	display: inline;
 }
 
-#editing, #highlighting {
+.editing, .highlighting {
   /* Both elements need the same text and space styling so they are directly on top of each other */
   margin: 10px;
   padding: 10px;
   border: 2px;
   width: 100%;
   height: 30%;
+  max-height: 30%;
 }
 
-#editing, #highlighting, #highlighting * {
-  /* Also add text styles to highlighting tokens */
+/* Everybody needs to hav ethe same text.
+ * Also add text styles to highlighting tokens
+ */
+.editing, .highlighting, .highlighting * {
   font-size: 10pt;
   font-family: monospace;
   line-height: 15pt;
 }
 
-#editing {
-	z-index: 1;
+/* Editing window belongs on top and needs to be transparent with a visible cursor */
+.editing {
+  color: transparent;
+  background: transparent;
+  caret-color: white; /* Or your favorite color */
+  z-index: 1;
 }
 
-#highlighting {
+.highlighting {
   background: black;
   z-index: 0;
 }
 
-#editing, #highlighting {
+/* both elements need the same positioning */
+.editing, .highlighting {
   position: fixed;
   bottom: 0;
   left: 0;
 }
 
-/* Make textarea almost completely transparent (except for caret) */
-#editing {
-  color: transparent;
-  background: transparent;
-  caret-color: white; /* Or choose your favorite color */
-}
-
-/* Can be scrolled */
-#editing, #highlighting {
+/* Enable scrolling */
+.editing, .highlighting {
   overflow: auto;
   white-space: nowrap; /* Allows textarea to scroll horizontally */
 }
 
+.codeEditor {
+  width: 100%;
+  height: 30%;
+  max-height: 30%;
+}
+
+/* The top of the page */
 .actionSelection {
 	position: absolute;
 	top: 0;
@@ -184,5 +192,58 @@ pre > code.diff-highlight.diff-highlight .token.inserted:not(.prefix) {
 	width: 100%;
 	height: 70%;
 	max-height: 70%;
-	overflow: scroll;
+	overflow: visible;
+}
+
+/* From previous participate.html */
+.card {
+	display: inline-block;
+	border: 1px solid black;
+	border-radius: 10px;
+	background-color: pink;
+	padding: 4px;
+	margin: 2px;
+}
+
+
+/* ripped from prism-line-numbers.css */
+pre[class*="language-"].line-numbers {
+	position: relative;
+	padding-left: 3.8em;
+	counter-reset: linenumber;
+}
+
+pre[class*="language-"].line-numbers > code {
+	position: relative;
+	white-space: inherit;
+}
+
+.line-numbers .line-numbers-rows {
+	position: absolute;
+	pointer-events: none;
+	top: 0;
+	font-size: 100%;
+	left: -3.8em;
+	width: 3em; /* works for line-numbers below 1000 lines */
+	letter-spacing: -1px;
+	border-right: 1px solid #999;
+
+	-webkit-user-select: none;
+	-moz-user-select: none;
+	-ms-user-select: none;
+	user-select: none;
+
+}
+
+.line-numbers-rows > span {
+	display: block;
+	counter-increment: linenumber;
+}
+
+.line-numbers-rows > span:before {
+	content: counter(linenumber);
+	color: #999;
+	display: block;
+	padding-right: 0.8em;
+	text-align: right;
 }

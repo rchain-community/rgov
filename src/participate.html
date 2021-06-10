@@ -3,16 +3,7 @@
 
 <head>
   <title>RGOV developer interface</title>
-  <style>
-    .card {
-      display: inline-block;
-      border: 1px solid black;
-      border-radius: 10px;
-      background-color: pink;
-      padding: 4px;
-      margin: 2px;
-    }
-  </style>
+  <link rel="stylesheet" href="rgov-development.css" />
 </head>
 
 <body>
@@ -29,21 +20,13 @@
         <div id="actionControl" class="mount">
           <label>Action:
             <select name="action">
-              <option>Check Registration</option>
+              <option>Something went wrong</option>
             </select>
-            </span>
           </label>
-          <br />
-          <!-- prettier-ignore -->
-          <textarea id='rholang-term' cols="80" rows="16"></textarea>
         </div>
         <div id="netControl">
           Network:
           <select id="netControlSelect">
-            <!-- <option name="network" value="mainnet">mainnet</option>
-            <option name="network" value="testnet" selected>testnet</option>
-            <option name="network" value="localhost" selected>localhost</option>
-            <option name="network" value="rhobot" selected>rhobot</option> -->
           </select>
         </div>
         <div id="runControl">
