@@ -5,6 +5,18 @@ import htm from 'htm';
 import m from 'mithril';
 import { getEthProvider } from 'rchain-api';
 import { unwrap, buildUI, makeBusy, ckControl } from './participate';
+import Prism from 'prismjs';
+
+// import 'prismjs/plugins/line-numbers/prism-line-numbers.js';
+
+// Import rholang prism extensions
+import { setRholangHighlight } from './prism-rholang.js'
+setRholangHighlight(Prism);
+
+// Deal with "disappearing" newlines
+Prism.hooks.add('before-sanity-check', function (env) {
+  env.code = env.element.innerText;
+});
 
 // WARNING: ambient access
 document.addEventListener('DOMContentLoaded', () => {

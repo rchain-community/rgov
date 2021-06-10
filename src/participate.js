@@ -13,20 +13,7 @@ import {
 } from 'rchain-api';
 import { actions } from './actions.js';
 
-import Prism, { highlightAll } from 'prismjs';
-
-// Import Prism JS
-// import 'prismjs/plugins/line-numbers/prism-line-numbers.js';
-// import 'prismjs/plugins/line-numbers/prism-line-numbers.css';
-
-// Import rholang prism extensions
-import './prism-rholang.css';
-import { setRholangHighlight } from './prism-rholang.js'
-setRholangHighlight(Prism);
-
-Prism.hooks.add('before-sanity-check', function (env) {
-  env.code = env.element.innerText;
-});
+import { highlightAll, highlightElement } from 'prismjs';
 
 // TODO(#185): stop pretending MasterURI is a design-time constant.
 // Meanwhile, see bootstrap/deploy-all for MasterURI.localhost.json
@@ -84,6 +71,7 @@ const NETWORKS = {
     MasterURI: mainnetNETWORK.MasterURI,
   },
 };
+
 /**
  * @param {string} hostname
  * @returns {string}
@@ -283,6 +271,9 @@ export function buildUI({
           ),
         );
       }
+      else {
+        state.term = '';
+      }
     },
     get fields() {
       return fieldValues;
@@ -303,7 +294,6 @@ export function buildUI({
           } else {
             return JSON.stringify(value);
           }
-          // fields[name].type === 'uri' ? `\`${value}\`` : JSON.stringify(value),
         });
         state.term = `match [${exprs.join(', ')}] {
           [${keys(fieldValues).join(', ')}] => {
@@ -320,7 +310,8 @@ export function buildUI({
     },
     set term(value) {
       // The browser puts in <br> or <br/> instead of newline. Fix that.
-      if (value !== null) value.replace(/<br\/?>/g, "\n");
+      // TODO there must be a better way to handle this, Prism suggests this fix right now.
+      if (value !== null) value = value.replace(/<br\/?>/g, "\n");
       term = fixIndent(value);
       state.results = [];
       state.problem = undefined;
@@ -455,7 +446,7 @@ function actionControl(state, { html, getEthProvider }) {
               value=${fty(action, name) === 'MasterURI'
                 ? state.shard.MasterURI
                 : value}
-              onchange=${(/** @type {Event} */ event) => {
+              oninput=${(/** @type {Event} */ event) => {
                 const current = { [name]: ckControl(event.target).value };
                 const old = state.fields;
                 state.fields = { ...old, ...current };
@@ -476,10 +467,8 @@ function actionControl(state, { html, getEthProvider }) {
   function updateHighlighting(text) {
     let result_element = document.querySelector("#highlighting-content");
     if (result_element === null) return;
-    // Update code
     result_element.innerText = text;
-    // Syntax Highlight
-    Prism.highlightElement(result_element);
+    highlightElement(result_element);
   }
 
   /**
@@ -514,26 +503,27 @@ function actionControl(state, { html, getEthProvider }) {
           </select>
         </label>
         <div class="fields">${fieldControls(state.action, state.fields)}</div>
-        <div id="editor">
-        <pre id="highlighting" aria-hidden="true">
-          <code class="language-rholang" id="highlighting-content">${state.term || ''}</code>
+        <div class="codeEditor">
+        <pre class="highlighting" id="highlighting" aria-hidden="true">
+          <code spellcheck="false" class="language-rholang" id="highlighting-content">${state.term || ''}</code>
         </pre>
         <textarea
           spellcheck="false"
+          class="editing"
           id="editing"
           cols="80"
           rows="16"
-          oninput=${(event) => {
+          oninput=${(/** @type {Event} */ event) => {
             state.term = ckControl(event.target).value;
             updateHighlighting(state.term);
             sync_scroll(event);
           }}
-          onchange=${(event) => {
+          onchange=${(/** @type {Event} */ event) => {
             state.term = ckControl(event.target).value;
             updateHighlighting(state.term);
             sync_scroll(event);
           }}
-          onscroll=${(/* @type {Event} */ event) => {sync_scroll(event);}}
+          onscroll=${(/** @type {Event} */ event) => {sync_scroll(event);}}
         >
 ${state.term || ''}</textarea
         >
