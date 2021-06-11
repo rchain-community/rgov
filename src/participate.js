@@ -1,6 +1,6 @@
 /* eslint-disable no-use-before-define */
 /* eslint-disable no-shadow */
-/* global HTMLInputElement, HTMLSelectElement, HTMLTextAreaElement, HTMLButtonElement */
+/* global Element, HTMLElement, HTMLInputElement, HTMLSelectElement, HTMLTextAreaElement, HTMLButtonElement */
 // @ts-check
 import {
   RNode,
@@ -11,9 +11,8 @@ import {
   startTerm,
   listenAtDeployId,
 } from 'rchain-api';
+import { highlightElement } from 'prismjs';
 import { actions } from './actions.js';
-
-import { highlightAll, highlightElement } from 'prismjs';
 
 // TODO(#185): stop pretending MasterURI is a design-time constant.
 // Meanwhile, see bootstrap/deploy-all for MasterURI.localhost.json
@@ -270,8 +269,7 @@ export function buildUI({
             }),
           ),
         );
-      }
-      else {
+      } else {
         state.term = '';
       }
     },
@@ -311,7 +309,7 @@ export function buildUI({
     set term(value) {
       // The browser puts in <br> or <br/> instead of newline. Fix that.
       // TODO there must be a better way to handle this, Prism suggests this fix right now.
-      if (value !== null) value = value.replace(/<br\/?>/g, "\n");
+      if (value !== null) value = value.replace(/<br\/?>/g, '\n');
       term = fixIndent(value);
       state.results = [];
       state.problem = undefined;
@@ -462,28 +460,30 @@ function actionControl(state, { html, getEthProvider }) {
 
   /**
    *
-   * @param {String} text
+   * @param {string} text
    */
   function updateHighlighting(text) {
-    let result_element = document.querySelector("#highlighting-content");
-    if (result_element === null) return;
-    result_element.innerText = text;
-    highlightElement(result_element);
+    const resultElement = document.querySelector('#highlighting-content');
+    if (resultElement === null) return;
+    if (!(resultElement instanceof HTMLElement)) return;
+    resultElement.innerText = text;
+    highlightElement(resultElement);
   }
 
   /**
    *
    * @param {Event} event
    */
-  function sync_scroll(event) {
-    let element = event.target;
+  function syncScroll(event) {
+    const element = event.target;
     if (element === null) return;
+    if (!(element instanceof Element)) return;
     /* Scroll result to scroll coords of event - sync with textarea */
-    let result_element = document.querySelector("#highlighting");
-    if (result_element === null) return;
+    const resultElement = document.querySelector('#highlighting');
+    if (resultElement === null) return;
     // Get and set x and y
-    result_element.scrollTop = element.scrollTop;
-    result_element.scrollLeft = element.scrollLeft;
+    resultElement.scrollTop = element.scrollTop;
+    resultElement.scrollLeft = element.scrollLeft;
   }
 
   return freeze({
@@ -504,29 +504,32 @@ function actionControl(state, { html, getEthProvider }) {
         </label>
         <div class="fields">${fieldControls(state.action, state.fields)}</div>
         <div class="codeEditor">
-        <pre class="highlighting" id="highlighting" aria-hidden="true">
-          <code spellcheck="false" class="language-rholang" id="highlighting-content">${state.term || ''}</code>
+          <pre class="highlighting" id="highlighting" aria-hidden="true">
+          <code spellcheck="false" class="language-rholang" id="highlighting-content">${state.term ||
+          ''}</code>
         </pre>
-        <textarea
-          spellcheck="false"
-          class="editing"
-          id="editing"
-          cols="80"
-          rows="16"
-          oninput=${(/** @type {Event} */ event) => {
-            state.term = ckControl(event.target).value;
-            updateHighlighting(state.term);
-            sync_scroll(event);
-          }}
-          onchange=${(/** @type {Event} */ event) => {
-            state.term = ckControl(event.target).value;
-            updateHighlighting(state.term);
-            sync_scroll(event);
-          }}
-          onscroll=${(/** @type {Event} */ event) => {sync_scroll(event);}}
-        >
+          <textarea
+            spellcheck="false"
+            class="editing"
+            id="editing"
+            cols="80"
+            rows="16"
+            oninput=${(/** @type {Event} */ event) => {
+              state.term = ckControl(event.target).value;
+              updateHighlighting(state.term);
+              syncScroll(event);
+            }}
+            onchange=${(/** @type {Event} */ event) => {
+              state.term = ckControl(event.target).value;
+              updateHighlighting(state.term);
+              syncScroll(event);
+            }}
+            onscroll=${(/** @type {Event} */ event) => {
+              syncScroll(event);
+            }}
+          >
 ${state.term || ''}</textarea
-        >
+          >
         </div>
       `;
     },

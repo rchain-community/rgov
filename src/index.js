@@ -4,17 +4,18 @@
 import htm from 'htm';
 import m from 'mithril';
 import { getEthProvider } from 'rchain-api';
-import { unwrap, buildUI, makeBusy, ckControl } from './participate';
 import Prism from 'prismjs';
+import { unwrap, buildUI, makeBusy, ckControl } from './participate';
 
 // import 'prismjs/plugins/line-numbers/prism-line-numbers.js';
 
 // Import rholang prism extensions
-import { setRholangHighlight } from './prism-rholang.js'
+import { setRholangHighlight } from './prism-rholang.js';
+
 setRholangHighlight(Prism);
 
 // Deal with "disappearing" newlines
-Prism.hooks.add('before-sanity-check', function (env) {
+Prism.hooks.add('before-sanity-check', (env) => {
   env.code = env.element.innerText;
 });
 
