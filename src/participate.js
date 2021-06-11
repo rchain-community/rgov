@@ -1,8 +1,7 @@
 /* eslint-disable no-use-before-define */
 /* eslint-disable no-shadow */
-/* global Element, HTMLElement, HTMLInputElement, HTMLSelectElement, HTMLTextAreaElement, HTMLButtonElement */
+/* global HTMLInputElement, HTMLSelectElement, HTMLTextAreaElement, HTMLButtonElement */
 // @ts-check
-import { highlightElement } from 'prismjs';
 import {
   RNode,
   RhoExpr,
@@ -12,8 +11,8 @@ import {
   startTerm,
   listenAtDeployId,
 } from 'rchain-api';
-import { highlightElement } from 'prismjs';
 import { actions } from './actions.js';
+import { RholangGrammar } from './prism-rholang';
 
 // TODO(#185): stop pretending MasterURI is a design-time constant.
 // Meanwhile, see bootstrap/deploy-all for MasterURI.localhost.json
@@ -194,7 +193,9 @@ function rhoBody(tmp) {
  * }} ScheduleAccess
  *
  * @typedef {{
- *   setGrammar: (language: string, grammar: Grammar) => void
+ *   setGrammar: (language: string, grammar: Grammar) => void,
+ *   updateHighlighting: (text: string) => void,
+ *   syncScroll: (event: Event) => void,
  * }} PrismAccess
  *
  * @typedef { import('rchain-api/src/ethProvider').MetaMaskProvider } MetaMaskProvider
@@ -211,6 +212,8 @@ export function buildUI({
   fetch,
   hostname,
   setGrammar,
+  updateHighlighting,
+  syncScroll,
 }) {
   const rnode = RNode(fetch);
   let action = '_select_an_action_';
@@ -322,6 +325,8 @@ export function buildUI({
       term = fixIndent(value);
       state.results = [];
       state.problem = undefined;
+      // after DOM updates are done, update highlighting.
+      Promise.resolve().then(() => updateHighlighting(term || ''));
     },
     bindings: bindings[network],
     get results() {
@@ -344,7 +349,14 @@ export function buildUI({
   state.setAction(action); // compute initial term
   state.network = network; // set up shard of initial network
 
-  mount('#actionControl', actionControl(state, { html, getEthProvider }));
+  mount(
+    '#actionControl',
+    actionControl(state, {
+      html,
+      getEthProvider,
+      syncScroll,
+    }),
+  );
   mount('#netControl', networkControl(state, { html }));
 
   mount(
@@ -400,9 +412,11 @@ function fixIndent(code) {
  *   term: string?,
  *   shard: { MasterURI: string },
  * }} state
- * @param {HTMLBuilder & EthSignAccess} io
+ * @param {HTMLBuilder & EthSignAccess & {
+ *   syncScroll: (event: Event) => void,
+ * }} io
  */
-function actionControl(state, { html, getEthProvider }) {
+function actionControl(state, { html, getEthProvider, syncScroll }) {
   const options = (/** @type {string[]} */ ids) =>
     ids.map(
       (id) =>
@@ -457,7 +471,6 @@ function actionControl(state, { html, getEthProvider }) {
                 const current = { [name]: ckControl(event.target).value };
                 const old = state.fields;
                 state.fields = { ...old, ...current };
-                updateHighlighting(state.term || '');
                 return false;
               }}
           /></label>
@@ -466,34 +479,6 @@ function actionControl(state, { html, getEthProvider }) {
     );
     return fragment;
   };
-
-  /**
-   *
-   * @param {string} text
-   */
-  function updateHighlighting(text) {
-    const resultElement = document.querySelector('#highlighting-content');
-    if (resultElement === null) return;
-    if (!(resultElement instanceof HTMLElement)) return;
-    resultElement.innerText = text;
-    highlightElement(resultElement);
-  }
-
-  /**
-   *
-   * @param {Event} event
-   */
-  function syncScroll(event) {
-    const element = event.target;
-    if (element === null) return;
-    if (!(element instanceof Element)) return;
-    /* Scroll result to scroll coords of event - sync with textarea */
-    const resultElement = document.querySelector('#highlighting');
-    if (resultElement === null) return;
-    // Get and set x and y
-    resultElement.scrollTop = element.scrollTop;
-    resultElement.scrollLeft = element.scrollLeft;
-  }
 
   return freeze({
     view() {
@@ -525,12 +510,10 @@ function actionControl(state, { html, getEthProvider }) {
             rows="16"
             oninput=${(/** @type {Event} */ event) => {
               state.term = ckControl(event.target).value;
-              updateHighlighting(state.term);
               syncScroll(event);
             }}
             onchange=${(/** @type {Event} */ event) => {
               state.term = ckControl(event.target).value;
-              updateHighlighting(state.term);
               syncScroll(event);
             }}
             onscroll=${(/** @type {Event} */ event) => {
