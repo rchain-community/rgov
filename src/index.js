@@ -10,11 +10,6 @@ import { unwrap, buildUI, makeBusy, ckControl } from './participate';
 
 // import 'prismjs/plugins/line-numbers/prism-line-numbers.js';
 
-// Import rholang prism extensions
-import { setRholangHighlight } from './prism-rholang.js';
-
-setRholangHighlight(Prism);
-
 // Deal with "disappearing" newlines
 Prism.hooks.add('before-sanity-check', (env) => {
   if (!(env.element instanceof HTMLElement)) return;
@@ -38,5 +33,12 @@ document.addEventListener('DOMContentLoaded', () => {
     getEthProvider: () => getEthProvider({ window }),
     mount: (selector, control) => m.mount($(selector), control),
     hostname: document.location.hostname,
+    /**
+     * @param {string} language
+     * @param {import('prismjs').Grammar} grammar
+     */
+    setGrammar: (language, grammar) => {
+      Prism.languages[language] = grammar;
+    },
   });
 });

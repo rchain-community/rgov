@@ -2,6 +2,7 @@
 /* eslint-disable no-shadow */
 /* global Element, HTMLElement, HTMLInputElement, HTMLSelectElement, HTMLTextAreaElement, HTMLButtonElement */
 // @ts-check
+import { highlightElement } from 'prismjs';
 import {
   RNode,
   RhoExpr,
@@ -168,7 +169,7 @@ function rhoBody(tmp) {
 
 /**
  * @param { HTMLBuilder & EthSignAccess & MithrilMount & WebAccess & FormAccess<any> & ScheduleAccess & {
- *  hostname: string }} io
+ *  hostname: string } & PrismAccess } io
  * @typedef {import('./actions').FieldSpec} FieldSpec
  *
  * @typedef {{
@@ -192,7 +193,12 @@ function rhoBody(tmp) {
  *   setTimeout: typeof setTimeout,
  * }} ScheduleAccess
  *
+ * @typedef {{
+ *   setGrammar: (language: string, grammar: Grammar) => void
+ * }} PrismAccess
+ *
  * @typedef { import('rchain-api/src/ethProvider').MetaMaskProvider } MetaMaskProvider
+ * @typedef { import('prismjs').Grammar } Grammar
  */
 export function buildUI({
   html,
@@ -204,6 +210,7 @@ export function buildUI({
   mount,
   fetch,
   hostname,
+  setGrammar,
 }) {
   const rnode = RNode(fetch);
   let action = '_select_an_action_';
@@ -224,6 +231,8 @@ export function buildUI({
     demo: {},
     rhobot: {},
   };
+
+  setGrammar('rholang', RholangGrammar);
 
   const state = {
     get shard() {
