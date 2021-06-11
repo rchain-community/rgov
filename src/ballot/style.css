@@ -15,12 +15,16 @@ body {
   display: flex;
   align-items: center;
   justify-content: space-between;
+  position: fixed;
+  width: 100%;
+  background: #1a4640;
+  height:10vw
 }
 
 .signin-button {
   margin-right: 4% !important;
-  background: #009879 !important;
-  color: white !important;
+  background: #1a4640; !important; */
+  /*color: white !important;*/
 }
 
 #rchain-logo {
@@ -31,15 +35,17 @@ body {
 
 #main-title {
   font-family: 'Fira Sans', sans-serif;
-  font-size: 3rem;
+  font-size: 2rem;
   font-weight: 500;
   margin-bottom: 4vw;
   margin-top: 5vw;
+  color: white;
 }
 
 #ballot-icon {
+  margin-top: 23vw;
   width: 14vw;
-  margin-bottom: 20vw;
+  margin-bottom: 11vw;
 }
 
 #main-content {
@@ -81,7 +87,8 @@ body {
   border-right: none; */
   border: none;
   /* margin: 3px !important; */
-  background: #009879 !important;
+  /* background: #009879 !important; */
+  background: #1a4640 !important;
   color: white !important;
 }
 
@@ -92,30 +99,6 @@ body {
   justify-content: center !important;
   font-size: 1em !important;
   width: 100%;
-}
-
-.envelope {
-  display: flex !important;
-  justify-content: center !important;
-  align-items: center !important;
-  text-align: center !important;
-
-  margin-right: auto !important;
-  margin-left: auto !important;
-  font-size: 1.8em !important;
-  color: black;
-}
-
-.selected.support {
-  color: #009879 !important;
-}
-
-.selected.abstain {
-  color: rgb(216, 163, 18);
-}
-
-.selected.oppose {
-  color: rgb(180, 22, 22);
 }
 
 .id-cell {

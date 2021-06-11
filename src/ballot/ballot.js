@@ -46,40 +46,54 @@ const state = {
 const initializeVotes = () => {
   let newVotes = {};
   state.issues.forEach((iss) => {
-    newVotes[iss.id] = { vote: null };
+    newVotes[iss.id] = null;
   });
   state.votes = newVotes;
 };
 
 const vote = (e, issueId, vote) => {
   e.preventDefault();
-
+  console.log(state.votes);
   state.votes = { ...state.votes, [issueId]: vote };
-
-  // state = {
-  //   ...state,
-  //   votes: {
-  //     ...state.votes,
-  //     [issueId]: vote,
-  //   },
-  // };
+  console.log(state.votes);
 };
 
 initializeVotes();
 
 const getIcon = (issueId, choice) => {
   if (state.votes[issueId] === choice) {
-    return m('i', {
-      class: 'envelope icon selected ' + choice,
-      row: issueId,
-      role: choice,
-    });
+    return m(
+      'div',
+      {
+        class: 'ui fitted checked checkbox',
+        row: issueId,
+        role: choice,
+        cursor: 'pointer',
+      },
+      [
+        m('input', {
+          type: 'checkbox',
+          checked: 'a',
+        }),
+        m('label'),
+      ],
+    );
   } else {
-    return m('i', {
-      class: 'envelope outline icon',
-      row: issueId,
-      role: choice,
-    });
+    return m(
+      'div',
+      {
+        class: 'ui fitted checkbox',
+        row: issueId,
+        role: choice,
+        cursor: 'pointer',
+      },
+      [
+        m('input', {
+          type: 'checkbox',
+        }),
+        m('label'),
+      ],
+    );
   }
 };
 
@@ -134,3 +148,43 @@ const tableBody = {
 };
 
 m.mount(tableBodyDiv, tableBody);
+
+// const checkBox = (isChecked) => {
+//   let checkedClass;
+//   if (isChecked === true ) {
+//      =
+//   }
+//   if (isChecked === true) {
+//     return m(
+//       'div',
+//       {
+//         class: 'ui checked checkbox' + choice,
+//         row: issueId,
+//         role: choice,
+//         cursor: pointer,
+//       },
+//       [
+//         m('input', {
+//           type: 'checkbox',
+//           checked: '',
+//         }),
+//       ],
+//     );
+//   } else {
+//     return m(
+//       'div',
+//       {
+//         class: 'ui checkbox' + choice,
+//         row: issueId,
+//         role: choice,
+//         cursor: pointer,
+//       },
+//       [
+//         m('input', {
+//           type: 'checkbox',
+//           checked: '',
+//         }),
+//       ],
+//     );
+//   }
+// };
