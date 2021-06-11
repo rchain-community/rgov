@@ -1,4 +1,5 @@
 /* global window, document, fetch, setTimeout */
+/* global HTMLElement */
 // @ts-check
 
 import htm from 'htm';
@@ -16,6 +17,7 @@ setRholangHighlight(Prism);
 
 // Deal with "disappearing" newlines
 Prism.hooks.add('before-sanity-check', (env) => {
+  if (!(env.element instanceof HTMLElement)) return;
   env.code = env.element.innerText;
 });
 
