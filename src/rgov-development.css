@@ -4,10 +4,6 @@
  * @author Bill Keuntje
  */
 
- * {
-	 /* position: relative; */
- }
-
 code[class*="language-"],
 pre[class*="language-"] {
 	font-family: Consolas, Monaco, 'Andale Mono', 'Ubuntu Mono', monospace;
@@ -135,6 +131,9 @@ pre > code.diff-highlight.diff-highlight .token.inserted:not(.prefix) {
 
 .editing, .highlighting {
   /* Both elements need the same text and space styling so they are directly on top of each other */
+  position: fixed;
+  bottom: 0;
+  left: 0;
   margin: 10px;
   padding: 10px;
   border: 2px;
@@ -143,16 +142,16 @@ pre > code.diff-highlight.diff-highlight .token.inserted:not(.prefix) {
   max-height: 30%;
 }
 
-/* Everybody needs to hav ethe same text.
+/* Everybody needs to have the same text.
  * Also add text styles to highlighting tokens
  */
-.editing, .highlighting, .highlighting * {
+.editing, .highlighting, .highlighting * .highlighting-content, .highlighting * {
   font-size: 10pt;
   font-family: monospace;
   line-height: 15pt;
 }
 
-/* Editing window belongs on top and needs to be transparent with a visible cursor */
+/* Editing window belongs needs to be transparent with a visible cursor and in front*/
 .editing {
   color: transparent;
   background: transparent;
@@ -160,16 +159,10 @@ pre > code.diff-highlight.diff-highlight .token.inserted:not(.prefix) {
   z-index: 1;
 }
 
+/* Higlighting window belongs under the editor window */
 .highlighting {
   background: black;
   z-index: 0;
-}
-
-/* both elements need the same positioning */
-.editing, .highlighting {
-  position: fixed;
-  bottom: 0;
-  left: 0;
 }
 
 /* Enable scrolling */
@@ -179,9 +172,12 @@ pre > code.diff-highlight.diff-highlight .token.inserted:not(.prefix) {
 }
 
 .codeEditor {
+  bottom: 0;
+  left: 0;
   width: 100%;
   height: 30%;
   max-height: 30%;
+  overflow: scroll;
 }
 
 /* The top of the page */
@@ -192,22 +188,22 @@ pre > code.diff-highlight.diff-highlight .token.inserted:not(.prefix) {
 	width: 100%;
 	height: 70%;
 	max-height: 70%;
-	overflow: visible;
+	overflow-y: scroll;
 }
 
 /* From previous participate.html */
-.card {
+/* .card {
 	display: inline-block;
 	border: 1px solid black;
 	border-radius: 10px;
 	background-color: pink;
 	padding: 4px;
 	margin: 2px;
-}
+} */
 
 
 /* ripped from prism-line-numbers.css */
-pre[class*="language-"].line-numbers {
+/* pre[class*="language-"].line-numbers {
 	position: relative;
 	padding-left: 3.8em;
 	counter-reset: linenumber;
@@ -224,7 +220,7 @@ pre[class*="language-"].line-numbers > code {
 	top: 0;
 	font-size: 100%;
 	left: -3.8em;
-	width: 3em; /* works for line-numbers below 1000 lines */
+	width: 3em; /* works for line-numbers below 1000 lines *
 	letter-spacing: -1px;
 	border-right: 1px solid #999;
 
@@ -246,4 +242,4 @@ pre[class*="language-"].line-numbers > code {
 	display: block;
 	padding-right: 0.8em;
 	text-align: right;
-}
+} */
