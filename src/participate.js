@@ -12,8 +12,7 @@ import {
   listenAtDeployId,
 } from 'rchain-api';
 import { actions } from './actions.js';
-
-import { highlightAll, highlightElement } from 'prismjs';
+import { RholangGrammar } from './prism-rholang';
 
 // TODO(#185): stop pretending MasterURI is a design-time constant.
 // Meanwhile, see bootstrap/deploy-all for MasterURI.localhost.json
@@ -169,7 +168,7 @@ function rhoBody(tmp) {
 
 /**
  * @param { HTMLBuilder & EthSignAccess & MithrilMount & WebAccess & FormAccess<any> & ScheduleAccess & {
- *  hostname: string }} io
+ *  hostname: string } & PrismAccess } io
  * @typedef {import('./actions').FieldSpec} FieldSpec
  *
  * @typedef {{
@@ -193,7 +192,14 @@ function rhoBody(tmp) {
  *   setTimeout: typeof setTimeout,
  * }} ScheduleAccess
  *
+ * @typedef {{
+ *   setGrammar: (language: string, grammar: Grammar) => void,
+ *   updateHighlighting: (text: string) => void,
+ *   syncScroll: (event: Event) => void,
+ * }} PrismAccess
+ *
  * @typedef { import('rchain-api/src/ethProvider').MetaMaskProvider } MetaMaskProvider
+ * @typedef { import('prismjs').Grammar } Grammar
  */
 export function buildUI({
   html,
@@ -205,6 +211,9 @@ export function buildUI({
   mount,
   fetch,
   hostname,
+  setGrammar,
+  updateHighlighting,
+  syncScroll,
 }) {
   const rnode = RNode(fetch);
   let action = '_select_an_action_';
@@ -225,6 +234,8 @@ export function buildUI({
     demo: {},
     rhobot: {},
   };
+
+  setGrammar('rholang', RholangGrammar);
 
   const state = {
     get shard() {
@@ -270,8 +281,7 @@ export function buildUI({
             }),
           ),
         );
-      }
-      else {
+      } else {
         state.term = '';
       }
     },
@@ -311,10 +321,12 @@ export function buildUI({
     set term(value) {
       // The browser puts in <br> or <br/> instead of newline. Fix that.
       // TODO there must be a better way to handle this, Prism suggests this fix right now.
-      if (value !== null) value = value.replace(/<br\/?>/g, "\n");
+      if (value !== null) value = value.replace(/<br\/?>/g, '\n');
       term = fixIndent(value);
       state.results = [];
       state.problem = undefined;
+      // after DOM updates are done, update highlighting.
+      Promise.resolve().then(() => updateHighlighting(term || ''));
     },
     bindings: bindings[network],
     get results() {
@@ -337,7 +349,14 @@ export function buildUI({
   state.setAction(action); // compute initial term
   state.network = network; // set up shard of initial network
 
-  mount('#actionControl', actionControl(state, { html, getEthProvider }));
+  mount(
+    '#actionControl',
+    actionControl(state, {
+      html,
+      getEthProvider,
+      syncScroll,
+    }),
+  );
   mount('#netControl', networkControl(state, { html }));
 
   mount(
@@ -393,9 +412,11 @@ function fixIndent(code) {
  *   term: string?,
  *   shard: { MasterURI: string },
  * }} state
- * @param {HTMLBuilder & EthSignAccess} io
+ * @param {HTMLBuilder & EthSignAccess & {
+ *   syncScroll: (event: Event) => void,
+ * }} io
  */
-function actionControl(state, { html, getEthProvider }) {
+function actionControl(state, { html, getEthProvider, syncScroll }) {
   const options = (/** @type {string[]} */ ids) =>
     ids.map(
       (id) =>
@@ -450,7 +471,6 @@ function actionControl(state, { html, getEthProvider }) {
                 const current = { [name]: ckControl(event.target).value };
                 const old = state.fields;
                 state.fields = { ...old, ...current };
-                updateHighlighting(state.term || '');
                 return false;
               }}
           /></label>
@@ -459,32 +479,6 @@ function actionControl(state, { html, getEthProvider }) {
     );
     return fragment;
   };
-
-  /**
-   *
-   * @param {String} text
-   */
-  function updateHighlighting(text) {
-    let result_element = document.querySelector("#highlighting-content");
-    if (result_element === null) return;
-    result_element.innerText = text;
-    highlightElement(result_element);
-  }
-
-  /**
-   *
-   * @param {Event} event
-   */
-  function sync_scroll(event) {
-    let element = event.target;
-    if (element === null) return;
-    /* Scroll result to scroll coords of event - sync with textarea */
-    let result_element = document.querySelector("#highlighting");
-    if (result_element === null) return;
-    // Get and set x and y
-    result_element.scrollTop = element.scrollTop;
-    result_element.scrollLeft = element.scrollLeft;
-  }
 
   return freeze({
     view() {
@@ -504,29 +498,30 @@ function actionControl(state, { html, getEthProvider }) {
         </label>
         <div class="fields">${fieldControls(state.action, state.fields)}</div>
         <div class="codeEditor">
-        <pre class="highlighting" id="highlighting" aria-hidden="true">
-          <code spellcheck="false" class="language-rholang" id="highlighting-content">${state.term || ''}</code>
+          <pre class="highlighting" id="highlighting" aria-hidden="true">
+          <code spellcheck="false" class="language-rholang" id="highlighting-content">${state.term ||
+          ''}</code>
         </pre>
-        <textarea
-          spellcheck="false"
-          class="editing"
-          id="editing"
-          cols="80"
-          rows="16"
-          oninput=${(/** @type {Event} */ event) => {
-            state.term = ckControl(event.target).value;
-            updateHighlighting(state.term);
-            sync_scroll(event);
-          }}
-          onchange=${(/** @type {Event} */ event) => {
-            state.term = ckControl(event.target).value;
-            updateHighlighting(state.term);
-            sync_scroll(event);
-          }}
-          onscroll=${(/** @type {Event} */ event) => {sync_scroll(event);}}
-        >
+          <textarea
+            spellcheck="false"
+            class="editing"
+            id="editing"
+            cols="80"
+            rows="16"
+            oninput=${(/** @type {Event} */ event) => {
+              state.term = ckControl(event.target).value;
+              syncScroll(event);
+            }}
+            onchange=${(/** @type {Event} */ event) => {
+              state.term = ckControl(event.target).value;
+              syncScroll(event);
+            }}
+            onscroll=${(/** @type {Event} */ event) => {
+              syncScroll(event);
+            }}
+          >
 ${state.term || ''}</textarea
-        >
+          >
         </div>
       `;
     },
