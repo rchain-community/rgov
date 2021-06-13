@@ -16,7 +16,7 @@ bravo = PrivateKey.from_hex('dd0dd23cd51460e6c42a154623df19372be332f0a61a5175560
 #bravo = PrivateKey.generate()
 charlie = PrivateKey.generate()
 
-deploy = '304502210092e9907119f19d0b3be0f8ba8c55a4483219766dbf317b1054917ce020be402c0220152db98864019237d648099cf8db2f0ac0b308eb94716ebad980df917620db9f'
+deploy = '304402202bddf2652cdc66219917f00892a28ab52103e57ff8d47dc9794d6d0b4a689221022026786a1e09510f301d1a6a0fecfca5a0178b8db65dd18e048fac1066c852c9a9'
 
 def print_balances(rgov: rgovAPI):
     # get balance of vault
@@ -41,23 +41,8 @@ def parse(result):
 
 rgov = rgovAPI(RCHAIN_SERVER[0])
 result = rgov.client.get_data_at_deploy_id(deploy, 5)
-#result = result.blockInfo[0].postBlockData[0].exprs[0].e_list_body
-print(result)
-status = [False, "no Votes found"]
-name = "unknown"
-tally = {}
-for Bdata in result.blockInfo[0].postBlockData:
-    if len(Bdata.exprs) > 0:
-        if Bdata.exprs[0].HasField("e_list_body"):
-            if len(Bdata.exprs[0].e_list_body.ps) > 0:
-                for ps in Bdata.exprs[0].e_list_body.ps:
-                    if ps.exprs[0].HasField("e_map_body"):
-                        for kvs in ps.exprs[0].e_map_body.kvs:
-                            tally[kvs.key.exprs[0].g_string] = kvs.value.exprs[0].g_int
-                    if ps.exprs[0].HasField("g_string"):
-                        name = ps.exprs[0].g_string
-                status = [True, [name, tally]]
-#            print("body", len(post.exprs[0].e_tuple_body.ps))
+print(dir(result))
+print("blockinfo", result.blockInfo, result.length)
 #            print("ps[0]", post.exprs[0].e_tuple_body.ps[0])
 #            print("ps[1]", post.exprs[0].e_tuple_body.ps[1])
 #            print("ps[2]", post.exprs[0].e_tuple_body.ps[2])
@@ -66,5 +51,5 @@ for Bdata in result.blockInfo[0].postBlockData:
 #                if kvs.key.exprs[0].HasField("g_string"):
 #                    if kvs.key.exprs[0].g_string == "URI":
 #                        status = [True, kvs.value.exprs[0].g_uri]
-print(status)
+#print(status)
 rgov.close()

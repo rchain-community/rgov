@@ -39,26 +39,33 @@ new2URI = result[1]
 result = rgov.newIssue(new1, "inbox", "lunch", ["pizza", "tacos", "salad"])
 assert result[0]
 
+# Tally votes when none have been cast
+# issue 197
+#result = rgov.tallyVotes(new1, "inbox", "lunch")
+#print("Tally Votes", result)
+#assert result[0]
+#votes = result[1]
+
 result = rgov.castVote(new1, "inbox", "lunch", "pizza")
 assert result[0]
 
-#result = rgov.delegateVote(new2, "inbox", "lunch", new1URI)
-#print(result)
-#if result is None:
-#    print("delagate returns None")
+#delegate vote when no permissons to the issue
+result = rgov.delegateVote(new2, "inbox", "lunch", new1URI)
+assert not result[0]
+
+# tally votes when no permissions to the issue
+result = rgov.tallyVotes(new2, "inbox", "lunch")
+assert not result[0]
 
 result = rgov.addVoterToIssue(new1, "inbox", new2URI, "lunch")
-#print("add Voter", result)
 assert result[0]
 
 result = rgov.delegateVote(new2, "inbox", "lunch", new1URI)
-print("Delegate Vote", result)
 assert result[0]
 delegate = result[1]
 assert delegate[1] == new1URI
 
 result = rgov.tallyVotes(new1, "inbox", "lunch")
-print("Tally Votes", result)
 assert result[0]
 votes = result[1]
 assert votes['pizza'] == 2
@@ -67,9 +74,11 @@ result = rgov.castVote(new2, "inbox", "lunch", "salad")
 assert result[0]
 
 result = rgov.tallyVotes(new1, "inbox", "lunch")
-print("Tally Votes", result)
 assert result[0]
 votes = result[1]
 assert votes['pizza'] == 1
 assert votes['salad'] == 1
 
+# delegate vote on an issue that does not exist
+result = rgov.delegateVote(new2, "inbox", "none", new1URI)
+assert not result[0]

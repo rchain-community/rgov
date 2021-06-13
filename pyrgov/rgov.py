@@ -347,6 +347,8 @@ class rgovAPI:
         print("delegateVote ", deployId);
         self.propose()
         result = self.client.get_data_at_deploy_id(deployId)
+        if result.length == 0:
+            return [False, "No issue found"]
         status = [False, "URI Not found"]
         for post in result.blockInfo[0].postBlockData:
             if len(post.exprs) > 0:
@@ -365,6 +367,8 @@ class rgovAPI:
         self.propose()
         #result = self.getDeployData(deployId)
         result = self.client.get_data_at_deploy_id(deployId)
+        if result.length == 0:
+            return [False, "No issue found"]
         votes = {}
         found_counts = False
         found_done = False
