@@ -498,7 +498,7 @@ function actionControl(state, { html, getEthProvider, syncScroll }) {
         </label>
         <div class="fields">${fieldControls(state.action, state.fields)}</div>
         <pre class="highlighting" id="highlighting" aria-hidden="true">
-          <code class="language-rholang" id="highlighting-content">
+          <code class="line-numbers language-rholang" id="highlighting-content">
             ${state.term || ''}
           </code>
         </pre>
