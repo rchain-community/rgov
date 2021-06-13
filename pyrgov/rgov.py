@@ -347,7 +347,13 @@ class rgovAPI:
         print("delegateVote ", deployId);
         self.propose()
         result = self.client.get_data_at_deploy_id(deployId)
-        return result
+        status = [False, "URI Not found"]
+        for post in result.blockInfo[0].postBlockData:
+            if len(post.exprs) > 0:
+                if post.exprs[0].HasField("e_tuple_body"):
+                    body = post.exprs[0].e_tuple_body
+                    status = [True, [body.ps[1].exprs[0].g_string, body.ps[2].exprs[0].g_uri]]
+        return status
 
     def tallyVotes(self, key: PrivateKey, inbox: str, issue: str) -> str:
         contract = render_contract_template(
@@ -363,15 +369,16 @@ class rgovAPI:
         found_counts = False
         found_done = False
         for BData in result.blockInfo[0].postBlockData:
-            print("BData", BData)
-            if BData.exprs[0].HasField("g_string"):
-                found_done = True
-            if BData.exprs[0].HasField("e_list_body"):
-                for BList in BData.exprs[0].e_list_body.ps:
-                    if BList.exprs[0].HasField("g_string"):
-                        if BList.exprs[0].g_string == "counts":
-                            found_counts = True
-                    if BList.exprs[0].HasField("e_map_body"):
-                        for voted in BList.exprs[0].e_map_body.kvs:
-                            votes[voted.key.exprs[0].g_string] = voted.value.exprs[0].g_int
+            if len(BData.exprs) > 0:
+                if BData.exprs[0].HasField("g_string"):
+                    found_done = True
+                if BData.exprs[0].HasField("e_list_body"):
+                    for BList in BData.exprs[0].e_list_body.ps:
+                        if BList.exprs[0].HasField("g_string"):
+                            if BList.exprs[0].g_string == "counts":
+                                found_counts = True
+                        if BList.exprs[0].HasField("e_map_body"):
+                            for voted in BList.exprs[0].e_map_body.kvs:
+                                votes[voted.key.exprs[0].g_string] = voted.value.exprs[0].g_int
         return [found_counts and found_done, votes]
+

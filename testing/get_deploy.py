@@ -16,7 +16,7 @@ bravo = PrivateKey.from_hex('dd0dd23cd51460e6c42a154623df19372be332f0a61a5175560
 #bravo = PrivateKey.generate()
 charlie = PrivateKey.generate()
 
-deploy = '3045022100954641415fe856dac335eac3cebb6de2f8a4fd2bb16c4f13d9c23c85ddd0d983022051145c935616cd7c5c9db65f9031ec2cdfe5963a6cd8b2d019fd343ae719bab5'
+deploy = '304502210092e9907119f19d0b3be0f8ba8c55a4483219766dbf317b1054917ce020be402c0220152db98864019237d648099cf8db2f0ac0b308eb94716ebad980df917620db9f'
 
 def print_balances(rgov: rgovAPI):
     # get balance of vault
@@ -43,13 +43,28 @@ rgov = rgovAPI(RCHAIN_SERVER[0])
 result = rgov.client.get_data_at_deploy_id(deploy, 5)
 #result = result.blockInfo[0].postBlockData[0].exprs[0].e_list_body
 print(result)
-status = [False, "URI Not found"]
-for post in result.blockInfo[0].postBlockData:
-    if len(post.exprs) > 0:
-        if post.exprs[0].HasField("e_map_body"):
-            for kvs in post.exprs[0].e_map_body.kvs:
-                if kvs.key.exprs[0].HasField("g_string"):
-                    if kvs.key.exprs[0].g_string == "URI":
-                        status = [True, kvs.value.exprs[0].g_uri]
+status = [False, "no Votes found"]
+name = "unknown"
+tally = {}
+for Bdata in result.blockInfo[0].postBlockData:
+    if len(Bdata.exprs) > 0:
+        if Bdata.exprs[0].HasField("e_list_body"):
+            if len(Bdata.exprs[0].e_list_body.ps) > 0:
+                for ps in Bdata.exprs[0].e_list_body.ps:
+                    if ps.exprs[0].HasField("e_map_body"):
+                        for kvs in ps.exprs[0].e_map_body.kvs:
+                            tally[kvs.key.exprs[0].g_string] = kvs.value.exprs[0].g_int
+                    if ps.exprs[0].HasField("g_string"):
+                        name = ps.exprs[0].g_string
+                status = [True, [name, tally]]
+#            print("body", len(post.exprs[0].e_tuple_body.ps))
+#            print("ps[0]", post.exprs[0].e_tuple_body.ps[0])
+#            print("ps[1]", post.exprs[0].e_tuple_body.ps[1])
+#            print("ps[2]", post.exprs[0].e_tuple_body.ps[2])
+#            status = [True, [post.exprs[0].e_tuple_body.ps[1].exprs[0].g_string, post.exprs[0].e_tuple_body.ps[2].exprs[0].g_uri]]
+#            for kvs in post.exprs[0].e_map_body.kvs:
+#                if kvs.key.exprs[0].HasField("g_string"):
+#                    if kvs.key.exprs[0].g_string == "URI":
+#                        status = [True, kvs.value.exprs[0].g_uri]
 print(status)
 rgov.close()

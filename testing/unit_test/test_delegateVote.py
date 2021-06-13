@@ -48,10 +48,28 @@ assert result[0]
 #    print("delagate returns None")
 
 result = rgov.addVoterToIssue(new1, "inbox", new2URI, "lunch")
-print("add Voter", result)
+#print("add Voter", result)
+assert result[0]
 
 result = rgov.delegateVote(new2, "inbox", "lunch", new1URI)
 print("Delegate Vote", result)
+assert result[0]
+delegate = result[1]
+assert delegate[1] == new1URI
 
 result = rgov.tallyVotes(new1, "inbox", "lunch")
 print("Tally Votes", result)
+assert result[0]
+votes = result[1]
+assert votes['pizza'] == 2
+
+result = rgov.castVote(new2, "inbox", "lunch", "salad")
+assert result[0]
+
+result = rgov.tallyVotes(new1, "inbox", "lunch")
+print("Tally Votes", result)
+assert result[0]
+votes = result[1]
+assert votes['pizza'] == 1
+assert votes['salad'] == 1
+
