@@ -497,17 +497,15 @@ function actionControl(state, { html, getEthProvider, syncScroll }) {
           </select>
         </label>
         <div class="fields">${fieldControls(state.action, state.fields)}</div>
-        <div class="codeEditor">
-          <pre cols="80" rows="16" class="highlighting" id="highlighting" aria-hidden="true">
-          <code spellcheck="false" class="language-rholang" id="highlighting-content">${state.term ||
-          ''}</code>
+        <pre class="highlighting" id="highlighting" aria-hidden="true">
+          <code class="language-rholang" id="highlighting-content">
+            ${state.term || ''}
+          </code>
         </pre>
           <textarea
-            spellcheck="false"
             class="editing"
             id="editing"
-            cols="80"
-            rows="16"
+            spellcheck="false"
             oninput=${(/** @type {Event} */ event) => {
               state.term = ckControl(event.target).value;
               syncScroll(event);
@@ -522,7 +520,6 @@ function actionControl(state, { html, getEthProvider, syncScroll }) {
           >
           ${state.term || ''}
           </textarea>
-        </div>
       `;
     },
   });
