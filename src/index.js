@@ -7,9 +7,8 @@ import htm from 'htm';
 import m from 'mithril';
 import { getEthProvider } from 'rchain-api';
 import Prism, { highlightElement } from 'prismjs';
+import 'prismjs/plugins/line-numbers/prism-line-numbers';
 import { unwrap, buildUI, makeBusy, ckControl } from './participate';
-
-// import 'prismjs/plugins/line-numbers/prism-line-numbers.js';
 
 // Deal with "disappearing" newlines
 Prism.hooks.add('before-sanity-check', (env) => {
