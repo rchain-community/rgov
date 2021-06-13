@@ -9,7 +9,7 @@ module.exports = {
     contentBase: './src',
     hot: true,
   },
-  entry: './src/index.js',
+  entry: [ './src/index.js', './src/rgov-development.css' ],
   module: {
     rules: [
       {
