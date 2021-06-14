@@ -10,7 +10,7 @@ export const RholangGrammar = {
   string: /"[^"]*"/,
   url: [/`[4-9][0-9]|[0-3][0-9][0-9]`/, /`rho:[^:]+:.*`/],
   keyword:
-    /(contract|for|in|if|else|match|new|select|case|bundle|bundle0|bundle+|bundle-)/,
+    /(contract|for|in|if|else|match|new|select|case|bundle[0\+-])/,
   operator: [
     /!|<-|<<-|<=|=>|_|\.\.\./,
     /\+|-|\*\|\/[^/]|(==)|=/,
