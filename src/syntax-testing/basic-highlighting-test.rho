@@ -23,8 +23,14 @@ contract for in if else match new select case bundle0 bundle+ bundle-
 "a string"
 "a comment in a string // This should FAIL to match as a string" // FAIL to match as a string
 
-// puncuation
-!@#$%^&*()_+=-[]{}\|;:,./<>?
+// punctuation
+!@#$%^&*_+=-\|;:,./<>?
+
+// brackets
+[]{}()
+
+// operators
+<- <= <<- =>
 ...
 
 // URIs
