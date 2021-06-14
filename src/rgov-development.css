@@ -41,7 +41,10 @@ code[class*="language-"] {
 	white-space: normal;
 }
 
-.token.comment,
+.token.comment {
+	color: green
+}
+
 .token.prolog,
 .token.doctype,
 .token.cdata {
@@ -62,7 +65,8 @@ code[class*="language-"] {
 .token.number,
 .token.constant,
 .token.symbol {
-	color: #0cf;
+	color: red;
+	font-style: bold;
 }
 
 .token.selector,
@@ -73,18 +77,24 @@ code[class*="language-"] {
 	color: yellow;
 }
 
+.token.url {
+	color: cyan;
+}
+
 .token.operator,
 .token.entity,
-.token.url,
 .language-css .token.string,
 .token.variable,
 .token.inserted {
 	color: yellowgreen;
 }
 
-.token.atrule,
-.token.attr-value,
 .token.keyword {
+	color: magenta
+}
+
+.token.atrule,
+.token.attr-value {
 	color: deeppink;
 }
 
@@ -133,7 +143,7 @@ pre > code.diff-highlight.diff-highlight .token.inserted:not(.prefix) {
 	position: fixed;
 	border: none;
 	width: 100%;
-	height: 30%;
+	height: 50%;
 	bottom: 0;
 	left: 0;
 	margin: 0;
@@ -161,8 +171,8 @@ pre > code.diff-highlight.diff-highlight .token.inserted:not(.prefix) {
 	top: 0;
 	left: 0;
 	width: 100%;
-	height: 70%;
-	max-height: 70%;
+	height: 50%;
+	max-height: 50%;
 	overflow-y: scroll;
 }
 
