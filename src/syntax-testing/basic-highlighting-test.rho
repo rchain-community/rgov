@@ -1,0 +1,32 @@
+// Test file for double checking the syntax highlighting regex
+
+// This, of course, is a comment
+// This should match as a TODO item
+
+// Numbers
+0 // This actually matches as an octal regex
+10 // decimal
+0b101010101 // binary
+0777 // octal
+0x1234567890abcdef // hex lower case
+0x1234567890ABCDEF // hex upper case
+1234567890l // decimal long (upper)
+1234567890L // decimal long (lower)
+1.2 // float
+.2 // float
+1._1_2_3_4 // float
+
+// rholang keywords
+contract for in if else match new select case bundle0 bundle+ bundle-
+
+// strings
+"a string"
+"a comment in a string // This should FAIL to match as a string" // FAIL to match as a string
+
+// puncuation
+!@#$%^&*()_+=-[]{}\|;:,./<>?
+...
+
+// URIs
+`rho:rchain:deployerId`
+`rho:registry:lookup`
