@@ -19,6 +19,7 @@ export const RholangGrammar = {
     inside: { italic: /\b(TODO|FIXME|XXX|NOTE)[ \t]\b.*/i },
   },
   string: /"[^"]*"/,
+  // Maybe a URI should be anything inside `back-ticks`?
   url: [
     /`[4-9][0-9]|[0-3][0-9][0-9]`/,
     /`rho:[^:]+:.*`/
@@ -32,18 +33,18 @@ export const RholangGrammar = {
   number: [
     /0b[0-1]+/, // binary integer
     /0x([0-9a-fA-F])+/, // hexadecimal integer
-    /[0-9]([0-9]|_[0-9])*[l]?/i, // decimal long integer
-    /[0-9]([0-9]|_[0-9])*\.[0-9]([0-9]|_[0-9])*/, // decimal float
-    /\.[0-9]([0-9]|_[0-9])*e[-+]?[0-9]([0-9]|_[0-9])*[fd]?/i, // decimal float lacking leading zero
-    /[0-9]([0-9]|_[0-9])*e[-+]?[0-9]([0-9]|_[0-9])*[fd]?/i, // float in mantissa/exponent form
+    /\b[0-9]\b([0-9]|_[0-9])*[l]?/i, // decimal long integer
+    /\b[0-9]\b([0-9]|_[0-9])*\.[0-9]([0-9]|_[0-9])*/, // decimal float
+    /\.[0-9]([0-9]|_[0-9])*(e[-+])?[0-9]([0-9]|_[0-9])*[fd]?/i, // decimal float lacking leading zero
+    /\b[0-9]\b([0-9]|_[0-9])*(e[-+])?[0-9]([0-9]|_[0-9])*[fd]?/i, // float in mantissa/exponent form
     // This should come last
     /0[0-7]*/, // octal integer (including literal zero!)
   ],
   operator: [
     // TODO The literal underscore regex needs help
     /!|<-|<<-|<=|=>|_|\.\.\./,
-    /\+|-|\*\|\/[^/]|(==)|=/,
-    /\w(not|and|or)\w/,
+    /\b(\+|-|\*|\||\/|(==)|=)\b/,
+    /\b(not|and|or)\b/,
   ],
   symbol: /@/,
 };
