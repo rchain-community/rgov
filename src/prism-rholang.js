@@ -19,10 +19,8 @@ export const RholangGrammar = {
     inside: { italic: /\b(TODO|FIXME|XXX|NOTE)[ \t]\b.*/i },
   },
   string: /"[^"]*"/,
-  // Maybe a URI should be anything inside `back-ticks`?
   url: [
-    /`[4-9][0-9]|[0-3][0-9][0-9]`/,
-    /`rho:[^:]+:.*`/
+    /`[^`]`/,
   ],
   keyword: [
     /\b(contract|for|in|if|else|match|new|select|case|bundle[-0\+])\b/,
