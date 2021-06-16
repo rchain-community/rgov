@@ -3,6 +3,14 @@
  * Based on “prism-funky.css” from http://jasonrivers.github.io/prism/
  * @author Bill Keuntje
  */
+ body {
+	 background-color: rgb(236, 234, 234);
+	 padding: 40px;
+ }
+
+ h1 {
+	 font-weight: bold;
+ }
 
 code[class*="language-"],
 pre[class*="language-"] {
@@ -12,6 +20,8 @@ pre[class*="language-"] {
 	word-spacing: normal;
 	word-break: normal;
 	word-wrap: normal;
+	width: 90%;
+	padding-left: 20px;
 
 	-moz-tab-size: 4;
 	-o-tab-size: 4;
@@ -26,11 +36,11 @@ pre[class*="language-"] {
 /* Code blocks */
 pre[class*="language-"] {
 	overflow: auto;
-	background: black;
+	background: #202020;
 }
 
 code[class*="language-"] {
-	background: black;
+	background: #202020;
 	color: white;
 }
 
@@ -65,7 +75,7 @@ code[class*="language-"] {
 .token.number,
 .token.constant,
 .token.symbol {
-	color: red;
+	color: #C54E57;
 	font-style: bold;
 }
 
@@ -74,11 +84,11 @@ code[class*="language-"] {
 .token.string,
 .token.char,
 .token.builtin {
-	color: yellow;
+	color: #DECA57;
 }
 
 .token.url {
-	color: cyan;
+	color: #98d0d1;
 }
 
 .token.operator,
@@ -90,7 +100,7 @@ code[class*="language-"] {
 }
 
 .token.keyword {
-	color: magenta
+	color: rgb(177, 36, 177)
 }
 
 .token.atrule,
@@ -116,7 +126,7 @@ code[class*="language-"] {
 }
 
 .token.deleted {
-	color: red;
+	color: #C54E57;
 }
 
 /* Plugin styles: Diff Highlight */
@@ -133,14 +143,15 @@ pre > code.diff-highlight.diff-highlight .token.inserted:not(.prefix) {
 }
 
 .editing {
-	resize:none;
+	resize: both;
+	overflow: auto;
 	color: transparent;
 	background-color: transparent;
 	caret-color: white;
 }
 
 .editing, .highlighting {
-	position: fixed;
+	position: relative;
 	border: none;
 	width: 100%;
 	height: 50%;
@@ -148,6 +159,8 @@ pre > code.diff-highlight.diff-highlight .token.inserted:not(.prefix) {
 	left: 0;
 	margin: 0;
 	padding: 0;
+	touch-action: none;
+	box-sizing: border-box;
 }
 
 .editing, .highlighting, .highlighting * {
@@ -168,12 +181,8 @@ pre > code.diff-highlight.diff-highlight .token.inserted:not(.prefix) {
 /* The top of the RGOV page */
 .actionSelection {
 	position: absolute;
-	top: 0;
-	left: 0;
 	width: 100%;
-	height: 50%;
-	max-height: 50%;
-	overflow-y: scroll;
+	overflow-y: hidden;
 }
 
 /* line number support ripped and modified from prismjs/plugins/line-numbers/prism-line-numbers.css */
@@ -215,4 +224,9 @@ pre[class*="language-"].line-numbers > code {
 	display: block;
 	padding-right: 0.8em;
 	text-align: right;
+}
+
+.members {
+	display: flex;
+	flex-direction: row !important;
 }

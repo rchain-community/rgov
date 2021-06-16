@@ -735,6 +735,7 @@ function groupControl(state, { html }) {
           ${roll.map(
             (revAddr) =>
               html`
+              <div class="members">
                 <div
                   id="${revAddr}"
                   data-revAddr=${revAddr}
@@ -753,6 +754,7 @@ function groupControl(state, { html }) {
                   <br />
                   <strong class="name">${nick(revAddr)}</strong>
                 </div>
+              </div>
               `,
           )}
         </div>`;
