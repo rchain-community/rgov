@@ -20,7 +20,7 @@ export const RholangGrammar = {
   },
   string: /"[^"]*"/,
   url: [
-    /`[^`]`/,
+    /`[^`]*`/,
   ],
   keyword: [
     /\b(contract|for|in|if|else|match|new|select|case|bundle[-0\+])\b/,
