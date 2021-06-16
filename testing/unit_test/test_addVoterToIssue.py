@@ -38,6 +38,5 @@ result = rgov.newIssue(new1, "inbox", "lunch", ["pizza", "tacos", "salad"])
 assert result[0]
 
 result = rgov.addVoterToIssue(new1, "inbox", new2URI, "lunch")
+assert result[0]
 
-assert len(result.blockInfo)
-#print("addVoterToIssue", result)

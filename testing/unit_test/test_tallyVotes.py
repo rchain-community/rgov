@@ -37,21 +37,30 @@ balance = rgov.checkBalance(new3.get_public_key().get_rev_address())
 assert balance == funds
 
 result = rgov.newInbox(new1)
-new1URI = result[2]
+assert result[0]
+new1URI = result[1]
 
 result = rgov.newInbox(new2)
-new2URI = result[2]
+assert result[0]
+new2URI = result[1]
 
 result = rgov.newInbox(new3)
-new3URI = result[2]
+assert result[0]
+new3URI = result[1]
 
 result = rgov.newIssue(new1, "inbox", "lunch", ["pizza", "tacos", "salad"])
+assert result[0]
 result = rgov.addVoterToIssue(new1, "inbox", new2URI, "lunch")
+assert result[0]
 result = rgov.addVoterToIssue(new1, "inbox", new3URI, "lunch")
+assert result[0]
 
 result = rgov.castVote(new1, "inbox", "lunch", "pizza")
+assert result[0]
 result = rgov.castVote(new2, "inbox", "lunch", "tacos")
+assert result[0]
 result = rgov.castVote(new3, "inbox", "lunch", "salad")
+assert result[0]
 
 result = rgov.tallyVotes(new1, "inbox", "lunch")
 print(result)
