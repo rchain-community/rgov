@@ -161,7 +161,7 @@ class rgovAPI:
         masterURI = masterstr[start:end]
         contract = render_contract_template(
             NEWINBOX_RHO_TPL,
-            {'masterURI': masterURI}, #, 'inbox': 'inboxURI'},
+            {'masterURI': masterURI},
         )
         deployId = self.client.deploy_with_vabn_filled(key, contract, TRANSFER_PHLO_PRICE, TRANSFER_PHLO_LIMIT)
         print("newInbox ", deployId)
