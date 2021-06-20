@@ -9,7 +9,6 @@ from typing import Iterable, List, Optional, Tuple, Type, TypeVar, Union
 
 from rchain.client import RClient
 from rchain.pb.RhoTypes_pb2 import DeployId
-#from rchain.util import create_deploy_data
 from rchain.crypto import PrivateKey
 
 import pathlib
@@ -116,49 +115,6 @@ class rgovAPI:
         reason = 'No key found in vault for ' + name
         raise Exception(reason)
 
-    def getDeploy(self, deployId: str, tries: int=10):
-        print("getBlock ", self.network['validatorBase']['host'])
-        url = self.network['validatorBase']['url'] + self.network['validatorBase']['host']
-        if self.network['validatorBase']['port'] > 0:
-            url += ':' + str(self.network['validatorBase']['port'])
-
-        url += '/api/deploy/' + deployId
-        print("Get Deploy ", url)
-        while tries > 0:
-            result = requests.get(url)
-            print("Got ", result)
-            if result.status_code == 200:
-                break
-            tries = tries - 1
-            time.sleep(1.0)
-            print("Try again ", tries)
-        print(result.json())
-        return result.json()
-
-    def getBlock(self, block_hash: str):
-        print("getBlock ", self.network['validatorBase']['host'])
-        url = self.network['validatorBase']['url'] + self.network['validatorBase']['host']
-        if self.network['validatorBase']['port'] > 0:
-            url += ':' + str(self.network['validatorBase']['port'])
-
-        url += '/api/block/' + block_hash
-        print("Get Block ", url)
-        result = requests.get(url)
-        return result.json()
-
-    def getDeployData(self, block_hash: str):
-        #print("getDeployData ", self.network['validatorBase']['host'])
-        url = self.network['validatorBase']['url'] + self.network['validatorBase']['host']
-        if self.network['validatorBase']['port'] > 0:
-            url += ':' + str(self.network['validatorBase']['port'])
-
-        url += '/api/data-at-name'
-        data = '{"depth": 1, "name": {"UnforgDeploy": {"data": "'+block_hash+'"}}}'
-        #print("Post ", url, data)
-        headers = {'Content-type': 'text/plain', 'Accept': '*/*'}
-        result = requests.post(url, data, headers=headers)
-        return result.json()
-
     def propose(self) -> None:
         if self.network['adminBase']['url']:
             url = self.network['adminBase']['url'] + self.network['adminBase']['host']
@@ -222,8 +178,6 @@ class rgovAPI:
         if (len(result.blockInfo[0].postBlockData[0].exprs) > 0):
             if (result.blockInfo[0].postBlockData[0].exprs[0].HasField('e_list_body')):
                 for data in result.blockInfo[0].postBlockData[0].exprs[0].e_list_body.ps:
-                    #if data.exprs[0].HasField("g_string"):
-                    #    print("Found (mystuff)", data.exprs[0].g_string)
                     if data.exprs[0].HasField("e_map_body"):
                         for kvs in data.exprs[0].e_map_body.kvs:
                             if kvs.key.exprs[0].g_string == "inbox":
