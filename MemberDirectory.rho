@@ -87,7 +87,7 @@ in { Nil
                      everyone.get(you).set("claimed", true)
                   ))
                |  for (@everyone <<- everyoneMap) { Nil
-                  |  retCh!((true, (false, everyone.get(you))))
+                  |  retCh!((true, (false, everyone.get(you).set("claimed", false))))
                   }
                }
             }
