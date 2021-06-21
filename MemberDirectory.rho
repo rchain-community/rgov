@@ -87,7 +87,7 @@ in { Nil
                      everyone.get(you).set("claimed", true)
                   ))
                |  for (@everyone <<- everyoneMap) { Nil
-                  |  retCh!((true, (false, everyone.get(you))))
+                  |  retCh!((true, (false, everyone.get(you).set("claimed", false))))
                   }
                }
             }
@@ -164,13 +164,16 @@ in { Nil
       |  MCAwrite!("SendThem", bundle+{*sendThem}, *mcaUpdateRet2)
       |  for (@one <- mcaUpdateRet1; @two <- mcaUpdateRet2) { Nil
          |  stdout!(["GetMe", one, "SendThem", two])
-         |  getMe!(*deployerId, *ret1, *stdout)
-         |  for (@(tf, {"inbox": inbox, "dictionary": dict}) <- ret1) { Nil
+         |  getMe!(*deployerId, *ret1, *stdout)|
+         for ( @(tf,(tf2,*x)) <<- ret1) {
+            stdout!(["x",*x])|
+            stdout!(["inbox", *x.get("inbox")])
+         |  for (@(tf, (tf2, {"inbox": inbox, "dictionary": dict, ..._})) <- ret1) { Nil
             |  stdout!(["writing inbox and dictionary for bootstrap", inbox, dict])
             |  @[*deployerId, "inbox"]!(inbox)
             |  @[*deployerId, "dictionary"]!(dict)
             |  sendThem!(["1111NkGJcLb9UdKg27bE1MXhaXwd2Sdhssn3i3EcWnZy11VLyW3zH", "two", "three"], "something", *stdout)
-            }
+            }}
          }
       }
    }
