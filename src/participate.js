@@ -497,6 +497,7 @@ function actionControl(state, { html, getEthProvider, syncScroll }) {
           </select>
         </label>
         <div class="fields">${fieldControls(state.action, state.fields)}</div>
+        <div class="pre-container">
         <pre class="highlighting" id="highlighting" aria-hidden="true">
           <code class="line-numbers language-rholang" id="highlighting-content">
             ${state.term || ''}
@@ -520,6 +521,7 @@ function actionControl(state, { html, getEthProvider, syncScroll }) {
           >
           ${state.term || ''}
           </textarea>
+        </div>
       `;
     },
   });

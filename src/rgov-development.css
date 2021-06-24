@@ -20,7 +20,7 @@ pre[class*="language-"] {
 	word-spacing: normal;
 	word-break: normal;
 	word-wrap: normal;
-	width: 90%;
+	width: 100%;
 	padding-left: 20px;
 
 	-moz-tab-size: 4;
@@ -88,7 +88,7 @@ code[class*="language-"] {
 }
 
 .token.url {
-	color: #98d0d1;
+	color: #68d1d1;
 }
 
 .token.operator,
@@ -150,18 +150,17 @@ pre > code.diff-highlight.diff-highlight .token.inserted:not(.prefix) {
 	caret-color: white;
 }
 
-.editing, .highlighting {
+.pre-container {
 	position: relative;
-	border: none;
-	width: 100%;
-	height: 50%;
-	bottom: 0;
-	left: 0;
-	margin: 0;
-	padding: 0;
-	touch-action: none;
-	box-sizing: border-box;
-}
+  }
+.pre-container .editing {
+	position: absolute;
+    top: 0.8%;
+    left: -0.2%;
+    width: 100%;
+    height: 100%;
+    display: block;
+  }
 
 .editing, .highlighting, .highlighting * {
 	font-size: 15px;
@@ -171,7 +170,7 @@ pre > code.diff-highlight.diff-highlight .token.inserted:not(.prefix) {
 
 .editing {
 	margin-left: 3.8em; /* for line-numbers */
-	z-index: 1;
+	z-index: 10;
 }
 
 .highlighting {
