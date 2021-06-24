@@ -337,6 +337,10 @@ class rgovAPI:
                                 found_counts = True
                         if BList.exprs[0].HasField("e_map_body"):
                             for voted in BList.exprs[0].e_map_body.kvs:
-                                votes[voted.key.exprs[0].g_string] = voted.value.exprs[0].g_int
+                                if voted.HasField("key"):
+                                    choice = voted.key.exprs[0].g_string
+                                else:
+                                    choice = ""
+                                votes[choice] = voted.value.exprs[0].g_int
         return [found_counts and found_done, votes]
 
