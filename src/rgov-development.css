@@ -152,7 +152,10 @@ pre > code.diff-highlight.diff-highlight .token.inserted:not(.prefix) {
 
 .pre-container {
 	position: relative;
+	width: 90%;
   }
+
+
 .pre-container .editing {
 	position: absolute;
     top: 0.8%;
@@ -171,9 +174,16 @@ pre > code.diff-highlight.diff-highlight .token.inserted:not(.prefix) {
 .editing {
 	margin-left: 3.8em; /* for line-numbers */
 	z-index: 10;
+	border: none;
+}
+
+.editing:active {
+	border: transparent !important;
 }
 
 .highlighting {
+	display: inline-block;
+	max-height: 350px;
 	z-index: 0;
 }
 
@@ -228,4 +238,27 @@ pre[class*="language-"].line-numbers > code {
 .members {
 	display: flex;
 	flex-direction: row !important;
+}
+
+.btn-container {
+	margin-top: 10px;
+}
+
+#deploy {
+	background-color: #9a9b96;
+	margin-left: 10px;
+	color: black;
+}
+
+#deploy:hover {
+	background-color:#777774;
+}
+
+#explore {
+	background-color: #CCCCC4;
+	color: black;
+}
+
+#explore:hover {
+	background-color: #AFB1A9;
 }

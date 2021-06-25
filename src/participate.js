@@ -322,7 +322,7 @@ export function buildUI({
       // The browser puts in <br> or <br/> instead of newline. Fix that.
       // TODO there must be a better way to handle this, Prism suggests this fix right now.
       if (value !== null) value = value.replace(/<br\/?>/g, '\n');
-      term = fixIndent(value);
+      term = value;
       state.results = [];
       state.problem = undefined;
       // after DOM updates are done, update highlighting.
@@ -498,29 +498,13 @@ function actionControl(state, { html, getEthProvider, syncScroll }) {
         </label>
         <div class="fields">${fieldControls(state.action, state.fields)}</div>
         <div class="pre-container">
-        <pre class="highlighting" id="highlighting" aria-hidden="true">
+        <pre class="highlighting" id="highlighting" aria-hidden="true"
+        >
           <code class="line-numbers language-rholang" id="highlighting-content">
             ${state.term || ''}
           </code>
         </pre>
-          <textarea
-            class="editing"
-            id="editing"
-            spellcheck="false"
-            oninput=${(/** @type {Event} */ event) => {
-              state.term = ckControl(event.target).value;
-              syncScroll(event);
-            }}
-            onchange=${(/** @type {Event} */ event) => {
-              state.term = ckControl(event.target).value;
-              syncScroll(event);
-            }}
-            onscroll=${(/** @type {Event} */ event) => {
-              syncScroll(event);
-            }}
-          >
-          ${state.term || ''}
-          </textarea>
+          
         </div>
       `;
     },
@@ -648,8 +632,10 @@ function runControl(
 
   return freeze({
     view() {
-      return html`<button
-          id="explore"
+      return html`
+      <div class="btn-container">
+      <button
+          id="explore" class="btn"
           disabled=${state.term === null}
           onclick=${async (/** @type {Event} */ event) => {
             event.preventDefault();
@@ -659,7 +645,7 @@ function runControl(
           Explore
         </button>
         <button
-          id="deploy"
+          id="deploy" class="btn"
           disabled=${state.term === null}
           onclick=${async (/** @type {Event} */ event) => {
             event.preventDefault();
@@ -668,6 +654,7 @@ function runControl(
         >
           Deploy
         </button>
+        </div>
         <section id="resultSection" ...${hide(!state.results)}>
           <h2>Result</h2>
           <pre id="deployId"> ${deployId} </pre>
@@ -706,7 +693,8 @@ function networkControl(state, { html }) {
               </option>`,
           )}
         </select>
-      </div>`;
+      </div>
+      `;
     },
   });
 }
