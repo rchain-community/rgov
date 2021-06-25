@@ -3,6 +3,9 @@
  * Based on “prism-funky.css” from http://jasonrivers.github.io/prism/
  * @author Bill Keuntje
  */
+
+
+
  body {
 	 background-color: rgb(236, 234, 234);
 	 padding: 40px;
@@ -42,6 +45,8 @@ pre[class*="language-"] {
 code[class*="language-"] {
 	background: #202020;
 	color: white;
+	outline: 0;
+	display: inline-block;
 }
 
 /* Inline code */
@@ -49,6 +54,11 @@ code[class*="language-"] {
 	border-radius: .3em;
 	box-shadow: none;
 	white-space: normal;
+}
+
+.token {
+	outline: 0;
+	display: inline-block;
 }
 
 .token.comment {
