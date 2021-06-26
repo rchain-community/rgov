@@ -2,6 +2,11 @@
 
 Any API added to the pyrgov python class should have a corresponding unit test added to the testing/unit_test directory using a logical name in the form test_xxx.py
 
+## OCAP discipline
+
+PyRGOV does not currently observe OCAP discipline. Continuing enhancements to the testing
+framework should STRONGLY consider remediating this deficiency.
+
 ## Class function requirements
 
 Each public function should correspond to the invocation of a single rholang file.

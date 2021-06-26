@@ -31,11 +31,15 @@ if USE_ABC:
     bravo = rgov.get_private_key('bravo')
     charlie = rgov.get_private_key('charlie')
 else:
+    # TODO: remove ambient access to PrivateKey.generate()
     print("Using random keys")
+    # WARNING: ambient access
     alpha = PrivateKey.generate()
     print("Alpha is ", alpha.to_hex())
+    # WARNING: ambient access
     bravo = PrivateKey.generate()
     print("Bravo is ", bravo.to_hex())
+    # WARNING: ambient access
     charlie = PrivateKey.generate()
     print("Charlie is ", charlie.to_hex())
 

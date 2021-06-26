@@ -35,6 +35,11 @@ capability discipline][ocap].
       such a function be imported. _We use a convention
       of only accessing ambient authority inside WARNING sections._
 
+  - **PyRGOV Testing framework**
+    - PyRGOV is in its infancy. It currently does not adhere to ocap
+      discipline. Enhancements to the testing framework will be expected
+      to remediate this oversight.
+
 [ocap]: http://erights.org/elib/capability/ode/ode-capabilities.html
 
 
