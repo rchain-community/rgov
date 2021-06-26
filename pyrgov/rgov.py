@@ -13,24 +13,25 @@ from rchain.pb.RhoTypes_pb2 import DeployId
 from rchain.crypto import PrivateKey
 
 import pathlib
-BASEPATH = str(pathlib.Path(__file__).parent.absolute())
+PYRGOV = pathlib.Path(__file__).parent.resolve()
+BASEPATH = PYRGOV.parent
 
 # these are predefined param
 TRANSFER_PHLO_LIMIT = 1000000
 TRANSFER_PHLO_PRICE = 1
 
-PRIVATE_KEYS = BASEPATH + '/../bootstrap/PrivateKeys/'
-CHECK_BALANCE_RHO_TPL = BASEPATH + '/../src/actions/checkBalance.rho'
-TRANSFER_RHO_TPL = BASEPATH + '/../src/actions/transfer.rho'
-NEWINBOX_RHO_TPL = BASEPATH + '/../src/actions/newinbox.rho'
-NEWISSUE_RHO_TPL = BASEPATH + '/../src/actions/newIssue.rho'
-ADDVOTER_RHO_TPL = BASEPATH + '/../src/actions/addVoterToIssue.rho'
-PEEKINBOX_RHO_TPL = BASEPATH + '/../src/actions/peekInbox.rho'
-CASTVOTE_RHO_TPL = BASEPATH + '/../src/actions/castVote.rho'
-DELEGATEVOTE_RHO_TPL = BASEPATH + '/../src/actions/delegateVote.rho'
-TALLYVOTES_RHO_TPL = BASEPATH + '/../src/actions/tallyVotes.rho'
+PRIVATE_KEYS = BASEPATH.joinpath('bootstrap', 'PrivateKeys')
+CHECK_BALANCE_RHO_TPL = BASEPATH.joinpath('src', 'actions', 'checkBalance.rho')
+TRANSFER_RHO_TPL = BASEPATH.joinpath('src', 'actions', 'transfer.rho')
+NEWINBOX_RHO_TPL = BASEPATH.joinpath('src', 'actions', 'newinbox.rho')
+NEWISSUE_RHO_TPL = BASEPATH.joinpath('src', 'actions', 'newIssue.rho')
+ADDVOTER_RHO_TPL = BASEPATH.joinpath('src', 'actions', 'addVoterToIssue.rho')
+PEEKINBOX_RHO_TPL = BASEPATH.joinpath('src', 'actions', 'peekInbox.rho')
+CASTVOTE_RHO_TPL = BASEPATH.joinpath('src', 'actions', 'castVote.rho')
+DELEGATEVOTE_RHO_TPL = BASEPATH.joinpath('src', 'actions', 'delegateVote.rho')
+TALLYVOTES_RHO_TPL = BASEPATH.joinpath('src', 'actions', 'tallyVotes.rho')
 
-MASTERURI = BASEPATH + '/../src/MasterURI.'
+MASTERURI = BASEPATH.joinpath('src')
 
 LOCALHOST = {
     'observerBase': {'url': 'http://', 'host': 'localhost', 'port': 40402},
@@ -66,8 +67,8 @@ NETWORKS = {
     'mainnet': MAINNET,
 }
 
-def render_contract_template(template_file: str, substitutions: Mapping[str, str]) -> str:
-    file = open(template_file)
+def render_contract_template(template_file: pathlib, substitutions: Mapping[str, str]) -> str:
+    file = template_file.open()
     template = file.read()
     file.close()
     return string.Template(template).substitute(substitutions)
@@ -98,16 +99,14 @@ class rgovAPI:
         self.close()
 
     def import_shared_private_keys(self) -> Mapping[str, str]:
-        search = PRIVATE_KEYS + "pk.*"
+        search = PRIVATE_KEYS
         keys = {}
-        for fname in glob.glob(search):
-            name = fname.split("/")[-1]
-            names = name.split(".")
-            if len(names) == 2:
-                file = open(fname)
-                pk = file.read()
-                file.close()
-                keys[names[1]] = pk
+        for fname in search.glob("pk.*"):
+            name = fname.suffix[1:]
+            file = fname.open()
+            pk = file.read()
+            file.close()
+            keys[name] = pk
         return keys
 
     def get_private_key(self, name: str) -> PrivateKey:
@@ -193,8 +192,8 @@ class rgovAPI:
         return [status, msg]
 
     def newInbox(self, key: PrivateKey) -> str:
-        fname = MASTERURI + self.net_name + '.json'
-        file = open(fname)
+        fname = MASTERURI.joinpath('MasterURI.' + self.net_name + '.json')
+        file = fname.open()
         masterstr = file.read()
         file.close()
         start = masterstr.find('rho:id:')
