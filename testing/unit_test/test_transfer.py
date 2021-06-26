@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 
 from rchain.crypto import PrivateKey
 from pyrgov.rgov import rgovAPI
