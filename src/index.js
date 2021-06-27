@@ -31,20 +31,6 @@ function updateHighlighting(text) {
   highlightElement(resultElement);
 }
 
-/**
- * @param {Event} event
- */
-function syncScroll(event) {
-  const element = event.target;
-  if (!(element instanceof Element)) return;
-  /* Scroll result to scroll coords of event - sync with textarea */
-  const resultElement = document.querySelector('#highlighting');
-  if (resultElement === null) return;
-  // Get and set x and y
-  resultElement.scrollTop = element.scrollTop;
-  resultElement.scrollLeft = element.scrollLeft;
-}
-
 document.addEventListener('DOMContentLoaded', () => {
   /** @type {(selector: string) => HTMLElement} */
   const $ = (selector) => unwrap(document.querySelector(selector));
@@ -69,6 +55,5 @@ document.addEventListener('DOMContentLoaded', () => {
       Prism.languages[language] = grammar;
     },
     updateHighlighting,
-    syncScroll,
   });
 });
