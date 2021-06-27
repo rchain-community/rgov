@@ -195,7 +195,6 @@ function rhoBody(tmp) {
  * @typedef {{
  *   setGrammar: (language: string, grammar: Grammar) => void,
  *   updateHighlighting: (text: string) => void,
- *   syncScroll: (event: Event) => void,
  * }} PrismAccess
  *
  * @typedef { import('rchain-api/src/ethProvider').MetaMaskProvider } MetaMaskProvider
@@ -213,7 +212,6 @@ export function buildUI({
   hostname,
   setGrammar,
   updateHighlighting,
-  syncScroll,
 }) {
   const rnode = RNode(fetch);
   let action = '_select_an_action_';
@@ -354,7 +352,7 @@ export function buildUI({
     actionControl(state, {
       html,
       getEthProvider,
-      syncScroll,
+      updateHighlighting,
     }),
   );
   mount('#netControl', networkControl(state, { html }));
@@ -413,10 +411,10 @@ function fixIndent(code) {
  *   shard: { MasterURI: string },
  * }} state
  * @param {HTMLBuilder & EthSignAccess & {
- *   syncScroll: (event: Event) => void,
+ *   updateHighlighting: (text: string) => void,
  * }} io
  */
-function actionControl(state, { html, getEthProvider, syncScroll }) {
+function actionControl(state, { html, getEthProvider, updateHighlighting }) {
   const options = (/** @type {string[]} */ ids) =>
     ids.map(
       (id) =>
@@ -482,6 +480,7 @@ function actionControl(state, { html, getEthProvider, syncScroll }) {
 
   return freeze({
     view() {
+      updateHighlighting(state.term || '');
       return html`
         <label
           >Action:
@@ -497,15 +496,6 @@ function actionControl(state, { html, getEthProvider, syncScroll }) {
           </select>
         </label>
         <div class="fields">${fieldControls(state.action, state.fields)}</div>
-        <div class="pre-container">
-        <pre class="highlighting" id="highlighting" aria-hidden="true"
-        >
-          <code class="line-numbers language-rholang" id="highlighting-content">
-            ${state.term || ''}
-          </code>
-        </pre>
-          
-        </div>
       `;
     },
   });
