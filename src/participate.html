@@ -27,6 +27,12 @@
             </select>
           </label>
         </div>
+        <div class="pre-container">
+          <pre class="highlighting" id="highlighting" aria-hidden="true">
+            <code class=" line-numbers language-rholang" id="highlighting-content">
+            </code>
+          </pre>
+        </div>
         <div id="netControl">
           Network:
           <select id="netControlSelect">
@@ -59,15 +65,15 @@
 
   <!-- Work In Progress TODO - Fix disappearing cursor in chromuim based browsers-->
   <script defer>
-    window.onload = function(){ 
-  
+    window.onload = function(){
+
        var editRholangCode = document.getElementById("highlighting");
-  
+
        editRholangCode.setAttribute("contentEditable", true);
        editRholangCode.setAttribute("spellcheck", false);
     };
   </script>
-  
+
 </body>
 
 </html>
