@@ -209,6 +209,10 @@ export const actions = {
     fields: { URI: { value: '', type: 'uri' } },
     filename: 'actions/lookupURI.rho',
   },
+  createURI: {
+    fields: { value: { value: '', type: 'number' } },
+    filename: 'actions/createURI.rho',
+  },
   doit: {
     fields: {
       lockerTag: { value: 'inbox', type: 'string' },

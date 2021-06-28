@@ -1,0 +1,20 @@
+match ["value"] {
+[value] => {
+new
+   return(`rho:rchain:deployId`),
+   insert(`rho:registry:insertArbitrary`),   
+   stdout(`rho:io:stdout`),
+   uriCh
+in {
+   insert!(
+      
+      value
+   
+   , *uriCh) |
+   for (@URI <- uriCh) {
+      stdout!([ "URI", URI, "Obj", value]) |
+      return!([ "URI", URI, "Obj", value])
+   }
+}
+
+}} // end of match
