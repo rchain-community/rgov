@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 
 import time
 
@@ -8,56 +8,133 @@ from rchain.util import create_deploy_data
 
 from pyrgov.rgov import rgovAPI
 
-RCHAIN_SERVER = ['localhost', 'rhobot', 'testnet', 'demo', 'mainnet']
-
 TRANSFER_PHLO_LIMIT = 10000000
 TRANSFER_PHLO_PRICE = 1
 
-admin = PrivateKey.from_hex('28a5c9ac133b4449ca38e9bdf7cacdce31079ef6b3ac2f0a080af83ecff98b36')
-alpha = PrivateKey.from_hex('7139b72b9939334ff76e1479072c0558dca2c3620971c2bb233a7b25a690d610')
-bravo = PrivateKey.from_hex('dd0dd23cd51460e6c42a154623df19372be332f0a61a51755603ab897f6ede39')
-charlie = PrivateKey.from_hex('79cf7604de08deee525ac9f500e118eef6036c56b175adf5afac94bb9542c5c1')
+USE_ABC = False
+SHOW_RESULT = False
 
-def print_balances(rgov: rgovAPI):
-    # get balance of vault
-    admin_balance = rgov.checkBalance(admin.get_public_key().get_rev_address())
-    print("admin Balance ", admin_balance, " REV ", admin.get_public_key().get_rev_address())
-    bravo_balance = rgov.checkBalance(bravo.get_public_key().get_rev_address())
-    print("bravo Balance ", bravo_balance, " REV ", bravo.get_public_key().get_rev_address())
+def show_error(where, result):
+    if SHOW_RESULT:
+        print("Show Result ", result)
+    if not result[0]:
+        print("Error: ", where, result[1])
+    return
 
+rgov = rgovAPI('localhost')
 
-rgov = rgovAPI(RCHAIN_SERVER[0])
+admin = rgov.get_private_key('bootstrap')
+
+if USE_ABC:
+    print("Using ABC")
+    alpha = rgov.get_private_key('alpha')
+    bravo = rgov.get_private_key('bravo')
+    charlie = rgov.get_private_key('charlie')
+else:
+    # TODO: remove ambient access to PrivateKey.generate()
+    print("Using random keys")
+    # WARNING: ambient access
+    alpha = PrivateKey.generate()
+    print("Alpha is ", alpha.to_hex())
+    # WARNING: ambient access
+    bravo = PrivateKey.generate()
+    print("Bravo is ", bravo.to_hex())
+    # WARNING: ambient access
+    charlie = PrivateKey.generate()
+    print("Charlie is ", charlie.to_hex())
+
+balance = rgov.checkBalance(alpha.get_public_key().get_rev_address())
+if balance > 0:
+    print("Alpha has a non-zero balance, test has been run already, restore rgov snapshot")
+    assert False
+
+# 100 REV should be plenty
+fund =10000000000
+result = rgov.transfer(admin.get_public_key().get_rev_address(), alpha.get_public_key().get_rev_address(), 100000000, admin)
+show_error("Transfer", result)
+assert result[0]
+result = rgov.transfer(admin.get_public_key().get_rev_address(), bravo.get_public_key().get_rev_address(), 100000000, admin)
+show_error("Transfer", result)
+assert result[0]
+result = rgov.transfer(admin.get_public_key().get_rev_address(), charlie.get_public_key().get_rev_address(), 100000000, admin)
+show_error("Transfer", result)
+assert result[0]
 
 result = rgov.newInbox(alpha)
-print(result)
+show_error("newInbox", result)
+assert result[0]
+print("Alpha Inbox", result[1])
+alphaURI = result[1]
 result = rgov.newInbox(bravo)
-print(result)
+show_error("newInbox", result)
+assert result[0]
+print("Bravo Inbox", result[1])
+bravoURI = result[1]
 result = rgov.newInbox(charlie)
-print(result)
+show_error("newInbox", result)
+assert result[0]
+print("Charlie Inbox", result[1])
+charlieURI = result[1]
+
 result = rgov.newIssue(alpha, "inbox", "lunch", ["pizza", "tacos", "salad"])
-print(result)
+show_error("newIssue", result)
+assert result[0]
 
-alphaURI = rgov.peekInbox(alpha, "inbox", "", "")
-bravoURI = rgov.peekInbox(bravo, "inbox", "", "")
-charlieURI = rgov.peekInbox(charlie, "inbox", "", "")
+result = rgov.peekInbox(alpha, "inbox", "", "")
+show_error("peekInbox", result)
+assert result[0]
+assert result[1] == alphaURI
+result = rgov.peekInbox(bravo, "inbox", "", "")
+show_error("peekInbox", result)
+assert result[0]
+assert result[1] == bravoURI
+result = rgov.peekInbox(charlie, "inbox", "", "")
+show_error("peekInbox", result)
+assert result[0]
+assert result[1] == charlieURI
 result = rgov.addVoterToIssue(alpha, "inbox", bravoURI, "lunch")
-print(result)
+show_error("addVoterToIssue", result)
+print(result[0])
 result = rgov.addVoterToIssue(alpha, "inbox", charlieURI, "lunch")
-print(result)
+show_error("addVoterToIssue", result)
+print(result[0])
 
-rgov.castVote(bravo, "inbox", "lunch", "pizza")
+result = rgov.castVote(bravo, "inbox", "lunch", "pizza")
+show_error("castVote", result)
+assert result[0]
+vote = result[1]
+print("CastVote: Bravo change from ", vote[0], " to ", vote[1])
+
 result = rgov.tallyVotes(bravo, "inbox", "lunch")
+show_error("tallyVotes", result)
+assert result[0]
+print("Tally", result[1])
 
 result = rgov.delegateVote(alpha, "inbox", "lunch", charlieURI)
-print(result)
+show_error("delegateVote", result)
+assert result[0]
+print("Vote Alpha Delegation is now ", result[1])
 
-rgov.castVote(charlie, "inbox", "lunch", "salad")
+result = rgov.castVote(charlie, "inbox", "lunch", "salad")
+show_error("castVote", result)
+assert result[0]
+vote = result[1]
+print("CastVote: Charlie change from ", vote[0], " to ", vote[1])
+
 result = rgov.tallyVotes(charlie, "inbox", "lunch")
+show_error("tallyVotes", result)
+assert result[0]
+print("Tally", result[1])
 
-rgov.castVote(alpha, "inbox", "lunch", "pizza")
-result = rgov.tallyVotes(alpha, "inbox", "lunch")
+result = rgov.castVote(alpha, "inbox", "lunch", "pizza")
+show_error("castVote", result)
+assert result[0]
+vote = result[1]
+print("CastVote: Alpha change from ", vote[0], " to ", vote[1])
 
 result = rgov.tallyVotes(alpha, "inbox", "lunch")
-print(result)
+show_error("tallyVotes", result)
+assert result[0]
+print("Tally", result[1])
 
 rgov.close()
