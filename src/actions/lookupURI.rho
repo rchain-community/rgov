@@ -1,8 +1,8 @@
 match ["?"] {
 [URI] => {
-new
-   lookup(`rho:registry:lookup`),
-   return(`rho:rchain:deployId`),
+new     // always use EXPLORE
+   return,
+   lookup(`rho:registry:lookup`),   
    stdout(`rho:io:stdout`),
    lookupCh
 in {
