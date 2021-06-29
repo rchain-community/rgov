@@ -1,6 +1,6 @@
 match ["?"] {
 [URI] => {
-new     /* use EXPLORE */
+new     // always use EXPLORE
    return,
    lookup(`rho:registry:lookup`),   
    stdout(`rho:io:stdout`),
