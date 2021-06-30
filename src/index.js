@@ -24,6 +24,22 @@ document.addEventListener('DOMContentLoaded', () => {
 
   const html = htm.bind(m);
 
+  /** @type HTMLTextAreaElement */
+  const editorElement = unwrap(document.getElementById("editor"));
+
+  /** @type HTMLCodeElement */
+  const prismElement = unwrap(document.getElementById("highlighting-content"));
+
+  /** @param text: string */
+  function updateHighlight(text) {
+    prismElement.innerHTML = text;
+    highlightElement(prismElement);
+  }
+
+  editorElement.addEventListener('input', () => {
+    updateHighlight(editorElement.value);
+  });
+
   buildUI({
     html,
     busy: makeBusy($, m.redraw),
@@ -41,6 +57,7 @@ document.addEventListener('DOMContentLoaded', () => {
     setGrammar: (language, grammar) => {
       Prism.languages[language] = grammar;
     },
-    codeTextArea: unwrap(document.getElementById("editor")),
+    codeTextArea: editorElement,
+    updateHighlight,
   });
 });
