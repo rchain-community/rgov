@@ -12,6 +12,7 @@ import {
   listenAtDeployId,
 } from 'rchain-api';
 import { actions } from './actions.js';
+import { RholangGrammar } from './prism-rholang';
 
 // TODO(#185): stop pretending MasterURI is a design-time constant.
 // Meanwhile, see bootstrap/deploy-all for MasterURI.localhost.json
@@ -166,7 +167,7 @@ function rhoBody(tmp) {
 
 /**
  * @param { HTMLBuilder & EthSignAccess & MithrilMount & WebAccess & FormAccess<any> & ScheduleAccess & {
- *  hostname: string }} io
+ *  hostname: string } & PrismAccess} io
  * @typedef {import('./actions').FieldSpec} FieldSpec
  *
  * @typedef {{
@@ -190,7 +191,12 @@ function rhoBody(tmp) {
  *   setTimeout: typeof setTimeout,
  * }} ScheduleAccess
  *
+ * @typedef {{
+ *   setGrammar: (language: string, grammar: Grammar) => void,
+ * }} PrismAccess
+ *
  * @typedef { import('rchain-api/src/ethProvider').MetaMaskProvider } MetaMaskProvider
+ * @typedef { import('prismjs').Grammar } Grammar
  */
 export function buildUI({
   html,
@@ -202,6 +208,7 @@ export function buildUI({
   mount,
   fetch,
   hostname,
+  setGrammar,
 }) {
   const rnode = RNode(fetch);
   let action = '_select_an_action_';
@@ -222,6 +229,8 @@ export function buildUI({
     demo: {},
     rhobot: {},
   };
+
+  setGrammar('rholang', RholangGrammar);
 
   const state = {
     get shard() {
