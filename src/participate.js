@@ -167,7 +167,7 @@ function rhoBody(tmp) {
 
 /**
  * @param { HTMLBuilder & EthSignAccess & MithrilMount & WebAccess & FormAccess<any> & ScheduleAccess & {
- *  hostname: string } & PrismAccess & { codeTextArea: HTMLElement}} io
+ *  hostname: string } & PrismAccess & { codeTextArea: HTMLElement} & {updateHighlight: (string) => void}} io
  * @typedef {import('./actions').FieldSpec} FieldSpec
  *
  * @typedef {{
@@ -210,6 +210,7 @@ export function buildUI({
   hostname,
   setGrammar,
   codeTextArea,
+  updateHighlight,
 }) {
   const rnode = RNode(fetch);
   let action = '_select_an_action_';
@@ -232,7 +233,7 @@ export function buildUI({
   };
 
   setGrammar('rholang', RholangGrammar);
-  codeTextArea.addEventListener('change', () => {state.term = codeTextArea.innerText})
+  codeTextArea.addEventListener('change', () => {state.term = codeTextArea.value})
 
   const state = {
     get shard() {
@@ -340,7 +341,7 @@ export function buildUI({
   state.setAction(action); // compute initial term
   state.network = network; // set up shard of initial network
 
-  mount('#actionControl', actionControl(state, { html, getEthProvider, codeTextArea }));
+  mount('#actionControl', actionControl(state, { html, getEthProvider, codeTextArea, updateHighlight }));
   mount('#netControl', networkControl(state, { html }));
 
   mount(
@@ -396,9 +397,9 @@ function fixIndent(code) {
  *   term: string?,
  *   shard: { MasterURI: string },
  * }} state
- * @param {HTMLBuilder & EthSignAccess & { codeTextArea: HTMLElement} io
+ * @param {HTMLBuilder & EthSignAccess & { codeTextArea: HTMLElement, updateHighlight: (text: string | null) => void }} io
  */
-function actionControl(state, { html, getEthProvider, codeTextArea }) {
+function actionControl(state, { html, getEthProvider, codeTextArea, updateHighlight }) {
   const options = (/** @type {string[]} */ ids) =>
     ids.map(
       (id) =>
@@ -464,7 +465,8 @@ function actionControl(state, { html, getEthProvider, codeTextArea }) {
 
   return freeze({
     view() {
-      codeTextArea.innerHTML = (state.term || '');
+      codeTextArea.value = state.term;
+      updateHighlight(state.term);
       return html`
         <label
           >Action:
