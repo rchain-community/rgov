@@ -41,5 +41,6 @@ document.addEventListener('DOMContentLoaded', () => {
     setGrammar: (language, grammar) => {
       Prism.languages[language] = grammar;
     },
+    codeTextArea: unwrap(document.getElementById("editor")),
   });
 });
