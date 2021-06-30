@@ -167,7 +167,7 @@ function rhoBody(tmp) {
 
 /**
  * @param { HTMLBuilder & EthSignAccess & MithrilMount & WebAccess & FormAccess<any> & ScheduleAccess & {
- *  hostname: string } & PrismAccess} io
+ *  hostname: string } & PrismAccess & { codeTextArea: HTMLElement}} io
  * @typedef {import('./actions').FieldSpec} FieldSpec
  *
  * @typedef {{
@@ -209,6 +209,7 @@ export function buildUI({
   fetch,
   hostname,
   setGrammar,
+  codeTextArea,
 }) {
   const rnode = RNode(fetch);
   let action = '_select_an_action_';
@@ -231,6 +232,7 @@ export function buildUI({
   };
 
   setGrammar('rholang', RholangGrammar);
+  codeTextArea.addEventListener('change', () => {state.term = codeTextArea.innerText})
 
   const state = {
     get shard() {
@@ -338,7 +340,7 @@ export function buildUI({
   state.setAction(action); // compute initial term
   state.network = network; // set up shard of initial network
 
-  mount('#actionControl', actionControl(state, { html, getEthProvider }));
+  mount('#actionControl', actionControl(state, { html, getEthProvider, codeTextArea }));
   mount('#netControl', networkControl(state, { html }));
 
   mount(
@@ -394,9 +396,9 @@ function fixIndent(code) {
  *   term: string?,
  *   shard: { MasterURI: string },
  * }} state
- * @param {HTMLBuilder & EthSignAccess} io
+ * @param {HTMLBuilder & EthSignAccess & { codeTextArea: HTMLElement} io
  */
-function actionControl(state, { html, getEthProvider }) {
+function actionControl(state, { html, getEthProvider, codeTextArea }) {
   const options = (/** @type {string[]} */ ids) =>
     ids.map(
       (id) =>
@@ -462,6 +464,7 @@ function actionControl(state, { html, getEthProvider }) {
 
   return freeze({
     view() {
+      codeTextArea.innerHTML = (state.term || '');
       return html`
         <label
           >Action:
@@ -477,15 +480,6 @@ function actionControl(state, { html, getEthProvider }) {
           </select>
         </label>
         <div class="fields">${fieldControls(state.action, state.fields)}</div>
-        <textarea
-          cols="80"
-          rows="16"
-          onchange=${(event) => {
-            state.term = ckControl(event.target).value;
-          }}
-        >
-${state.term || ''}</textarea
-        >
       `;
     },
   });
