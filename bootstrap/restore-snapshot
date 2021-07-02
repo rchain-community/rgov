@@ -17,8 +17,9 @@ if [ $? -ne 0 ] ; then exit $?; fi
 
 TARGET=$PWD/snapshot/$1.tgz
 
-if [ -f $TARGET ];then
-   (cd ~; tar xzf $TARGET) && echo "snapshot restored: $TARGET"
+echo $TARGET TARGET
+if [ -f "$TARGET" ];then
+   (cd ~; tar xzf "$TARGET") && echo "snapshot restored: $TARGET"
 else
    echo "snapshot not found: $TARGET"
 fi
