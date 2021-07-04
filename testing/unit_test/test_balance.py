@@ -2,6 +2,10 @@
 
 from rchain.crypto import PrivateKey
 from pyrgov.rgov import rgovAPI
+import pathlib
+
+if __name__ == pathlib.Path(__file__).stem or __name__ == '__main__':
+    assert False
 
 rgov = rgovAPI('localhost')
 new1 = PrivateKey.generate()
