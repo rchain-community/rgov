@@ -110,6 +110,8 @@ class rgovAPI:
         return keys
 
     def get_private_key(self, name: str) -> PrivateKey:
+        if name == 'anonymous':
+            return PrivateKey.generate() # Warning potential Ambient Access, if account is given REV
         if name in self.keyVault:
             return PrivateKey.from_hex(self.keyVault[name])
         reason = 'No key found in vault for ' + name
