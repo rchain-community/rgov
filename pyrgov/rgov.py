@@ -70,7 +70,8 @@ def render_contract_template(template_file: pathlib, substitutions: Mapping[str,
     file = template_file.open()
     template = file.read()
     file.close()
-    return string.Template(template).substitute(substitutions)
+    contract = string.Template(template).substitute(substitutions)
+    return contract
 
 class rgovAPI:
 
@@ -109,6 +110,8 @@ class rgovAPI:
         return keys
 
     def get_private_key(self, name: str) -> PrivateKey:
+        if name == 'anonymous':
+            return PrivateKey.generate() # Warning potential Ambient Access, if account is given REV
         if name in self.keyVault:
             return PrivateKey.from_hex(self.keyVault[name])
         reason = 'No key found in vault for ' + name
@@ -128,10 +131,14 @@ class rgovAPI:
     def checkBalance(self, rev_addr: str, block_hash: str='') -> int:
         contract = render_contract_template(
             CHECK_BALANCE_RHO_TPL,
-            {'addr': rev_addr, 'myBalance': "mybal"},
+            {'addr': rev_addr, 'myBalance': "mybal",
+            'rev': "${rev}", 'fraction': "${fraction}", 'num': "${num}"},
         )
         result = self.client.exploratory_deploy(contract, block_hash)
-        return result[0].exprs[0].e_list_body.ps[2].exprs[0].g_int
+        if result[0].exprs[0].HasField("e_list_body"):
+            return result[0].exprs[0].e_list_body.ps[2].exprs[0].g_int
+        if result[1].exprs[0].HasField("e_list_body"):
+            return result[1].exprs[0].e_list_body.ps[2].exprs[0].g_int
 
     def transfer(self, from_addr: str, to_addr: str, amount: int, key: PrivateKey) -> str:
         contract = render_contract_template(
