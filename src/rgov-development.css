@@ -24,7 +24,8 @@ pre[class*="language-"] {
 	word-break: normal;
 	word-wrap: normal;
 	width: 100%;
-	padding-left: 20px;
+	border: 0;
+	margin: 0;
 
 	-moz-tab-size: 4;
 	-o-tab-size: 4;
@@ -152,7 +153,7 @@ pre > code.diff-highlight.diff-highlight .token.inserted:not(.prefix) {
 	display: inline;
 }
 
-.editing {
+.editor {
 	resize: both;
 	overflow: auto;
 	color: transparent;
@@ -162,39 +163,50 @@ pre > code.diff-highlight.diff-highlight .token.inserted:not(.prefix) {
 
 .pre-container {
 	position: relative;
-	width: 90%;
-  }
+	width: 100%;
+	border: white;
+	border-width: 2px;
+	border-radius: 4px;
+	max-height: 350px;
+	display: block;
+}
 
-
-.pre-container .editing {
+.editor {
 	position: absolute;
-    top: 0.8%;
-    left: -0.2%;
-    width: 100%;
-    height: 100%;
-    display: block;
-  }
+	/* top: 0.8%;
+	left: -0.2%; */
+	width: 100%;
+	max-width: 100% - 3.8em;
+	height: 100%;
+	display: block;
+	 margin-bottom: 0;
+	margin-left: 3.8em; /* for line numbers */
+}
 
-.editing, .highlighting, .highlighting * {
+.editor, .highlighting, .highlighting * {
 	font-size: 15px;
 	font-family: Consolas, Monaco, 'Andale Mono', 'Ubuntu Mono', monospace; /* must match the definition in <pre> above */
 	line-height: 20px;
 }
 
-.editing {
-	margin-left: 3.8em; /* for line-numbers */
+.editor, .highlighting {
 	z-index: 10;
 	border: none;
 }
 
-.editing:active {
+.editor:active {
 	border: transparent !important;
 }
 
 .highlighting {
 	display: inline-block;
+	height: 100%;
 	max-height: 350px;
 	z-index: 0;
+}
+
+.editor, .highlighting, .highlighting-content {
+	padding: 0;
 }
 
 /* The top of the RGOV page */
