@@ -173,8 +173,6 @@ pre > code.diff-highlight.diff-highlight .token.inserted:not(.prefix) {
 
 .editor {
 	position: absolute;
-	/* top: 0.8%;
-	left: -0.2%; */
 	width: 100%;
 	max-width: 100% - 3.8em;
 	height: 100%;
