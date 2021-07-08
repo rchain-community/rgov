@@ -179,7 +179,8 @@ pre > code.diff-highlight.diff-highlight .token.inserted:not(.prefix) {
 	max-width: 100% - 3.8em;
 	height: 100%;
 	display: block;
-	 margin-bottom: 0;
+	margin-bottom: 0;
+	outline: 0;
 	margin-left: 3.8em; /* for line numbers */
 }
 
@@ -191,11 +192,9 @@ pre > code.diff-highlight.diff-highlight .token.inserted:not(.prefix) {
 
 .editor, .highlighting {
 	z-index: 10;
+	overflow: auto;
+	white-space: nowrap;
 	border: none;
-}
-
-.editor:active {
-	border: transparent !important;
 }
 
 .highlighting {
