@@ -27,6 +27,9 @@ document.addEventListener('DOMContentLoaded', () => {
   /** @type HTMLTextAreaElement */
   const editorElement = unwrap(document.getElementById("editor"));
 
+  /** @type HTMLPreElement */
+  const highlightingElement = unwrap(document.getElementById("highlighting"));
+
   /** @type HTMLCodeElement */
   const prismElement = unwrap(document.getElementById("highlighting-content"));
 
@@ -36,8 +39,19 @@ document.addEventListener('DOMContentLoaded', () => {
     highlightElement(prismElement);
   }
 
+  function syncScroll(element) {
+    // Get and set x and y
+    highlightingElement.scrollTop = editorElement.scrollTop;
+    highlightingElement.scrollLeft = editorElement.scrollLeft;
+  }
+
   editorElement.addEventListener('input', () => {
     updateHighlight(editorElement.value);
+    syncScroll();
+  });
+
+  editorElement.addEventListener('scroll', () => {
+    syncScroll();
   });
 
   buildUI({
