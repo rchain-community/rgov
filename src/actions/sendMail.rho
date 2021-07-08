@@ -1,4 +1,4 @@
-match ["inbox", "", "", "", "", ""] {
+match ["$inbox", `$toURI`, "$from", "$to", "$subj", "$body"] {
 [lockerTag, toInboxURI, from, to, sub, body] => {
 new
    deployId(`rho:rchain:deployId`),
