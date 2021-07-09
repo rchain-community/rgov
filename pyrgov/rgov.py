@@ -29,6 +29,8 @@ PEEKINBOX_RHO_TPL = BASEPATH.joinpath('src', 'actions', 'peekInbox.rho')
 CASTVOTE_RHO_TPL = BASEPATH.joinpath('src', 'actions', 'castVote.rho')
 DELEGATEVOTE_RHO_TPL = BASEPATH.joinpath('src', 'actions', 'delegateVote.rho')
 TALLYVOTES_RHO_TPL = BASEPATH.joinpath('src', 'actions', 'tallyVotes.rho')
+CREATEURI_RHO_TPL = BASEPATH.joinpath('src', 'actions', 'createURI.rho')
+LOOKUPURI_RHO_TPL = BASEPATH.joinpath('src', 'actions', 'lookupURI.rho')
 
 MASTERURI = BASEPATH.joinpath('src')
 

@@ -1,4 +1,4 @@
-match ["value"] {
+match ["$value"] {
 [value] => {
 new
    return(`rho:rchain:deployId`),
