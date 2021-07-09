@@ -4,8 +4,8 @@ from rchain.crypto import PrivateKey
 from pyrgov.rgov import rgovAPI
 
 rgov = rgovAPI('localhost')
-new1 = PrivateKey.generate()
-new2 = PrivateKey.generate()
+new1 = rgov.get_private_key('anonymous')
+new2 = rgov.get_private_key('anonymous')
 admin = rgov.get_private_key('bootstrap')
 
 balance = rgov.checkBalance(admin.get_public_key().get_rev_address())
@@ -28,7 +28,6 @@ assert balance == funds
 balance = rgov.checkBalance(new2.get_public_key().get_rev_address())
 assert balance == funds
 
-print("No Inbox")
 result = rgov.receiveFromInbox(new1, "inbox", "", "")
 print("No Inbox", result)
 
@@ -42,14 +41,11 @@ assert result[0]
 new2URI = result[1]
 print("new1URI", new2URI)
 
-print("No Messages Waiting")
 result = rgov.receiveFromInbox(new1, "inbox", "", "")
 print("No Messages Waiting", result)
 
-print("sendMail")
 result = rgov.sendMail(new1, "inbox", new1URI, "New2", "New1", "Test Message", "This is a Test")
 print("sendMail", result)
 
-print("New Message")
 result = rgov.receiveFromInbox(new1, "inbox", "", "")
 print("New Message", result)
