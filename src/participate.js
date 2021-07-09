@@ -465,8 +465,14 @@ function actionControl(state, { html, getEthProvider, codeTextArea, updateHighli
 
   return freeze({
     view() {
+      /* Not sure this should be in the Mithril view pattern.
+         The <texarea> element for code editing used to be created here.
+         It's been moved to participate.html and enhanced with syntax
+         highlighting, so this is the obvious place to update with new action data.
+      */
       codeTextArea.value = state.term;
       updateHighlight(state.term);
+
       return html`
         <label
           >Action:
