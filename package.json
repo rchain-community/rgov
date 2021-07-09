@@ -54,6 +54,7 @@
     "htm": "^3.0.4",
     "jake": "^10.8.2",
     "mithril": "^2.0.4",
+    "prismjs": "^1.24.1",
     "rchain-api": "github:rchain-community/rchain-api#http-client"
   }
 }
