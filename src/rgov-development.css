@@ -154,7 +154,7 @@ pre > code.diff-highlight.diff-highlight .token.inserted:not(.prefix) {
 }
 
 .editor {
-	resize: both;
+	resize: none;
 	overflow: auto;
 	color: transparent;
 	background-color: transparent;
@@ -191,7 +191,8 @@ pre > code.diff-highlight.diff-highlight .token.inserted:not(.prefix) {
 .editor, .highlighting {
 	z-index: 10;
 	overflow: auto;
-	white-space: nowrap;
+	white-space: pre;
+	word-wrap: normal;
 	border: none;
 }
 
