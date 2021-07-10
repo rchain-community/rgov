@@ -10,6 +10,7 @@ module.exports = {
     hot: true,
   },
   entry: './src/index.js',
+  include: ['./src/actions', './src/rgov-development.css' ],
   module: {
     rules: [
       {
