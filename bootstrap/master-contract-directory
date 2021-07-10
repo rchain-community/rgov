@@ -25,7 +25,7 @@ new
    ,lastUri
 EOF
 
-   echo "$1"|while read name id;do
+   echo "$1"|while read -r name id;do
       echo "   ,lookCh_$name"
       echo "   ,ret_$name"
       echo "   ,final_$name"
@@ -47,20 +47,20 @@ in {
          }
 EOF2
 
-   echo "$1"|while read name id;do
-      gen_dir_entry $name
+   echo "$1"|while read -r name id;do
+      gen_dir_entry "$name"
    done
 
    echo "         }"
    echo "         |  for ( "
-   echo "$1"|while read name id;do
+   echo "$1"|while read -r name id;do
       echo "               final_$name <- ret_$name;"
    done
    echo "               last <- lastUri"
    echo "            )"
    echo "            {  stdout!([\"Finished with ReadcapURI\", *last])"
 
-   echo "$1"|while read name id;do
+   echo "$1"|while read -r name id;do
        echo "            |  stdout!([\"Finished with $name\", *final_$name])"
    done
 
@@ -72,7 +72,8 @@ EOF2
 }
 
 get_classes() {
-egrep '^\["#define [^"][^"]*", `[^`]*`]|^\["Log contract created at"' log/deploy-all.log | sort -u|sed '
+# shellcheck disable=SC2016
+grep -E '^\["#define [^"][^"]*", `[^`]*`]|^\["Log contract created at"' log/deploy-all.log | sort -u|sed '
    s/\["Log contract created at"/["#define $Log"/
    ' |
    cut -d' ' -f2,3 | sed 's/[$",`\]]*//g'
@@ -80,7 +81,7 @@ egrep '^\["#define [^"][^"]*", `[^`]*`]|^\["Log contract created at"' log/deploy
 
 gen_match() {
    tmp="false"
-   echo "$1" | while read name id;do
+   echo "$1" | while read -r name id;do
       if [ -z "$tmp" ];then echo -n ",";else unset tmp;fi
       echo "\`$id\`"
    done
@@ -88,17 +89,17 @@ gen_match() {
 
 gen_vars() {
    tmp="false"
-   echo "$1" | while read name id;do
+   echo "$1" | while read -r name id;do
       if [ -z "$tmp" ];then echo -n ",";else unset tmp;fi
       echo "URI_$name"
    done
 }
 
-CLASSES=`get_classes`
+CLASSES=$(get_classes)
 
-MATCH=`gen_match "$CLASSES"|sed 's/^/   /'`
-VARS=`gen_vars "$CLASSES"|sed 's/^/   /'`
-CODE=`gen_code "$CLASSES"|sed 's/^/   /'`
+MATCH=$(gen_match "$CLASSES"|sed 's/^/   /')
+VARS=$(gen_vars "$CLASSES"|sed 's/^/   /')
+CODE=$(gen_code "$CLASSES"|sed 's/^/   /')
 
 cat - << EOF
 match [
