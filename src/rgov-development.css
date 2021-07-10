@@ -263,10 +263,21 @@ pre[class*="language-"].line-numbers > code {
 	margin-top: 10px;
 }
 
+#netControl {
+	margin-top: 10px;
+}
+
+#runControl {
+	margin-top: 10px;
+}
+
 #deploy {
 	background-color: #9a9b96;
 	margin-left: 10px;
 	color: black;
+	border: none;
+	height: 30px;
+	width: 70px;
 }
 
 #deploy:hover {
@@ -276,6 +287,9 @@ pre[class*="language-"].line-numbers > code {
 #explore {
 	background-color: #CCCCC4;
 	color: black;
+	border: none;
+	height: 30px;
+	width: 70px;
 }
 
 #explore:hover {
