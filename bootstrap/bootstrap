@@ -32,7 +32,6 @@ $ME snapshot exists.
 		./restore-snapshot "$YES" "$ME"
 		exit 0
 	else
-		"$ME: Rerunning $ME"
 		break
 	fi
 done
@@ -47,17 +46,29 @@ tar cf - genesis|(cd ~/.rnode; tar xvf -) || exit 3
 
 touch "$LOGFILE"
 
+rm -f /tmp/bootstrap.fifo
+mkfifo /tmp/bootstrap.fifo
+
 rnode run -s \
 	--validator-private-key "$private_key" \
 	--dev-mode \
 	-XX:MaxDirectMemorySize=100m -XX:MaxRAMPercentage=25 \
-	2>&1 | tee "$LOGFILE" |
-while read -r line;do
-	echo "$line"
-	if echo "$line"|grep 'Making a transition to Running state.';then
-		break;
+	> /tmp/bootstrap.fifo 2>&1 &
+
+PID=$?
+
+while true;do
+	if read -r line < /tmp/bootstrap.fifo;then
+		if echo "$line"|grep 'Making a transition to Running state.';then
+			break
+		fi
+		echo "$line"
+	else
+		sleep 1
 	fi
 done
+
+rm -f /tmp/bootstrap.fifo
 
 echo "$ME: Stopping $ME rnode process"
 sleep 3 && kill $PID && wait "$PID"
