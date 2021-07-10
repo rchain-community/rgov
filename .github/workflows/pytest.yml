@@ -19,7 +19,7 @@ jobs:
       - name: Install rnode
         run: |
           wget https://github.com/rchain/rchain/releases/download/v0.10.2/rnode_0.10.2_all.deb
-          apt install rnode_0.10.2_all.deb
+          sudo apt install rnode_0.10.2_all.deb
       - name: Install PyRchain
         run: |
           pip3 install -U pyrchain
