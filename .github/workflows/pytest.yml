@@ -19,6 +19,7 @@ jobs:
       - name: Install rnode
         run: |
           wget https://github.com/rchain/rchain/releases/download/v0.10.2/rnode_0.10.2_all.deb
+          sudo apt install openjdk-11-jre-headless
           sudo dpkg -i rnode_0.10.2_all.deb
       - name: Install PyRchain
         run: |
