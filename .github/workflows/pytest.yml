@@ -16,7 +16,11 @@ jobs:
         uses: actions/setup-python@v2
         with:
           python-version: ${{ matrix.python-version }}
-      - name: Install Rchain
+      - name: Install rnode
+        run: |
+          wget https://github.com/rchain/rchain/releases/download/v0.10.2/rnode_0.10.2_all.deb
+          apt install rnode_0.10.2_all.deb
+      - name: Install PyRchain
         run: |
           pip3 install -U pyrchain
       - name: Install dependencies
