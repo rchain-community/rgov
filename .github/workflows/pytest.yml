@@ -16,10 +16,12 @@ jobs:
         uses: actions/setup-python@v2
         with:
           python-version: ${{ matrix.python-version }}
+      - name: Install openjdk11
+        run: |
+          sudo apt install openjdk-11-jre-headless
       - name: Install rnode
         run: |
           wget https://github.com/rchain/rchain/releases/download/v0.10.2/rnode_0.10.2_all.deb
-          sudo apt install openjdk-11-jre-headless
           sudo dpkg -i rnode_0.10.2_all.deb
       - name: Install PyRchain
         run: |
