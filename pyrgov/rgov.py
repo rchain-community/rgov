@@ -34,6 +34,8 @@ LOOKUPURI_RHO_TPL = BASEPATH.joinpath('src', 'actions', 'lookupURI.rho')
 
 MASTERURI = BASEPATH.joinpath('src')
 
+RHOID = "rho:id:"
+
 LOCALHOST = {
     'observerBase': {'url': 'http://', 'host': 'localhost', 'port': 40402},
     'validatorBase': {'url': 'http://', 'host': 'localhost', 'port': 40403, 'num': 1},
@@ -161,7 +163,7 @@ class rgovAPI:
         file = fname.open()
         masterstr = file.read()
         file.close()
-        start = masterstr.find('rho:id:')
+        start = masterstr.find(RHOID)
         end = masterstr.find('`', start)
         if start < 0 or end < 0:
             return [False, "masterURI file corrupt"]
@@ -352,3 +354,43 @@ class rgovAPI:
                                 votes[choice] = voted.value.exprs[0].g_int
         return [found_counts and found_done, votes]
 
+    def createURI(self, key: PrivateKey, value: str) -> List:
+        contract = render_contract_template(
+            CREATEURI_RHO_TPL,
+            {'value': value},
+        )
+        deployId = self.client.deploy_with_vabn_filled(key, contract, TRANSFER_PHLO_PRICE, TRANSFER_PHLO_LIMIT)
+        print("createURI ", deployId);
+        self.propose()
+        result = self.client.get_data_at_deploy_id(deployId)
+        status = [False, "No deploy Data returned"]
+        if result.length == 0:
+            return status
+        if result.blockInfo[0].postBlockData[0].exprs[0].HasField("e_list_body"):
+            body = result.blockInfo[0].postBlockData[0].exprs[0].e_list_body
+            if body.ps[0].exprs[0].HasField("g_string"):
+                if body.ps[0].exprs[0].g_string == "URI":
+                    value = body.ps[1].exprs[0].g_uri
+                    if len(value) > len(RHOID) and value[:len(RHOID)] == RHOID:
+                        status = [True, value]
+        return status
+        
+    def lookupURI(self, key: PrivateKey, uri: str) -> List:
+        contract = render_contract_template(
+            LOOKUPURI_RHO_TPL,
+            {'uri': uri},
+        )
+        result = self.client.exploratory_deploy(contract, "")
+        status = [False, "No Data returned"]
+        if result == None:
+            return status
+        if result[0].exprs[0].HasField("e_list_body"):
+            if result[0].exprs[0].e_list_body.ps[0].exprs[0].HasField("g_string"):
+                if result[0].exprs[0].e_list_body.ps[0].exprs[0].g_string == "URI":
+                    value = result[0].exprs[0].e_list_body.ps[1].exprs[0].g_uri
+                    if len(value) > len(RHOID) and value[:len(RHOID)] == RHOID:
+                        if result[0].exprs[0].e_list_body.ps[2].exprs[0].g_string == "Obj":
+                            if len(result[0].exprs[0].e_list_body.ps[3].exprs) > 0:
+                                object = result[0].exprs[0].e_list_body.ps[3].exprs[0].g_string
+                                status = [True, object]
+        return status

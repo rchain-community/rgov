@@ -1,4 +1,4 @@
-match ["?"] {
+match [`$uri`] {
 [URI] => {
 new     // always use EXPLORE
    return,
