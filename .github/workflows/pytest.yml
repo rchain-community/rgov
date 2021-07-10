@@ -26,13 +26,13 @@ jobs:
       - name: Bootstrap rnode
         run: |
           bootstrap/bootstrap
-      -name: Deploy RGOV
+      - name: Deploy RGOV
         run: |
           bootstrap/deploy-all
       - name: Install PyRchain
         run: |
           pip3 install -U pyrchain
-      -name: Run RGOV rnode
+      - name: Run RGOV rnode
         run: |
           bootstrap/run-rnode
       - name: Install dependencies
