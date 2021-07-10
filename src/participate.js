@@ -629,12 +629,6 @@ function runControl(
           <pre id="result">
 ${state.results ? pprint(state.results.map(RhoExpr.parse)) : ''}</pre
           >
-          <!-- TODO
-          <h2>Block Info</h2>
-          <small>
-            <pre id="blockInfo"></pre>
-          </small>
-          -->
         </section>
         <section id="problemSection" ...${hide(!state.problem)}>
           <h3>Problem</h3>
