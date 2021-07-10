@@ -233,7 +233,11 @@ export function buildUI({
   };
 
   setGrammar('rholang', RholangGrammar);
-  codeTextArea.addEventListener('change', () => {state.term = codeTextArea.value})
+  codeTextArea.addEventListener('change', () => {
+    const tmp = fixIndent(codeTextArea.value);
+    state.term = tmp;
+    updateHighlight(tmp);
+  })
 
   const state = {
     get shard() {
