@@ -54,7 +54,12 @@ rnode run -s \
 PID=$!
 
 # The previous command doesn't produce output -- but this one makes up for that
-tail -f "$LOGFILE"|sed -e '/Making a transition to Running state./q' &&
+while read -r line;do
+	echo "$line"
+	if echo "$line"|grep 'Making a transition to Running state.';then
+		break;
+	fi
+done < "$LOGFILE"
 
 echo "$ME: Stopping $ME rnode process"
 sleep 3 && kill $PID && wait "$PID"
