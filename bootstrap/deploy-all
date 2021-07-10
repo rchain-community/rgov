@@ -1,37 +1,32 @@
 #!/bin/bash
 
+ME=$(basename "$0")
+! cd "$(dirname "$0")" && echo "Could not cd to script directory" && exit 1
+
 [ ! -d ~/.rnode ] && echo "
-$0: $HOME/.rnode does not exist. Use 'bootstrap' to fix.
+$ME: $HOME/.rnode does not exist. Use 'bootstrap' to fix.
 " && exit 1
 
-cd `dirname $0`
+! ./stop-rnode && exit $?
 
-./stop-rnode
-if [ $? -ne 0 ] ; then exit $?; fi
-
-./list-snapshot|grep "rgov" && echo "$0: snapshot rgov already exists." && while read -p "Use it instead of re-running deploy [y]? " response;do
+./list-snapshot |grep "rgov" > /dev/null && echo "$ME: snapshot rgov already exists." && while read -r -p "Use it instead of re-running deploy [y]? " response;do
    if [ "$response" == 'y' ] || [ -z "$response" ];then
       ./restore-snapshot "rgov"
       exit 0
    else
-      echo "$0: Re-running deploy"
+      echo "$ME: Re-running deploy"
       break
    fi
 done
 
-set -x
+private_key=$(cat PrivateKeys/pk.bootstrap)
 
-private_key=`cat PrivateKeys/pk.bootstrap`
-
-ME=`basename $0`
-ERRORLOG="$(mktemp /tmp/$ME.XXXXXX)"
+ERRORLOG="$(mktemp /tmp/"$ME".XXXXXX)"
 LOGFILE="log/$ME.log"
-rm -f $ERRORLOG
+rm -f "$ERRORLOG"
 DEPLOY="./deploy --error $ERRORLOG"
 
 mkdir -p generated log
-javascript_file=generated/generated.rhoid.bootstrap.js
-json_file=generated/generated.rhoid.bootstrap.json
 
 # Get everything, including system classes
 git clone https://github.com/rchain/rchain.git || (cd rchain && git pull)
@@ -40,40 +35,41 @@ git clone https://github.com/rchain/rchain.git || (cd rchain && git pull)
 #git pull https://github.com/rchain-community/liquid-democracy.git
 
 rnode run -s \
-   --validator-private-key $private_key \
+   --validator-private-key "$private_key" \
    --dev-mode \
    -XX:MaxDirectMemorySize=100m -XX:MaxRAMPercentage=25 \
-   > $LOGFILE 2>&1 &
+   > "$LOGFILE" 2>&1 &
 
-set +x
 
 PID=$!
 
 # The previous command doesn't produce output -- but this makes up for that
-tail -F $LOGFILE|sed -e '/Making a transition to Running state./q'
+tail -F "$LOGFILE"|sed -e '/Making a transition to Running state./q' | sed "s/^/$ME: /"
 
 deployFiles() {
    WAITPID=""
-   while read t;do
-      $DEPLOY $t &
+   while read -r t;do
+      $DEPLOY "$t" &
+      # shellcheck disable=SC2030
       WAITPID="$WAITPID $!"
    done |tee -a log/deployment.log 2>&1
+   # shellcheck disable=SC2031,SC2086
    wait $WAITPID
-   echo "deployFiles done status $?"
+   echo "$ME: done status $?"
 }
 
 # deploy rchain code
 find rchain -name "*.rho"|grep -v "test"|grep -v "tests" |grep -v "examples" | deployFiles
 
 if [ -f "$ERRORLOG" ]; then
-   echo "$0 DeployFiles error:";
-   cat $ERRORLOG;
-   rm -f $ERRORLOG;
+   echo "$ME: error:";
+   cat "$ERRORLOG";
+   rm -f "$ERRORLOG";
    exit 2;
 fi
 
 # deploy rgov
-ls -1 \
+find \
 ../Ballot.rho \
 ../Group.rho \
 ../CrowdFund.rho \
@@ -88,81 +84,44 @@ ls -1 \
 | deployFiles
 
 if [ -f "$ERRORLOG" ]; then
-   echo "$0 DeployFiles error:";
-   cat $ERRORLOG;
-   rm -f $ERRORLOG;
+   echo "$ME: DeployFiles error:";
+   cat "$ERRORLOG";
+   rm -f "$ERRORLOG";
    exit 2;
 fi
 
 # Finalize the rnode
-echo "$0: Proposing...." | tee -a log/deployment.log
+echo "$ME: Proposing...." | tee -a log/deployment.log
 rnode --grpc-port 40402 propose 2>&1 | tee -a log/deployment.log
-echo "$0: Propose finished."
-
-# generate javascript
-gen_javascript() {
-echo "// @ts-check"
-egrep '^\["#define [^"][^"]*", `[^`]*`]|^\["Log contract created at"' | sort -u|sed '
-s/\["Log contract created at"/["#define $Log"/
-s/\["#define \$/\/** @type { FieldSpec } *\/\nexport const /
-s/", /Reg = {\n\ttype: "uri",\n\tvalue: "/
-s/\]/",\n};\n\n/
-s/`//g
-s/\t/  /g
-'
-}
-
-# These are no longer necessary and are invalid after a redploy-class
-# echo "$0: Generating javascript file [$javascript_file]"
-# gen_javascript < $LOGFILE > $javascript_file
-
-# generate json
-gen_json() {
-echo "{
-   \"rhoid\": {"
-egrep '^\["#define [^"][^"]*", `[^`]*`]|^\["Log contract created at"' | sort -u|sed '
-s/\["Log contract created at"/["#define $Log"/
-s/\["#define \$/    "/
-s/, /: "/
-s/\]/",/
-s/`//g
-'
-echo '    "NecessaryInvalidPlaceholder": ""
-  }
-}'
-}
-
-# These are no longer necessary and are invalid after a redploy-class
-# echo "$0: Generating json file [$json_file]"
-# gen_json < $LOGFILE > $json_file
+echo "$ME: Propose finished."
 
 # generate and create the master contract directory
-echo "$0: Generating generated/generated.create-master-contract-directory.rho"
+echo "$ME: Generating generated/generated.create-master-contract-directory.rho"
 ./master-contract-directory > generated/generated.create-master-contract-directory.rho
 
 echo "generated/generated.create-master-contract-directory.rho"| deployFiles | tee -a log/create-master-directory.log
-echo "$0: Proposing generated/generated.create-master-contract-directory.rho" |tee -a log/create-master-directory.log
+echo "$ME: Proposing generated/generated.create-master-contract-directory.rho" |tee -a log/create-master-directory.log
 rnode --grpc-port 40402 propose 2>&1 | tee -a log/deployment.log
 
-echo "Creating ../src/MasterURI.localhost.json"
+echo "$ME: Creating MasterURI.localhost.json"
 echo "{\"localhostNETWORK\": { \"MasterURI\":" > ../src/MasterURI.localhost.json
-grep "ReadcapURI" $LOGFILE |tail -1 | cut -d' ' -f3|sed '
+grep "ReadcapURI" "$LOGFILE" |tail -1 | cut -d' ' -f3|sed '
 s/\}/"/
 s/^/"/
 '>> ../src/MasterURI.localhost.json
 echo "}}" >> ../src/MasterURI.localhost.json
 
-echo "$0: listing master directory"
+echo "$ME: listing master directory"
 ./deploy listMasterURI.rho
 rnode --grpc-port 40402 propose 2>&1 | tee -a log/deployment.log
 
-echo "$0: creating member directory"
+echo "$ME: creating member directory"
 ./deploy ../MemberDirectory.rho
 rnode --grpc-port 40402 propose 2>&1 | tee -a log/deployment.log
 
-echo "Waiting for rnode to finalize (10s)" && sleep 10 && echo "$0: Stopping deployment rnode"
+echo "$ME: Waiting for rnode to finalize (10s)" && sleep 10 && echo "$ME: Stopping deployment rnode"
 kill $PID && sleep 2
 
-echo "$0: Creating rgov snapshot"
+echo "$ME: Creating rgov snapshot"
 ./create-snapshot rgov
-stty echo
+stty echo # for some reason, deploy screws up the terminal, so set it right
