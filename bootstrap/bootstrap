@@ -1,12 +1,16 @@
 #!/bin/bash
 
+YES='n'
+
+[ -n "$1" ] && [ "$1" = '-y' ] && YES='y' && shift
+
 ! cd "$(dirname "$0")" && echo "Could not cd to script directory" && exit 1
 
 ME=$(basename "$0")
 
 ! ./stop-rnode && exit $?
 
-[ -d ~/.rnode ] && echo "
+[ -d ~/.rnode ] && [ "$YES" != 'y' ] && echo "
 $ME: $HOME/.rnode exists. Use 'rm -rf $HOME/.rnode' to fix.
 " && while read -r -p "$ME: Execute 'rm -rf $HOME/.rnode' [y]? " response;do
 	if [ "$response" == "y" ] || [ -z "$response" ];then
@@ -20,7 +24,7 @@ done
 
 mkdir -p snapshot log generated 2>/dev/null
 
-./list-snapshot |grep "$ME" >/dev/null 2>&1 && echo "
+./list-snapshot |grep "$ME" >/dev/null 2>&1 && [ "$YES" != 'y' ] && echo "
 $ME snapshot exists.
 " && while read -r -p "Use snapshot instead of re-running $ME [y]? " response;do
 	if [ "$response" == "y" ] || [ -z "$response" ];then
