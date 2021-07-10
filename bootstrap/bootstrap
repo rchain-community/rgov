@@ -54,7 +54,7 @@ echo "$ME: Stopping $ME rnode process"
 sleep 3 && kill $PID && sleep 3
 
 echo "$ME: Creating snapshot '$ME'"
-./create-snapshot "$ME"
+./create-snapshot -y "$ME"
 
 # exit 0 is for github actions
 stty echo || exit 0
