@@ -14,6 +14,9 @@ rnode run -s \
    -XX:MaxDirectMemorySize=100m -XX:MaxRAMPercentage=25 \
    > log/run-rnode.log 2>&1 &
 
-tail -F log/run-rnode.log 2>/dev/null|sed -e '/Making a transition to Running state./q'
+stdbuf -oL -eL tail -F log/run-rnode.log 2>/dev/null|sed -e '/Making a transition to Running state./q'
 
-stty echo
+echo "out of tail"
+
+# exit 0 is required to make this work in github actions
+stty echo || exit 0
