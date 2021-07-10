@@ -124,4 +124,6 @@ kill $PID && sleep 2
 
 echo "$ME: Creating rgov snapshot"
 ./create-snapshot rgov
-stty echo # for some reason, deploy screws up the terminal, so set it right
+
+# exit 0 is for github actions
+stty echo || exit 0 # for some reason, deploy screws up the terminal, so set it right
