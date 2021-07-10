@@ -49,13 +49,13 @@ touch "$LOGFILE"
 rm -f /tmp/bootstrap.fifo
 mkfifo /tmp/bootstrap.fifo
 
-(trap "exit 0" term; rnode run -s \
+(trap "exit 0" term; stdbuf -oL -eL rnode run -s \
 	--validator-private-key "$private_key" \
 	--dev-mode \
 	-XX:MaxDirectMemorySize=100m -XX:MaxRAMPercentage=25 \
-	> /tmp/bootstrap.fifo 2>&1 &)
+	> /tmp/bootstrap.fifo 2>&1) &
 
-PID=$?
+PID=$!
 
 while true;do
 	if read -r line < /tmp/bootstrap.fifo;then
