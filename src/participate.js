@@ -524,7 +524,6 @@ function runControl(
       );
       console.log('... explore done.');
       state.results = expr;
-      // TODO? $('#blockInfo').textContent = pprint(block);
     } catch (err) {
       state.problem = err.message;
     }
