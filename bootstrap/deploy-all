@@ -41,12 +41,12 @@ stdbuf -oL -eL rnode run -s \
 	--validator-private-key "$private_key" \
 	--dev-mode \
 	-XX:MaxDirectMemorySize=100m -XX:MaxRAMPercentage=25 \
-	| tee "$LOGFILE" > /tmp/deploy-all.fifo 2>&1 &
+	> /tmp/deploy-all.fifo 2>&1 &
 
 PID=$!
 
 while true;do
-	if read -r line < /tmp/bootstrap.fifo;then
+	if read -r line < /tmp/deploy-all.fifo;then
 		if echo "$line"|grep 'Making a transition to Running state.';then
 			break
 		fi
@@ -54,7 +54,7 @@ while true;do
 	else
 		sleep 1
 	fi
-done
+done | tee "$LOGFILE"
 
 deployFiles() {
    WAITPID=""

@@ -1,20 +1,16 @@
 #!/bin/bash
 
-YES="$1"
-
-[ -n "$1" ] && shift
-
 ! cd "$(dirname "$0")" && echo "Could not cd to script directory" && exit 1
 
 ME=$(basename "$0")
 
-! ./stop-rnode "$YES" && exit $?
+! ./stop-rnode && exit $?
 
-[ "$YES" != '-y' ] && [ -d ~/.rnode ] && echo "
+[ -d ~/.rnode ] && echo "
 $ME: $HOME/.rnode exists. Use 'rm -rf $HOME/.rnode' to fix.
 " && while read -r -p "$ME: Execute 'rm -rf $HOME/.rnode' [y]? " response;do
 	if [ "$response" == "y" ] || [ -z "$response" ];then
-		echo "Removing $HOME/.rnode"
+		echo "$ME: Removing $HOME/.rnode"
 		break
 	else
 		echo "$ME: Aborting $ME"
@@ -25,26 +21,24 @@ done
 rm -rf "$HOME"/.rnode
 mkdir -p snapshot log generated 2>/dev/null
 
-[ "$YES" != '-y' ] && ./list-snapshot | grep "$ME" >/dev/null 2>&1 && echo "
-$ME snapshot exists.
-" && while read -r -p "Use snapshot instead of re-running $ME [y]? " response;do
+./list-snapshot | grep "$ME" >/dev/null 2>&1 && echo "
+$ME: $ME snapshot exists.
+" && while read -r -p "$ME: Use snapshot instead of re-running $ME [y]? " response;do
 	if [ "$response" == "y" ] || [ -z "$response" ];then
-		./restore-snapshot "$YES" "$ME"
+		./restore-snapshot "$ME"
 		exit 0
 	else
 		break
 	fi
 done
 
-echo "Rerunning $ME"
+echo "$ME: Re-running $ME"
 LOGFILE="log/$ME.log"
 
 private_key=$(cat PrivateKeys/pk.bootstrap)
 
 mkdir -p ~/.rnode || exit 3
 tar cf - genesis|(cd ~/.rnode; tar xvf -) || exit 3
-
-touch "$LOGFILE"
 
 rm -f /tmp/bootstrap.fifo
 mkfifo /tmp/bootstrap.fifo
@@ -53,7 +47,7 @@ stdbuf -oL -eL rnode run -s \
 	--validator-private-key "$private_key" \
 	--dev-mode \
 	-XX:MaxDirectMemorySize=100m -XX:MaxRAMPercentage=25 \
-	| tee "$LOGFILE" > /tmp/bootstrap.fifo 2>&1 &
+	> /tmp/bootstrap.fifo 2>&1 &
 
 PID=$!
 
@@ -62,11 +56,11 @@ while true;do
 		if echo "$line"|grep 'Making a transition to Running state.';then
 			break
 		fi
-		echo "$line"
+		echo "$ME: $line"
 	else
 		sleep 1
 	fi
-done
+done | tee "$LOGFILE"
 
 rm -f /tmp/bootstrap.fifo
 
@@ -76,7 +70,7 @@ sleep 3 && kill "$PID"
 wait "$PID"
 
 echo "$ME: Creating snapshot '$ME'"
-./create-snapshot "$YES" "$ME"
+./create-snapshot "$ME"
 
 stty echo
 
