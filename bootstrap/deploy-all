@@ -59,9 +59,9 @@ done | tee "$LOGFILE"
 deployFiles() {
    WAITPID=""
    while read -r t;do
-      $DEPLOY "$t" &
-      # shellcheck disable=SC2030
-      WAITPID="$WAITPID $!"
+      $DEPLOY "$t"
+#      # shellcheck disable=SC2030
+#      WAITPID="$WAITPID $!"
    done |tee -a log/deployment.log 2>&1
    # shellcheck disable=SC2031,SC2086
    wait $WAITPID

@@ -27,10 +27,10 @@ jobs:
           sudo dpkg -i rnode_0.10.2_all.deb
       - name: Bootstrap rnode
         run: |
-          bootstrap/bootstrap -y
+          bootstrap/bootstrap
       - name: Deploy RGOV
         run: |
-          bootstrap/deploy-all -y
+          bootstrap/deploy-all
       - name: Install PyRchain
         run: |
           pip3 install -U pyrchain
