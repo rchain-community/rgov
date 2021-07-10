@@ -19,17 +19,17 @@ jobs:
       - name: Install openjdk11
         run: |
           sudo apt install openjdk-11-jre-headless
-      - name: Getr node
+      - name: Get rnode
         run: |
           wget https://github.com/rchain/rchain/releases/download/v0.10.2/rnode_0.10.2_all.deb
       - name: Install rnode
           sudo dpkg -i rnode_0.10.2_all.deb
       - name: Bootstrap rnode
         run: |
-          echo 'y\ny\ny\n' | bootstrap/bootstrap
+          echo 'y\ny\ny\n' \| bootstrap/bootstrap
       - name: Deploy RGOV
         run: |
-          echo 'y\ny\ny\n' | bootstrap/deploy-all
+          echo 'y\ny\ny\n' \| bootstrap/deploy-all
       - name: Install PyRchain
         run: |
           pip3 install -U pyrchain
