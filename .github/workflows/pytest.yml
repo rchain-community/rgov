@@ -23,14 +23,18 @@ jobs:
         run: |
           wget https://github.com/rchain/rchain/releases/download/v0.10.2/rnode_0.10.2_all.deb
           sudo dpkg -i rnode_0.10.2_all.deb
-      - name: Run rnode
+      - name: Bootstrap rnode
         run: |
           bootstrap/bootstrap
+      -name: Deploy RGOV
+        run: |
           bootstrap/deploy-all
-          bootstrap/run-rnode
       - name: Install PyRchain
         run: |
           pip3 install -U pyrchain
+      -name: Run RGOV rnode
+        run: |
+          bootstrap/run-rnode
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
