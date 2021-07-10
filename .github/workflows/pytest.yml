@@ -1,10 +1,9 @@
 name: Run the python tests for rholang actions
 
 on:
-  [pull_request]
-    paths:
-      - 'testing/**'
-      - '!bootstrap/**'
+  pull_request:
+    paths-ignore:
+      - 'bootstrap/**'
 
 jobs:
   build:
