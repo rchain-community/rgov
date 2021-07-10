@@ -14,6 +14,6 @@ jobs:
       with:
         check_together: 'yes'
         scandir: './bootstrap'
-        exclude: 'PrivateKeys'
+        ignore: 'PrivateKeys'
         additional_files: 'bootstrap deploy deploy-all propose check-rnode create-snapshot restore-snapshot explore eval lookupURI run-rnode stop-rnode'
         
