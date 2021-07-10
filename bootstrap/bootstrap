@@ -51,20 +51,12 @@ rnode run -s \
 	--validator-private-key "$private_key" \
 	--dev-mode \
 	-XX:MaxDirectMemorySize=100m -XX:MaxRAMPercentage=25 \
-	> "$LOGFILE" 2>&1 &
-
-PID=$!
-
-# The previous command doesn't produce output -- but this one makes up for that
-while true;do
-	# shellcheck disable=SC2030
-	tail -1 "$LOGFILE" | while read -r line;do
-		echo "$line"
-		if echo "$line"|grep 'Making a transition to Running state.';then
-			break 2;
-		fi
-	done
-	sleep 1
+	2>&1 | tee "$LOGFILE" |
+while read -r line;do
+	echo "$line"
+	if echo "$line"|grep 'Making a transition to Running state.';then
+		break;
+	fi
 done
 
 echo "$ME: Stopping $ME rnode process"
