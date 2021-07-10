@@ -3,7 +3,7 @@ name: Run the python tests for rholang actions
 on:
   pull_request:
     paths-ignore:
-      - 'bootstrap/**'
+      - './bootstrap'
 
 jobs:
   build:
