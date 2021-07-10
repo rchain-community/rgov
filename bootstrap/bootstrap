@@ -1,20 +1,20 @@
 #!/bin/bash
 
-YES='n'
+YES="$1"
 
-[ -n "$1" ] && [ "$1" = '-y' ] && YES='y' && shift
+[ -n "$1" ] && shift
 
 ! cd "$(dirname "$0")" && echo "Could not cd to script directory" && exit 1
 
 ME=$(basename "$0")
 
-! ./stop-rnode && exit $?
+! ./stop-rnode "$YES" && exit $?
 
-[ -d ~/.rnode ] && [ "$YES" != 'y' ] && echo "
+[ "$YES" != '-y' ] && [ -d ~/.rnode ] && echo "
 $ME: $HOME/.rnode exists. Use 'rm -rf $HOME/.rnode' to fix.
 " && while read -r -p "$ME: Execute 'rm -rf $HOME/.rnode' [y]? " response;do
 	if [ "$response" == "y" ] || [ -z "$response" ];then
-		rm -rf "$HOME"/.rnode
+		echo "Removing $HOME/.rnode"
 		break
 	else
 		echo "$ME: Aborting $ME"
@@ -22,20 +22,22 @@ $ME: $HOME/.rnode exists. Use 'rm -rf $HOME/.rnode' to fix.
 	fi
 done
 
+rm -rf "$HOME"/.rnode
 mkdir -p snapshot log generated 2>/dev/null
 
-./list-snapshot |grep "$ME" >/dev/null 2>&1 && [ "$YES" != 'y' ] && echo "
+[ "$YES" != '-y' ] && ./list-snapshot | grep "$ME" >/dev/null 2>&1 && echo "
 $ME snapshot exists.
 " && while read -r -p "Use snapshot instead of re-running $ME [y]? " response;do
 	if [ "$response" == "y" ] || [ -z "$response" ];then
-		./restore-snapshot "$ME"
+		./restore-snapshot "$YES" "$ME"
 		exit 0
 	else
-		echo "Rerunning $ME"
+		"$ME: Rerunning $ME"
 		break
 	fi
 done
 
+echo "Rerunning $ME"
 LOGFILE="log/$ME.log"
 
 private_key=$(cat PrivateKeys/pk.bootstrap)
@@ -52,13 +54,13 @@ rnode run -s \
 PID=$!
 
 # The previous command doesn't produce output -- but this one makes up for that
-tail -f "$LOGFILE"|sed -e '/Making a transition to Running state./q'
+tail -f "$LOGFILE"|sed -e '/Making a transition to Running state./q' &&
 
 echo "$ME: Stopping $ME rnode process"
-sleep 3 && kill $PID && sleep 3
+sleep 3 && kill $PID && wait "$PID"
 
 echo "$ME: Creating snapshot '$ME'"
-./create-snapshot -y "$ME"
+./create-snapshot "$YES" "$ME"
 
 stty echo
 
