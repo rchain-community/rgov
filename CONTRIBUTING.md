@@ -1,11 +1,14 @@
 # Development and Design notes for Contributors
 
-Thanks for your interest in contributing!
+Thanks for your contribution!
 
 ## Quality Code Style
 
-All contributions should pass:
+Pull Requests are checked with https://github.com/koalaman/shellcheck.
+Shell script contributors using vscode are encouraged to install the vscode extension https://marketplace.visualstudio.com/items?itemName=timonwong.shellcheck to catch issues before making a pull request. Contributors not using vscode can use the ```shellcheck``` command line tool by installing the Ubuntu package ```shellcheck```
+Pull requests that do not pass a ```shellcheck``` review will require remediation before approval.
 
+Pull Requests are checked with the tools available at https://eslint.org/. Contributors can check eslint compliance by running:
  1. `npm run lint-check`
  2. `npm run lint:types`
 
