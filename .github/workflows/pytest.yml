@@ -53,7 +53,7 @@ jobs:
           PYTHONPATH: $GITHUB_WORKSPACE
       - name: Test with pytest
         run: |
-          pytest testing
+          cd testing && pytest
         env:
           # what a complete hack here. Should be referencing the rgov root instead of explicit path
           PYTHONPATH: /home/runner/work/rgov/rgov
