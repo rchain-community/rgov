@@ -29,6 +29,7 @@ PEEKINBOX_RHO_TPL = BASEPATH.joinpath('src', 'actions', 'peekInbox.rho')
 CASTVOTE_RHO_TPL = BASEPATH.joinpath('src', 'actions', 'castVote.rho')
 DELEGATEVOTE_RHO_TPL = BASEPATH.joinpath('src', 'actions', 'delegateVote.rho')
 TALLYVOTES_RHO_TPL = BASEPATH.joinpath('src', 'actions', 'tallyVotes.rho')
+DISPLAYVOTE_RHO_TPL = BASEPATH.joinpath('src', 'actions', 'displayVote.rho')
 
 MASTERURI = BASEPATH.joinpath('src')
 
@@ -350,3 +351,45 @@ class rgovAPI:
                                 votes[choice] = voted.value.exprs[0].g_int
         return [found_counts and found_done, votes]
 
+    def displayVote(self, key: PrivateKey, inbox: str, issue: str) -> List:
+        contract = render_contract_template(
+            DISPLAYVOTE_RHO_TPL,
+            {'inbox': inbox, 'issue': issue},
+        )
+        deployId = self.client.deploy_with_vabn_filled(key, contract, TRANSFER_PHLO_PRICE, TRANSFER_PHLO_LIMIT)
+        print("displayVote ", deployId);
+        self.propose()
+        result = self.client.get_data_at_deploy_id(deployId)
+        vote = {}
+        found = False
+        status = [False, "No Issue Found"]
+        if result.length == 0:
+            return status
+        for BData in result.blockInfo[0].postBlockData:
+            if len(BData.exprs) > 0:
+                if BData.exprs[0].HasField("e_list_body"):
+                    if BData.exprs[0].e_list_body.ps[0].exprs[0].HasField("g_string"):
+                        if BData.exprs[0].e_list_body.ps[0].exprs[0].g_string == "vote":
+                            if len(BData.exprs[0].e_list_body.ps[1].exprs) > 0:
+                                if BData.exprs[0].e_list_body.ps[1].exprs[0].HasField("g_string"):
+                                    vote['vote'] = BData.exprs[0].e_list_body.ps[1].exprs[0].g_string
+                            found = True
+                        if BData.exprs[0].e_list_body.ps[0].exprs[0].g_string == "delegate":
+                            if len(BData.exprs[0].e_list_body.ps[1].exprs) > 0:
+                                if BData.exprs[0].e_list_body.ps[1].exprs[0].HasField("g_uri"):
+                                    vote['delegate'] = BData.exprs[0].e_list_body.ps[1].exprs[0].g_uri
+                            found = True
+                if BData.exprs[0].HasField("e_map_body"):
+                    for kvs in BData.exprs[0].e_map_body.kvs:
+                        if kvs.key.exprs[0].g_string == "name":
+                            vote['uri'] = kvs.value.exprs[0].g_uri
+                            found = True
+                        if kvs.key.exprs[0].g_string == "proposals":
+                            choices = []
+                            for choice in kvs.value.exprs[0].e_list_body.ps:
+                                choices.append(choice.exprs[0].g_string)
+                            vote['proposals'] = choices
+                            found = True
+        if found:
+            status = [True, vote]
+        return status
