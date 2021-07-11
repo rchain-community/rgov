@@ -12,6 +12,7 @@ import {
   listenAtDeployId,
 } from 'rchain-api';
 import { actions } from './actions.js';
+import { RholangGrammar } from './prism-rholang';
 
 // TODO(#185): stop pretending MasterURI is a design-time constant.
 // Meanwhile, see bootstrap/deploy-all for MasterURI.localhost.json
@@ -166,7 +167,7 @@ function rhoBody(tmp) {
 
 /**
  * @param { HTMLBuilder & EthSignAccess & MithrilMount & WebAccess & FormAccess<any> & ScheduleAccess & {
- *  hostname: string }} io
+ *  hostname: string } & PrismAccess & { codeTextArea: HTMLElement} & {updateHighlight: (string) => void}} io
  * @typedef {import('./actions').FieldSpec} FieldSpec
  *
  * @typedef {{
@@ -190,7 +191,12 @@ function rhoBody(tmp) {
  *   setTimeout: typeof setTimeout,
  * }} ScheduleAccess
  *
+ * @typedef {{
+ *   setGrammar: (language: string, grammar: Grammar) => void,
+ * }} PrismAccess
+ *
  * @typedef { import('rchain-api/src/ethProvider').MetaMaskProvider } MetaMaskProvider
+ * @typedef { import('prismjs').Grammar } Grammar
  */
 export function buildUI({
   html,
@@ -202,6 +208,9 @@ export function buildUI({
   mount,
   fetch,
   hostname,
+  setGrammar,
+  codeTextArea,
+  updateHighlight,
 }) {
   const rnode = RNode(fetch);
   let action = '_select_an_action_';
@@ -222,6 +231,13 @@ export function buildUI({
     demo: {},
     rhobot: {},
   };
+
+  setGrammar('rholang', RholangGrammar);
+  codeTextArea.addEventListener('change', () => {
+    const tmp = fixIndent(codeTextArea.value);
+    state.term = tmp;
+    updateHighlight(tmp);
+  })
 
   const state = {
     get shard() {
@@ -329,7 +345,7 @@ export function buildUI({
   state.setAction(action); // compute initial term
   state.network = network; // set up shard of initial network
 
-  mount('#actionControl', actionControl(state, { html, getEthProvider }));
+  mount('#actionControl', actionControl(state, { html, getEthProvider, codeTextArea, updateHighlight }));
   mount('#netControl', networkControl(state, { html }));
 
   mount(
@@ -385,9 +401,9 @@ function fixIndent(code) {
  *   term: string?,
  *   shard: { MasterURI: string },
  * }} state
- * @param {HTMLBuilder & EthSignAccess} io
+ * @param {HTMLBuilder & EthSignAccess & { codeTextArea: HTMLElement, updateHighlight: (text: string | null) => void }} io
  */
-function actionControl(state, { html, getEthProvider }) {
+function actionControl(state, { html, getEthProvider, codeTextArea, updateHighlight }) {
   const options = (/** @type {string[]} */ ids) =>
     ids.map(
       (id) =>
@@ -453,6 +469,14 @@ function actionControl(state, { html, getEthProvider }) {
 
   return freeze({
     view() {
+      /* Not sure this should be in the Mithril view pattern.
+         The <texarea> element for code editing used to be created here.
+         It's been moved to participate.html and enhanced with syntax
+         highlighting, so this is the obvious place to update with new action data.
+      */
+      codeTextArea.value = state.term;
+      updateHighlight(state.term);
+
       return html`
         <label
           >Action:
@@ -468,15 +492,6 @@ function actionControl(state, { html, getEthProvider }) {
           </select>
         </label>
         <div class="fields">${fieldControls(state.action, state.fields)}</div>
-        <textarea
-          cols="80"
-          rows="16"
-          onchange=${(event) => {
-            state.term = ckControl(event.target).value;
-          }}
-        >
-${state.term || ''}</textarea
-        >
       `;
     },
   });
