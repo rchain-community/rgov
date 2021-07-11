@@ -55,4 +55,4 @@ jobs:
         run: |
           pytest testing
         env:
-          PYTHONPATH: $GITHUB_WORKSPACE
+          PYTHONPATH: pyrgov
