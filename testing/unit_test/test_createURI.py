@@ -22,7 +22,6 @@ assert balance == funds
 
 uri = "rho:id:doesnotexistxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
 result = rgov.lookupURI(new1, uri)
-print(result)
 assert not result[0]
 
 value = "Hello World"
@@ -32,4 +31,14 @@ uri = result[1]
 
 result = rgov.lookupURI(new1, uri)
 assert result[0]
-assert result[1] == 'Hello World'
+assert result[1] == value
+
+value = "2+2"
+result = rgov.createURI(new1, value)
+assert result[0]
+uri = result[1]
+
+result = rgov.lookupURI(new1, uri)
+print(result)
+assert result[0]
+assert result[1] == value

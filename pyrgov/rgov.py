@@ -8,7 +8,7 @@ from types import TracebackType
 from typing import Iterable, List, Optional, Tuple, Type, TypeVar, Union
 
 from rchain.client import RClient
-from rchain.pb.RhoTypes_pb2 import DeployId
+from rchain.pb.RhoTypes_pb2 import DeployId, Expr, Par
 from rchain.crypto import PrivateKey
 
 import pathlib
@@ -69,6 +69,30 @@ NETWORKS = {
     'rhobot': RHOBOTNET,
     'mainnet': MAINNET,
 }
+
+def protobuf_to_python(obj:Par.exprs):
+    if obj.HasField("g_string"):
+        return obj.g_string
+    if obj.HasField("g_int"):
+        return obj.g_int
+    if obj.HasField("g_uri"):
+        return obj.g_uri
+    if obj.HasField("g_bool"):
+        return obj.g_bool
+    if obj.HasField("e_list_body"):
+        value = []
+        for data in obj.e_list_body.ps:
+            if len(data.exprs) > 0:
+                value.append(protobuf_to_python(data.exprs[0]))
+        return value
+    if obj.HasField("e_map_body"):
+        mapValue = {}
+        for kvs in obj.e_map_body.kvs:
+            key = protobuf_to_python(kvs.key.exprs[0])
+            value = protobuf_to_python(kvs.value.exprs[0])
+            mapValue[key] = value
+        return mapValue
+    return None
 
 def render_contract_template(template_file: pathlib, substitutions: Mapping[str, str]) -> str:
     file = template_file.open()
@@ -384,13 +408,7 @@ class rgovAPI:
         status = [False, "No Data returned"]
         if result == None:
             return status
-        if result[0].exprs[0].HasField("e_list_body"):
-            if result[0].exprs[0].e_list_body.ps[0].exprs[0].HasField("g_string"):
-                if result[0].exprs[0].e_list_body.ps[0].exprs[0].g_string == "URI":
-                    value = result[0].exprs[0].e_list_body.ps[1].exprs[0].g_uri
-                    if len(value) > len(RHOID) and value[:len(RHOID)] == RHOID:
-                        if result[0].exprs[0].e_list_body.ps[2].exprs[0].g_string == "Obj":
-                            if len(result[0].exprs[0].e_list_body.ps[3].exprs) > 0:
-                                object = result[0].exprs[0].e_list_body.ps[3].exprs[0].g_string
-                                status = [True, object]
+        data = protobuf_to_python(result[0].exprs[0])
+        if data[0] == "URI" and data[1] == uri and data[2] == "Obj" and len(data) > 3:
+            status = [True, data[3]]
         return status
