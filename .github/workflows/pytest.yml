@@ -53,4 +53,6 @@ jobs:
           PYTHONPATH: $GITHUB_WORKSPACE
       - name: Test with pytest
         run: |
-          PYTHONPATH=$GITHUB_WORKSPACE pytest testing
+          pytest testing
+        env:
+          PYTHONPATH: $GITHUB_WORKSPACE
