@@ -18,8 +18,10 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
       - name: Install openjdk11
-        run: |
-          sudo apt install openjdk-11-jre-headless
+        uses: actions/setup-java@v2
+        with:
+          distribution: 'adopt'
+          java-version: '11'
       - name: Get rnode
         run: |
           wget https://github.com/rchain/rchain/releases/download/v0.10.2/rnode_0.10.2_all.deb
