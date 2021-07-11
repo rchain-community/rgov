@@ -1,0 +1,46 @@
+name: Run the python tests for rholang actions
+
+on:
+  [ pull_request ]
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: [3.6]
+
+    steps:
+      - uses: actions/checkout@v2
+      - name: Install openjdk11
+        run: |
+          sudo apt install openjdk-11-jre-headless
+      - name: Get rnode
+        run: |
+          wget https://github.com/rchain/rchain/releases/download/v0.10.2/rnode_0.10.2_all.deb
+      - name: Install rnode
+        run: |
+          sudo dpkg -i rnode_0.10.2_all.deb
+      - name: Bootstrap rnode
+        run: |
+          bootstrap/bootstrap
+      - name: Deploy RGOV
+        run: |
+          bootstrap/deploy-all
+      - name: Install PyRchain
+        run: |
+          pip3 install -U pyrchain
+      - name: Run RGOV rnode
+        run: |
+          bootstrap/run-rnode
+          - name: Install and Build 🔧 # This example project is built using npm and outputs the result to the 'build' folder. Replace with the commands required to build your project, or remove this step entirely if your site is pre-built.
+      -name: Install up webpage
+        run: |
+          npm install
+          npm run build
+      - name: Deploy 🚀
+        uses: JamesIves/github-pages-deploy-action@4.1.4
+        with:
+          branch: master # The branch the action should deploy to.
+          folder: dist # The folder the action should deploy.
