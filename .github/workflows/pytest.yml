@@ -34,7 +34,7 @@ jobs:
           bootstrap/deploy-all
       - name: Install PyRchain
         run: |
-          pip3 install -U pyrchain grpcio-tools
+          cd $GITHUB_WORKSPACE && pip3 install -U pyrchain grpcio-tools
           cd pyrchain && pip3 install -e .[dev]
           ./update-protobufs
           ./update-generated || exit 0
@@ -43,9 +43,9 @@ jobs:
           bootstrap/run-rnode
       - name: Install dependencies
         run: |
-          python -m pip install --upgrade pip
-          pip install flake8 pytest requests
-          if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+          python3 -m pip install --upgrade pip
+          pip3 install flake8 pytest requests
+          if [ -f requirements.txt ]; then pip3 install -r requirements.txt; fi
       - name: Lint with flake8
         run: |
           # stop the build if there are Python syntax errors or undefined names
@@ -59,4 +59,4 @@ jobs:
           cd testing && pytest
         env:
           # what a complete hack here. Should be referencing the rgov root instead of explicit path
-          PYTHONPATH: /home/runner/work/rgov/rgov
+          PYTHONPATH: $GITHUB_WORKSPACE
