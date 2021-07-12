@@ -1,0 +1,34 @@
+match [ "inbox", "", ""] {
+[lockerTag, name, ballot] => {
+new
+   trace,
+   lookupCh,
+   bCh,
+   ch1,
+   lookup(`rho:registry:lookup`),
+   return(`rho:rchain:deployId`),
+   deployerId(`rho:rchain:deployerId`)
+in {
+   for (@{"read": *MCA, ..._} <<- @[*deployerId, "dictionary"]) {
+      return!(["MCA", *MCA]) |
+      MCA!("Ballot", *lookupCh)
+   } |
+   for(Ballot <- lookupCh) {
+      return!(["Ballot", *Ballot]) |
+      Ballot!(ballot, *bCh, *return) |
+      for(admin, tally <- bCh) {
+         return!(["bCh", *admin, *tally]) |
+         for (@{"inbox": *inbox, "URI": uri ..._} <<- @[*deployerId, lockerTag]) {
+            return!(["Ballot", name, {"admin": *admin, "tally": *tally}]) |
+            inbox!(["Ballot", name, {"admin": *admin, "tally": *tally}], *return) |
+            admin!("giveRightToVote", uri, *ch1, *return) |
+            for (voterCap <- ch1) {
+               inbox!(["voter", name, {"voterCap": *voterCap}], *return) 
+            }
+
+         }
+      }
+   }
+}
+
+}} // end of match
