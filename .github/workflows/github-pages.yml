@@ -1,16 +1,11 @@
 name: Run the python tests for rholang actions
 
 on:
-  [ pull_request ]
+  pull_request
 
 jobs:
   build:
-
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        python-version: [3.6]
-
     steps:
       - uses: actions/checkout@v2
       - name: Install openjdk11
@@ -36,8 +31,8 @@ jobs:
         run: |
           npm install
           npm run build
-      - name: Deploy 🚀
+      - name: Deploy webpage
         uses: JamesIves/github-pages-deploy-action@4.1.4
         with:
-          branch: master # The branch the action should deploy to.
+          branch: action-github-pages # The branch the action should deploy to.
           folder: dist # The folder the action should deploy.
