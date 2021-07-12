@@ -34,7 +34,11 @@ jobs:
           bootstrap/deploy-all
       - name: Install PyRchain
         run: |
-          pip3 install -U pyrchain
+          pip3 install -U pyrchain grpc-tools
+          git clone git@github.com:rchain/pyrchain.git
+          cd rchain/pyrchain
+          ./update-protobufs
+          ./update-generated
       - name: Run RGOV rnode
         run: |
           bootstrap/run-rnode
