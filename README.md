@@ -7,6 +7,7 @@ This project aims to create an environment to support governance capabilities on
 _image credit: [Liquid Democracy, Ethereum, and the slow path to revolution\. \| Jul 2017 by Luke Duncan \| 1Hive \| Medium](https://medium.com/1hive/liquid-democracy-ethereum-and-the-slow-path-to-revolution-9c1d5916e706)_
 
 ## Progress
+ - 2021-07: [Full RGOV developer environment](https://rchain-community.github.io/rgov/)
 
  - 2021-05: [localhost rgov development](https://docs.google.com/document/d/1V5k9tDjztEVDYiXJG1-Hpb0rNtVcV22GrsdXb0pDUx8/edit#)
    - [Localhost Setup Demo video](https://www.youtube.com/watch?v=P1jxxElpKX0)
