@@ -1,10 +1,11 @@
-name: Run the python tests for rholang actions
-
 on:
-  pull_request
+  pull_request:
+
+name: Deploy GitHub pages
 
 jobs:
   build:
+    name: Deploy GitHub pages
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
