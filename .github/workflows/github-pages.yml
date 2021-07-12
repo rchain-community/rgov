@@ -1,0 +1,24 @@
+name: Build and Deploy
+on: [push]
+  branches:
+    - master
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout 🛎️
+        uses: actions/checkout@v2.3.1
+
+      - name: Install and Build 🔧
+        run: |
+          npm install
+          npm run build
+          cp -r src/actions dist/
+          cp src/rgov-development.css dist/
+          cp src/favicon.ico dist/
+
+      - name: Deploy 🚀
+        uses: JamesIves/github-pages-deploy-action@4.1.4
+        with:
+          branch: pages # The branch the action should deploy to.
+          folder: dist # The folder the action should deploy.
