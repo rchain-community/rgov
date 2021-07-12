@@ -32,13 +32,23 @@ jobs:
       - name: Deploy RGOV
         run: |
           bootstrap/deploy-all
-      - name: Install PyRchain
+      - name: find
         run: |
           find /home/runner
+      - name: Install PyRchain
+        run: |
           cd $GITHUB_WORKSPACE && pip3 install -U pyrchain grpcio-tools
+      - name: find2
+        run: |
           find /home/runner
+      -name: install dev
+        run: |
           cd $GITHUB_WORKSPACE/pyrchain && pip3 install -e .[dev]
+      - name: find3
+        run: |
           find /home/runner
+      - name: update
+        run: |
           ./update-protobufs
           ./update-generated || exit 0
       - name: Run RGOV rnode
@@ -59,7 +69,7 @@ jobs:
           PYTHONPATH: $GITHUB_WORKSPACE
       - name: Test with pytest
         run: |
-          cd testing && pytest
+          cd $GITHUB_WORKSPACE/testing && pytest
         env:
           # what a complete hack here. Should be referencing the rgov root instead of explicit path
           PYTHONPATH: $GITHUB_WORKSPACE
