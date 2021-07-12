@@ -34,8 +34,11 @@ jobs:
           bootstrap/deploy-all
       - name: Install PyRchain
         run: |
+          find /home/runner
           cd $GITHUB_WORKSPACE && pip3 install -U pyrchain grpcio-tools
-          cd pyrchain && pip3 install -e .[dev]
+          find /home/runner
+          cd $GITHUB_WORKSPACE/pyrchain && pip3 install -e .[dev]
+          find /home/runner
           ./update-protobufs
           ./update-generated || exit 0
       - name: Run RGOV rnode
