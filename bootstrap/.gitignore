@@ -1,9 +1,0 @@
-rhoid.bootstrap.js
-rhoid.bootstrap.json
-*.log
-rchain/
-rnode.data.dir_IS_UNDEFINED/
-snapshot/
-generated.*
-generated/
-log/

@@ -1,5 +1,0 @@
-#!/bin/bash
-
-! cd "$(dirname "$0")" && echo "Could not cd to script directory" && exit 1
-
-cd snapshot && find . -name "*.tgz" -ls |sed -e 's/\.tgz$//'
