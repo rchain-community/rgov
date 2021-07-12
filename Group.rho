@@ -52,7 +52,7 @@ in {
           groupMapCh!(groups) |
           return!(Nil)
         } else {
-          for(@{"read": *masterRead, ..._} <<- @[*deployerId, "MasterContractAdmin"]) {
+          for(@{"read": *masterRead, ..._} <<- @[*deployerId, "dictionary"]) {
             stdout!({"read": *masterRead}) |
             masterRead!("Directory", *ret)
           } |

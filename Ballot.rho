@@ -47,6 +47,9 @@ in {
                 voteCh!(votes)
               }
             } |
+            contract voter(@"ballot", return, log) = {
+              return!(ballot)
+            } |
             contract voter(@"choices", @priorDelegates, return, log) = {
               for ( @votes <<- voteCh ) {
                 log!(["vote",votes])|
