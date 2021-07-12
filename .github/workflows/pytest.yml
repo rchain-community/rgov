@@ -35,10 +35,9 @@ jobs:
       - name: Install PyRchain
         run: |
           pip3 install -U pyrchain grpcio-tools
-          git clone git@github.com:rchain/pyrchain.git
-          cd rchain/pyrchain
+          cd pyrchain && pip3 install -e .[dev]
           ./update-protobufs
-          ./update-generated
+          ./update-generated || exit 0
       - name: Run RGOV rnode
         run: |
           bootstrap/run-rnode
