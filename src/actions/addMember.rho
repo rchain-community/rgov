@@ -10,10 +10,10 @@ new
 in {
    for(@{"peek": *peek, "inbox": *inbox, ..._} <<- @{[*deployerId, lockerTag]}) {
       lookup!(themBoxReg, *boxCh) |
-      peek!("Community", group, *ret)|
+      peek!("Group", group, *ret)|
       for ( @[{"admin": *admin, "read": *read, "write": *write, "grant": *grant}] <- ret; themBox <- boxCh ) {
          //stdout!("adding user")|
-         admin!("add user", name, userid, *thembox, revAddres, *ret, *deployId) |
+         admin!("add user", name, revAddress, themBoxReg, *ret, *deployId) |
          for (selfmod <- ret) {
             //stdout!("user added") |
             themBox!(["member", group, {"read": *read, "selfmod": *selfmod}], *deployId)

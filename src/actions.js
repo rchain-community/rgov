@@ -48,7 +48,30 @@ export const actions = {
     },
     filename: 'actions/receiveFromInbox.rho',
   },
-  ____________________________: {
+  ______________________________: {
+    fields: {},
+  },
+  newBallot: {
+    fields: {
+      lockerTag: { value: 'inbox', type: 'string' },
+      name: { type: 'string', value: '' },
+      // choice, choice, choice, ...
+      ballot: {
+        type: "number",
+        value: '',
+      },
+    },
+    filename: 'actions/newBallot.rho',
+  },
+  castBallot: {
+    fields: {
+      lockerTag: { value: 'inbox', type: 'string' },
+      ballot: { value: '', type: 'string' },
+      choices: { value: '', type: 'number' },
+    },
+    filename: 'actions/castBallot.rho',
+  },
+  _________________________: {
     fields: {},
   },
   newIssue: {
@@ -109,7 +132,7 @@ export const actions = {
     },
     filename: 'actions/tallyVotes.rho',
   },
-  ______________________________: {
+  ____________________________: {
     fields: {},
   },
   share: {
