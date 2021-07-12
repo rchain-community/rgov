@@ -32,22 +32,22 @@ jobs:
       - name: Deploy RGOV
         run: |
           bootstrap/deploy-all
-      - name: find
+      - name: finder
         run: |
           find /home/runner
       - name: Install PyRchain
         run: |
           cd $GITHUB_WORKSPACE && pip3 install -U pyrchain grpcio-tools
-      - name: find2
+      - name: finder2
         run: |
           find /home/runner
-      -name: install dev
+      - name: install dev
         run: |
           cd $GITHUB_WORKSPACE/pyrchain && pip3 install -e .[dev]
-      - name: find3
+      - name: finder3
         run: |
           find /home/runner
-      - name: update
+      - name: updater
         run: |
           ./update-protobufs
           ./update-generated || exit 0
