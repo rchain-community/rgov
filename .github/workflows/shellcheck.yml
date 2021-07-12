@@ -1,0 +1,19 @@
+on:
+  pull_request:
+
+name: 'shellcheck Trigger: pull_request'
+
+jobs:
+  shellcheck:
+    name: Shellcheck
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+    - name: Run ShellCheck
+      uses: ludeeus/action-shellcheck@master
+      with:
+        check_together: 'yes'
+        scandir: './bootstrap'
+        ignore: 'PrivateKeys'
+        additional_files: 'bootstrap deploy deploy-all propose check-rnode create-snapshot restore-snapshot explore eval lookupURI run-rnode stop-rnode'
+        

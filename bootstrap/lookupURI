@@ -1,17 +1,18 @@
 #!/bin/bash
 
-cd `dirname $0`
+! cd "$(dirname "$0")" && echo "Could not cd to script directory" && exit 1
 
 mkdir -p log
 
-TMPFILE=`mktemp`
+TMPFILE=$(mktemp)
 
-cat > $TMPFILE << EOF
+cat > "$TMPFILE" << EOF
 match [\`$1\`] { [URI] => {
-`cat ../src/actions/lookupURI.rho`
+$(cat ../src/actions/lookupURI.rho)
 }}
 EOF
 
-./deploy $TMPFILE | grep "DeployId is:" && ./propose | tail -n 0 -f log/run-rnode.log | sed '/URI/q' | grep URI
+# shellcheck disable=SC2016
+./deploy "$TMPFILE" | grep "DeployId is:" && ./propose | tail -n 0 -f log/run-rnode.log | sed '/URI/q' | grep URI
 
-rm $TMPFILE
+rm "$TMPFILE"

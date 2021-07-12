@@ -12,24 +12,26 @@ from rchain.pb.RhoTypes_pb2 import DeployId
 from rchain.crypto import PrivateKey
 
 import pathlib
-BASEPATH = str(pathlib.Path(__file__).parent.absolute())
+PYRGOV = pathlib.Path(__file__).parent.resolve()
+BASEPATH = PYRGOV.parent
 
 # these are predefined param
 TRANSFER_PHLO_LIMIT = 1000000
 TRANSFER_PHLO_PRICE = 1
 
-PRIVATE_KEYS = BASEPATH + '/../bootstrap/PrivateKeys/'
-CHECK_BALANCE_RHO_TPL = BASEPATH + '/../src/actions/checkBalance.rho'
-TRANSFER_RHO_TPL = BASEPATH + '/../src/actions/transfer.rho'
-NEWINBOX_RHO_TPL = BASEPATH + '/../src/actions/newinbox.rho'
-NEWISSUE_RHO_TPL = BASEPATH + '/../src/actions/newIssue.rho'
-ADDVOTER_RHO_TPL = BASEPATH + '/../src/actions/addVoterToIssue.rho'
-PEEKINBOX_RHO_TPL = BASEPATH + '/../src/actions/peekInbox.rho'
-CASTVOTE_RHO_TPL = BASEPATH + '/../src/actions/castVote.rho'
-DELEGATEVOTE_RHO_TPL = BASEPATH + '/../src/actions/delegateVote.rho'
-TALLYVOTES_RHO_TPL = BASEPATH + '/../src/actions/tallyVotes.rho'
+PRIVATE_KEYS = BASEPATH.joinpath('bootstrap', 'PrivateKeys')
+CHECK_BALANCE_RHO_TPL = BASEPATH.joinpath('src', 'actions', 'checkBalance.rho')
+TRANSFER_RHO_TPL = BASEPATH.joinpath('src', 'actions', 'transfer.rho')
+NEWINBOX_RHO_TPL = BASEPATH.joinpath('src', 'actions', 'newinbox.rho')
+NEWISSUE_RHO_TPL = BASEPATH.joinpath('src', 'actions', 'newIssue.rho')
+ADDVOTER_RHO_TPL = BASEPATH.joinpath('src', 'actions', 'addVoterToIssue.rho')
+PEEKINBOX_RHO_TPL = BASEPATH.joinpath('src', 'actions', 'peekInbox.rho')
+CASTVOTE_RHO_TPL = BASEPATH.joinpath('src', 'actions', 'castVote.rho')
+DELEGATEVOTE_RHO_TPL = BASEPATH.joinpath('src', 'actions', 'delegateVote.rho')
+TALLYVOTES_RHO_TPL = BASEPATH.joinpath('src', 'actions', 'tallyVotes.rho')
+DISPLAYVOTE_RHO_TPL = BASEPATH.joinpath('src', 'actions', 'displayVote.rho')
 
-MASTERURI = BASEPATH + '/../src/MasterURI.'
+MASTERURI = BASEPATH.joinpath('src')
 
 LOCALHOST = {
     'observerBase': {'url': 'http://', 'host': 'localhost', 'port': 40402},
@@ -65,11 +67,12 @@ NETWORKS = {
     'mainnet': MAINNET,
 }
 
-def render_contract_template(template_file: str, substitutions: Mapping[str, str]) -> str:
-    file = open(template_file)
+def render_contract_template(template_file: pathlib, substitutions: Mapping[str, str]) -> str:
+    file = template_file.open()
     template = file.read()
     file.close()
-    return string.Template(template).substitute(substitutions)
+    contract = string.Template(template).substitute(substitutions)
+    return contract
 
 class rgovAPI:
 
@@ -97,19 +100,19 @@ class rgovAPI:
         self.close()
 
     def import_shared_private_keys(self) -> Mapping[str, str]:
-        search = PRIVATE_KEYS + "pk.*"
+        search = PRIVATE_KEYS
         keys = {}
-        for fname in glob.glob(search):
-            name = fname.split("/")[-1]
-            names = name.split(".")
-            if len(names) == 2:
-                file = open(fname)
-                pk = file.read()
-                file.close()
-                keys[names[1]] = pk
+        for fname in search.glob("pk.*"):
+            name = fname.suffix[1:]
+            file = fname.open()
+            pk = file.read()
+            file.close()
+            keys[name] = pk
         return keys
 
     def get_private_key(self, name: str) -> PrivateKey:
+        if name == 'anonymous':
+            return PrivateKey.generate() # Warning potential Ambient Access, if account is given REV
         if name in self.keyVault:
             return PrivateKey.from_hex(self.keyVault[name])
         reason = 'No key found in vault for ' + name
@@ -129,10 +132,14 @@ class rgovAPI:
     def checkBalance(self, rev_addr: str, block_hash: str='') -> int:
         contract = render_contract_template(
             CHECK_BALANCE_RHO_TPL,
-            {'addr': rev_addr, 'myBalance': "mybal"},
+            {'addr': rev_addr, 'myBalance': "mybal",
+            'rev': "${rev}", 'fraction': "${fraction}", 'num': "${num}"},
         )
         result = self.client.exploratory_deploy(contract, block_hash)
-        return result[0].exprs[0].e_list_body.ps[2].exprs[0].g_int
+        if result[0].exprs[0].HasField("e_list_body"):
+            return result[0].exprs[0].e_list_body.ps[2].exprs[0].g_int
+        if result[1].exprs[0].HasField("e_list_body"):
+            return result[1].exprs[0].e_list_body.ps[2].exprs[0].g_int
 
     def transfer(self, from_addr: str, to_addr: str, amount: int, key: PrivateKey) -> str:
         contract = render_contract_template(
@@ -149,8 +156,8 @@ class rgovAPI:
         return [status, msg]
 
     def newInbox(self, key: PrivateKey) -> str:
-        fname = MASTERURI + self.net_name + '.json'
-        file = open(fname)
+        fname = MASTERURI.joinpath('MasterURI.' + self.net_name + '.json')
+        file = fname.open()
         masterstr = file.read()
         file.close()
         start = masterstr.find('rho:id:')
@@ -344,3 +351,45 @@ class rgovAPI:
                                 votes[choice] = voted.value.exprs[0].g_int
         return [found_counts and found_done, votes]
 
+    def displayVote(self, key: PrivateKey, inbox: str, issue: str) -> List:
+        contract = render_contract_template(
+            DISPLAYVOTE_RHO_TPL,
+            {'inbox': inbox, 'issue': issue},
+        )
+        deployId = self.client.deploy_with_vabn_filled(key, contract, TRANSFER_PHLO_PRICE, TRANSFER_PHLO_LIMIT)
+        print("displayVote ", deployId);
+        self.propose()
+        result = self.client.get_data_at_deploy_id(deployId)
+        vote = {}
+        found = False
+        status = [False, "No Issue Found"]
+        if result.length == 0:
+            return status
+        for BData in result.blockInfo[0].postBlockData:
+            if len(BData.exprs) > 0:
+                if BData.exprs[0].HasField("e_list_body"):
+                    if BData.exprs[0].e_list_body.ps[0].exprs[0].HasField("g_string"):
+                        if BData.exprs[0].e_list_body.ps[0].exprs[0].g_string == "vote":
+                            if len(BData.exprs[0].e_list_body.ps[1].exprs) > 0:
+                                if BData.exprs[0].e_list_body.ps[1].exprs[0].HasField("g_string"):
+                                    vote['vote'] = BData.exprs[0].e_list_body.ps[1].exprs[0].g_string
+                            found = True
+                        if BData.exprs[0].e_list_body.ps[0].exprs[0].g_string == "delegate":
+                            if len(BData.exprs[0].e_list_body.ps[1].exprs) > 0:
+                                if BData.exprs[0].e_list_body.ps[1].exprs[0].HasField("g_uri"):
+                                    vote['delegate'] = BData.exprs[0].e_list_body.ps[1].exprs[0].g_uri
+                            found = True
+                if BData.exprs[0].HasField("e_map_body"):
+                    for kvs in BData.exprs[0].e_map_body.kvs:
+                        if kvs.key.exprs[0].g_string == "name":
+                            vote['uri'] = kvs.value.exprs[0].g_uri
+                            found = True
+                        if kvs.key.exprs[0].g_string == "proposals":
+                            choices = []
+                            for choice in kvs.value.exprs[0].e_list_body.ps:
+                                choices.append(choice.exprs[0].g_string)
+                            vote['proposals'] = choices
+                            found = True
+        if found:
+            status = [True, vote]
+        return status
