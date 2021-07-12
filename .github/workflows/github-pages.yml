@@ -12,7 +12,8 @@ jobs:
           npm install
           npm run build
           cp -r src/actions dist/
-          cp src/rgov-development.css dist
+          cp src/rgov-development.css dist/
+          cp src/favicon.ico dist/
 
       - name: Deploy 🚀
         uses: JamesIves/github-pages-deploy-action@4.1.4
