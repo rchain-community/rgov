@@ -12,7 +12,7 @@ jobs:
           npm install
           npm run build
           cp -r src/actions dist/
-          cp src/rgov-development.css src
+          cp src/rgov-development.css dist
 
       - name: Deploy 🚀
         uses: JamesIves/github-pages-deploy-action@4.1.4
