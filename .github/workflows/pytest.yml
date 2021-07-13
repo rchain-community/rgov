@@ -18,16 +18,15 @@ jobs:
           python-version: ${{ matrix.python-version }}
       - name: Install PyRchain
         run: |
-          pip3 install -U grpcio-tools
-      - name: install pyrchain dev
-        run: |
-          pip3 install -U pyrchain
-          echo `pip3 show pyrchain|grep 'Location'|cut -d' ' -f2`
-          cd `pip3 show pyrchain|grep 'Location'|cut -d' ' -f2`
-          sudo pip3 install -e .[dev]
+          echo $GITHUB_WORKSPACE
+          cd $GITHUB_WORKSPACE
+          pip3 install -vvv -U grpcio-tools
+          pip3 install -vvv -U pyrchain
+          pip3 install -vvv -e .[dev]
       - name: update protobufs and generated files
         run: |
-          cd `pip3 show pyrchain|grep 'Location'|cut -d' ' -f2`
+          echo $GITHUB_WORKSPACE/pyrchain
+          cd $GITHUB_WORKSPACE/pyrchain
           ./update-protobufs
           ./update-generated || exit 0
       - name: Install openjdk11
