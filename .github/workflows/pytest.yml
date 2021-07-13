@@ -24,7 +24,7 @@ jobs:
           pip3 install -vv --ignore-installed --user pyrchain
           pip3 install -vv --ignore-installed --user -e .[dev]
         env:
-          PYTHONPATH=$GITHUB_WORKFLOW
+          PYTHONPATH: $GITHUB_WORKFLOW
       - name: update protobufs and generated files
         run: |
           echo `pip3 show pyrchain|grep 'location'|cut -d' ' -f2`
@@ -32,7 +32,7 @@ jobs:
           ./update-protobufs
           ./update-generated || exit 0
         env:
-          PYTHONPATH=$GITHUB_WORKSPACE
+          PYTHONPATH: $GITHUB_WORKSPACE
       - name: Install openjdk11
         run: |
           sudo apt install openjdk-11-jre-headless
