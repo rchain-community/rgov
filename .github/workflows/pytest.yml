@@ -24,7 +24,7 @@ jobs:
           pip3 install -U pyrchain
           echo `pip3 show pyrchain|grep 'Location'|cut -d' ' -f2`
           cd `pip3 show pyrchain|grep 'Location'|cut -d' ' -f2`
-          pip3 install -e .[dev]
+          sudo pip3 install -e .[dev]
       - name: update protobufs and generated files
         run: |
           cd `pip3 show pyrchain|grep 'Location'|cut -d' ' -f2`
