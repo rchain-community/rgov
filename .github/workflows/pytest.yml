@@ -17,6 +17,19 @@ jobs:
         uses: actions/setup-python@v2
         with:
           python-version: ${{ matrix.python-version }}
+      - name: Install PyRchain
+        run: |
+          pip3 install -U pyrchain grpcio-tools
+          cd `pip3 show pyrchain|grep 'Location'|cut -d' ' -f2`
+      - name: install dev
+        run: |
+          cd `pip3 show pyrchain|grep 'Location'|cut -d' ' -f2`
+          pip3 install -e .[dev]
+      - name: update protobufs and generated files
+        run: |
+          cd `pip3 show pyrchain|grep 'Location'|cut -d' ' -f2`
+          ./update-protobufs
+          ./update-generated || exit 0
       - name: Install openjdk11
         run: |
           sudo apt install openjdk-11-jre-headless
@@ -35,25 +48,6 @@ jobs:
       - name: finder
         run: |
           find /home/runner
-      - name: Install PyRchain
-        run: |
-          pip3 install -U pyrchain grpcio-tools
-          cd `pip3 show pyrchain|grep 'Location'|cut -d' ' -f2`
-      - name: finder2
-        run: |
-          find /home/runner
-      - name: install dev
-        run: |
-          cd `pip3 show pyrchain|grep 'Location'|cut -d' ' -f2`
-          pip3 install -e .[dev]
-      - name: finder3
-        run: |
-          find /home/runner
-      - name: updater
-        run: |
-          cd `pip3 show pyrchain|grep 'Location'|cut -d' ' -f2`
-          ./update-protobufs
-          ./update-generated || exit 0
       - name: Run RGOV rnode
         run: |
           echo $GITHUB_WORKSPACE
