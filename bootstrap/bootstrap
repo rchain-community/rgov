@@ -71,4 +71,4 @@ wait "$PID"
 echo "$ME: Creating snapshot '$ME'"
 ./create-snapshot "$ME"
 
-stty echo
+stty echo || exit 0
