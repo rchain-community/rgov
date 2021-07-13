@@ -65,6 +65,9 @@ jobs:
       - name: Test with pytest
         run: |
           echo $GITHUB_WORKSPACE
-          cd $GITHUB_WORKSPACE/testing && pytest
-        env:
-          PYTHONPATH: $GITHUB_WORKSPACE:$GITHUB_WORKSPACE/rgov
+          export PYTHONPATH=$GITHUB_WORKSPACE:$GITHUB_WORKSPACE/rgov
+          echo $PYTHONPATH
+          cd $GITHUB_WORKSPACE/rgov
+          ls testing
+          testing/unit_test/test_peekInbox.py
+          testing && pytest
