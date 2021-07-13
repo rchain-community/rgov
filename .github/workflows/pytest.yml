@@ -21,7 +21,7 @@ jobs:
           pip3 install -U grpcio-tools
       - name: install pyrchain dev
         run: |
-          pip3 install -e pyrchain
+          pip3 install -U pyrchain
           echo `pip3 show pyrchain|grep 'Location'|cut -d' ' -f2`
           cd `pip3 show pyrchain|grep 'Location'|cut -d' ' -f2`
           pip3 install -e .[dev]
