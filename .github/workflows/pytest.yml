@@ -21,9 +21,8 @@ jobs:
         run: |
           pip3 install -U pyrchain grpcio-tools
           cd `pip3 show pyrchain|grep 'Location'|cut -d' ' -f2`
-      - name: install dev
+      - name: install pyrchain dev
         run: |
-          cd `pip3 show pyrchain|grep 'Location'|cut -d' ' -f2`
           pip3 install -e .[dev]
       - name: update protobufs and generated files
         run: |
@@ -45,9 +44,6 @@ jobs:
       - name: Deploy RGOV
         run: |
           bootstrap/deploy-all
-      - name: finder
-        run: |
-          find /home/runner
       - name: Run RGOV rnode
         run: |
           echo $GITHUB_WORKSPACE
