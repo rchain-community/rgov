@@ -20,15 +20,15 @@ jobs:
         run: |
           echo $GITHUB_WORKSPACE
           cd $GITHUB_WORKSPACE
-          pip3 install -vv -U grpcio-tools
-          pip3 install -vv --ignore-installed --user pyrchain
-          pip3 install -vv --ignore-installed --user -e .[dev]
+          pip3 install -U grpcio-tools
+          git clone https://github.com/rchain/pyrchain.git
+          cd pyrchain
+          pip3 install -e .[dev]
         env:
           PYTHONPATH: $GITHUB_WORKFLOW
       - name: update protobufs and generated files
         run: |
-          echo `pip3 show pyrchain|grep 'location'|cut -d' ' -f2`
-          cd `pip3 show pyrchain|grep 'location'|cut -d' ' -f2`
+          cd pyrchain
           ./update-protobufs
           ./update-generated || exit 0
         env:
