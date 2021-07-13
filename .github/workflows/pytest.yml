@@ -19,9 +19,9 @@ jobs:
       - name: Install PyRchain
         run: |
           pip3 install -U pyrchain grpcio-tools
-          cd `pip3 show pyrchain|grep 'Location'|cut -d' ' -f2`
       - name: install pyrchain dev
         run: |
+          cd `pip3 show pyrchain|grep 'Location'|cut -d' ' -f2`
           pip3 install -e .[dev]
       - name: update protobufs and generated files
         run: |
@@ -34,8 +34,6 @@ jobs:
       - name: Get rnode
         run: |
           wget https://github.com/rchain/rchain/releases/download/v0.10.2/rnode_0.10.2_all.deb
-      - name: Install rnode
-        run: |
           sudo dpkg -i rnode_0.10.2_all.deb
       - name: Bootstrap rnode
         run: |
@@ -45,8 +43,6 @@ jobs:
           bootstrap/deploy-all
       - name: Run RGOV rnode
         run: |
-          echo $GITHUB_WORKSPACE
-          cd $GITHUB_WORKSPACE
           bootstrap/run-rnode
       - name: Install dependencies
         run: |
