@@ -23,18 +23,16 @@ jobs:
           pip3 install -vv -U grpcio-tools
           pip3 install -vv --ignore-installed --user pyrchain
           pip3 install -vv --ignore-installed --user -e .[dev]
-        with:
-          env:
-            PYTHONPATH=$GITHUB_WORKFLOW
+        env:
+          PYTHONPATH=$GITHUB_WORKFLOW
       - name: update protobufs and generated files
         run: |
           echo `pip3 show pyrchain|grep 'location'|cut -d' ' -f2`
           cd `pip3 show pyrchain|grep 'location'|cut -d' ' -f2`
           ./update-protobufs
           ./update-generated || exit 0
-        with:
-          env:
-            PYTHONPATH=$GITHUB_WORKSPACE
+        env:
+          PYTHONPATH=$GITHUB_WORKSPACE
       - name: Install openjdk11
         run: |
           sudo apt install openjdk-11-jre-headless
