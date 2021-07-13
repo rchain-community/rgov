@@ -56,7 +56,7 @@ while true;do
 	fi
 done | tee "$LOGFILE"
 
-cat < /tmp/deploy-all.fifo | tee "$LOGFILE" &
+cat < /tmp/deploy-all.fifo | tee -a "$LOGFILE" &
 
 deployFiles() {
    WAITPID=""
