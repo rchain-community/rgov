@@ -74,4 +74,4 @@ jobs:
           echo $PYTHONPATH
           ls testing
           testing/unit_test/test_peekInbox.py
-          testing && pytest
+          cd testing && pytest
