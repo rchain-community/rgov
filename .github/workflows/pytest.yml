@@ -18,7 +18,7 @@ jobs:
           python-version: ${{ matrix.python-version }}
       - name: Install PyRchain
         run: |
-          pip3 install -U pyrchain grpcio-tools
+          pip3 install -U grpcio-tools
       - name: install pyrchain dev
         run: |
           pip3 install -e pyrchain[dev]
