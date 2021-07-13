@@ -62,11 +62,11 @@ jobs:
           PYTHONPATH: $GITHUB_WORKSPACE
       - name: Test with pytest
         run: |
-          ls .
-          ls -d *
-          ls *
+          ls -a .
+          ls -da *
+          ls -a *
           echo $GITHUB_WORKSPACE
-          export PYTHONPATH=~:$GITHUB_WORKSPACE:~/.local/lib/python3.8/site-packages:$GITHUB_WORKSPACE/pyrchain
+          export PYTHONPATH=~:$GITHUB_WORKSPACE:~/.local/lib/python3.6/site-packages:$GITHUB_WORKSPACE/pyrchain
           echo $PYTHONPATH
           ls testing
           testing/unit_test/test_peekInbox.py
