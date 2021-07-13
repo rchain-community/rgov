@@ -4,7 +4,7 @@ Thanks for your interest in contributing!
 
 ## Quality Code Style
 
-This project uses [```shellcheck```][https://github.com/koalaman/shellcheck] for static analysis of shell scripts. Pull requests that do not pass ```shellcheck``` will require remediation before approval.
+This project uses [```shellcheck```](https://github.com/koalaman/shellcheck) for static analysis of shell scripts. Pull requests that do not pass ```shellcheck``` will require remediation before approval.
 Shell script contributors using vscode are encouraged to install the vscode extension https://marketplace.visualstudio.com/items?itemName=timonwong.shellcheck.
 ```shellcheck``` is also available in the Ubuntu package ```shellcheck```
 
