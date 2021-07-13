@@ -21,6 +21,7 @@ jobs:
           pip3 install -U pyrchain grpcio-tools
       - name: install pyrchain dev
         run: |
+          cd pyrchain
           pip3 install -e .[dev]
       - name: update protobufs and generated files
         run: |
