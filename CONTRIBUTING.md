@@ -105,7 +105,7 @@ Propose the previously deployed rholang file "test.rho"
 bootstrap/propose
 ```
 
-## To deploy the contractsusing jakefile: (out of date)
+## To deploy the contracts using jakefile: (out of date)
 
 ```
 npm install
