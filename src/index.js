@@ -8,7 +8,7 @@ import m from 'mithril';
 import { getEthProvider } from 'rchain-api';
 import Prism, { highlightElement } from 'prismjs';
 import 'prismjs/plugins/line-numbers/prism-line-numbers';
-import { unwrap, buildUI, makeBusy, ckControl } from './participate';
+import { unwrap, buildUI, makeBusy, ckControl, signIn } from './participate';
 
 // WARNING: ambient access
 // Deal with "disappearing" newlines
@@ -33,6 +33,10 @@ document.addEventListener('DOMContentLoaded', () => {
   /** @type HTMLCodeElement */
   const prismElement = unwrap(document.getElementById("highlighting-content"));
 
+  //const signIn = unwrap(document.getElementById("siginIn"));
+
+  
+
   /** @param text: string */
   function updateHighlight(text) {
     prismElement.innerHTML = text;
@@ -53,6 +57,10 @@ document.addEventListener('DOMContentLoaded', () => {
   editorElement.addEventListener('scroll', () => {
     syncScroll();
   });
+
+  // signIn.addEventListener('click', () => {
+  //   console.log('Enter');
+  //})
 
   buildUI({
     html,

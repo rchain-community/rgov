@@ -30,5 +30,9 @@ module.exports = {
       template: './src/participate.html',
       filename: 'index.html',
     }),
+    // new HTMLWebpackPlugin({
+    //   template: './src/ballot.html',
+    //   filename: 'voting.html',
+    // })
   ],
 };

@@ -360,6 +360,7 @@ export function buildUI({
     }),
   );
   mount('#groupControl', groupControl(state, { html }));
+  mount('#signIn', signIn({ html, getEthProvider}));
 }
 
 /**
@@ -724,3 +725,32 @@ function groupControl(state, { html }) {
     },
   });
 }
+
+//Voting Interface signin button - Work In Progress
+export function signIn({ html, getEthProvider }) {
+  const metaMaskP = getEthProvider().then((ethereum) =>
+    MetaMaskAccount(ethereum),
+  );
+
+  return freeze({
+    view(){
+      return html`<button class="signin-btn"
+      onclick=${(/** @type {Event} */ _event) => {
+        metaMaskP.then((mm) =>
+          mm.ethereumAddress().then((ethAddr) => {
+            const revAddr = getAddrFromEth(ethAddr);
+            if (!revAddr) throw new Error('bad ethAddr???');
+            // const current = { [name]: revAddr };
+            // const old = state.fields;
+            // state.fields = { ...old, ...current };
+            console.log(revAddr);
+          }),
+        );
+        return false;
+      }}
+    >
+      Connect Wallet
+    </button>`;
+    }
+  })
+} 

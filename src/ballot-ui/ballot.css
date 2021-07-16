@@ -1,0 +1,21 @@
+.custom-navbar {
+    background-color:  #e4e4e4 !important;
+    height: 70px;
+}
+
+.container {
+    margin-bottom: 20px;
+}
+
+.signin-btn {
+    background-color: #9a9b96;
+	margin-left: 10px;
+	color: black;
+	border: none;
+	height: 30px;
+	width: 70px;
+}
+
+.signin-btn:hover {
+    background-color:#777774;
+}
