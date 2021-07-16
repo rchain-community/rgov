@@ -71,6 +71,13 @@ export const actions = {
     },
     filename: 'actions/castBallot.rho',
   },
+  tallyBallot: {
+    fields: {
+      lockerTag: { value: 'inbox', type: 'string' },
+      ballot: { value: '', type: 'string' },
+    },
+    filename: 'actions/tallyBallot.rho',
+  },
   _________________________: {
     fields: {},
   },
