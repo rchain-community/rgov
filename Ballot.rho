@@ -178,14 +178,14 @@ in {
 ], *bCh, *trace) |
     for (admin, tally <- bCh) {
       trace!(["Ballot returned", *admin, *tally]) |
-      admin!("giveRightToVote", "Owans", *OwansVoterCh, *trace) |
-      admin!("giveRightToVote", "jimscarver", *jimscarverVoterCh, *trace) |
-      admin!("giveRightToVote", "aviation_hacker", *aviation_hackerVoterCh, *trace) |
-      admin!("giveRightToVote", "momchilov", *momchilovVoterCh, *trace) |
+      admin!("giveRightToVote", `rho:rchain:Owans`, *OwansVoterCh, *trace) |
+      admin!("giveRightToVote", `rho:rchain:jim`, *jimscarverVoterCh, *trace) |
+      admin!("giveRightToVote", `rho:rchain:aviation_hacker`, *aviation_hackerVoterCh, *trace) |
+      admin!("giveRightToVote", `rho:rchain:momchilov`, *momchilovVoterCh, *trace) |
       for(Owans <- OwansVoterCh; jimscarver <- jimscarverVoterCh; aviation_hacker <- aviation_hackerVoterCh; momchilov <- momchilovVoterCh) {
-        aviation_hacker!("delegate", "jimscarver", *jimscarverVoterCh, *trace) |
-        jimscarver!("delegate", "Owans", *OwansVoterCh, *trace) |
-        jimscarver!("delegate", "momchilov", *momchilovVoterCh, *trace) |
+        aviation_hacker!("delegate", `rho:rchain:jim`, *jimscarverVoterCh, *trace) |
+        jimscarver!("delegate", `rho:rchain:Owans`, *OwansVoterCh, *trace) |
+        jimscarver!("delegate", `rho:rchain:momchilov`, *momchilovVoterCh, *trace) |
         for(_ <- jimscarverVoterCh; _ <- OwansVoterCh; _ <- momchilovVoterCh) {
           trace!("voting.") |
           // TODO multiple tallies should be performed since the delegate is set above
