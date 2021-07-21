@@ -21,10 +21,6 @@ jobs:
           git clone https://github.com/rchain/pyrchain.git
           cd pyrchain
           pip3 install -e .[dev]
-        with:
-          python-version: ${{ matrix.python-version }}
-        env:
-          PYTHONPATH: $GITHUB_WORKFLOW
       - name: Install openjdk11
         run: |
           sudo apt install openjdk-11-jre-headless
