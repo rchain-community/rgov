@@ -74,9 +74,6 @@ find ../rholang/core -name "*.rho" | deployFiles
 # deploy rchain voters
 echo ./voter-insertion.rho | deployFiles
 
-# deploy rholang 'features' that depend on core
-find ../rholang/feature -name "*.rho" | deployFiles
-
 if [ -f "$ERRORLOG" ]; then
    echo "$ME: DeployFiles error:";
    cat "$ERRORLOG";
@@ -105,12 +102,13 @@ s/^/"/
 '>> ../src/MasterURI.localhost.json
 echo "}}" >> ../src/MasterURI.localhost.json
 
+# double-check the directory was created.
 echo "$ME: listing master directory"
 ./deploy listMasterURI.rho
 rnode --grpc-port 40402 propose 2>&1 | tee -a log/deployment.log
 
-echo "$ME: creating member directory"
-./deploy ../MemberDirectory.rho
+# deploy rholang 'features' that depend on core
+find ../rholang/feature -name "*.rho" | deployFiles
 rnode --grpc-port 40402 propose 2>&1 | tee -a log/deployment.log
 
 echo "$ME: Waiting for rnode to finalize (10s)" && sleep 10 && echo "$ME: Stopping deployment rnode"
