@@ -1,6 +1,6 @@
 name: Run the python tests for rholang actions
 
-on: [ pull_request ]
+on: [ push, pull_request ]
 
 jobs:
   install:
