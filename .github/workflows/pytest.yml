@@ -22,6 +22,8 @@ jobs:
           git clone https://github.com/rchain/pyrchain.git
           cd pyrchain
           pip3 install -e .[dev]
+        with:
+          python-version: ${{ matrix.python-version }}
         env:
           PYTHONPATH: $GITHUB_WORKFLOW
       - name: update protobufs and generated files
@@ -52,6 +54,8 @@ jobs:
           python3 -m pip install --upgrade pip
           pip3 install flake8 pytest requests
           if [ -f requirements.txt ]; then pip3 install -r requirements.txt; fi
+        with:
+          python-version: ${{ matrix.python-version }}
       - name: Lint with flake8
         run: |
           # stop the build if there are Python syntax errors or undefined names
