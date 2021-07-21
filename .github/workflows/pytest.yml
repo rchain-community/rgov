@@ -30,7 +30,7 @@ jobs:
           sudo dpkg -i rnode_0.10.2_all.deb
 
   update:
-    needs: build
+    needs: install
     runs-on: ubuntu-latest
     steps:
       - name: update protobufs and generated files
@@ -41,7 +41,7 @@ jobs:
         env:
           PYTHONPATH: $GITHUB_WORKSPACE
   genesis:
-    needs: build
+    needs: install
     runs-on: ubuntu-latest
     steps:
       - name: Bootstrap rnode (genesis)
