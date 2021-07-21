@@ -5,31 +5,18 @@ on: [ push, pull_request ]
 jobs:
   checkout:
     runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v2
-
-  install-python:
-    runs-on: ubuntu-latest
     strategy:
       matrix:
         python-version: [3.6.13]
     steps:
+      - uses: actions/checkout@v2
       - name: Set up Python ${{ matrix.python-version }}
         uses: actions/setup-python@v2
         with:
           python-version: ${{ matrix.python-version }}
-  install-grpcio:
-    needs: install-python
-    runs-on: ubuntu-latest
-    steps:
       - name: install-grpcio
         run: |
           pip3 install -U grpcio-tools
-
-  install-pyrchain:
-    needs: install-python
-    runs-on: ubuntu-latest
-    steps:
       - name: Install PyRchain
         run: |
           git clone https://github.com/rchain/pyrchain.git
@@ -42,10 +29,6 @@ jobs:
           ./update-generated || exit 0
         env:
           PYTHONPATH: $GITHUB_WORKSPACE
-
-  install-rnode:
-    runs-on: ubuntu-latest
-    steps:
       - name: Install openjdk11
         run: |
           sudo apt install openjdk-11-jre-headless
@@ -64,10 +47,6 @@ jobs:
       - name: Run RGOV rnode
         run: |
           bootstrap/run-rnode
-  python-test:
-    needs: [ run-rnode, update-pyrchain ]
-    runs-on: ubuntu-latest
-    steps:
       - name: Test with pytest
         run: |
           ls -a .
