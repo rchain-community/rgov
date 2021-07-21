@@ -12,7 +12,7 @@ jobs:
 
       - name: Install and Build 🔧
         run: |
-          cp src/MasterURI.testnet.json /home/runner/work/rgov/rgov/src/MasterURI.localhost.json
+          cp src/MasterURI.testnet.json dist/src/MasterURI.localhost.json
           npm install
           npm run build
           cp -r src/actions dist/
