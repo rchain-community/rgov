@@ -35,6 +35,13 @@ jobs:
           git clone https://github.com/rchain/pyrchain.git
           cd pyrchain
           pip3 install -e .[dev]
+      - name: update protobufs and generated files
+        run: |
+          cd pyrchain
+          ./update-protobufs
+          ./update-generated || exit 0
+        env:
+          PYTHONPATH: $GITHUB_WORKSPACE
 
   install-rnode:
     needs: install-openjdk11
@@ -49,36 +56,12 @@ jobs:
       - name: install rnode
         run: |
           sudo dpkg -i rnode_0.10.2_all.deb
-
-  update-pyrchain:
-    needs: install-pyrchain
-    runs-on: ubuntu-latest
-    steps:
-      - name: update protobufs and generated files
-        run: |
-          cd pyrchain
-          ./update-protobufs
-          ./update-generated || exit 0
-        env:
-          PYTHONPATH: $GITHUB_WORKSPACE
-  genesis:
-    needs: install-rnode
-    runs-on: ubuntu-latest
-    steps:
-      - name: Bootstrap rnode (genesis)
+      - name: genesis
         run: |
           bootstrap/bootstrap
-  rgov:
-    needs: genesis
-    runs-on: ubuntu-latest
-    steps:
       - name: rgov deployment
         run: |
           bootstrap/deploy-all
-  run-rnode:
-    needs: rgov
-    runs-on: ubuntu-latest
-    steps:
       - name: Run RGOV rnode
         run: |
           bootstrap/run-rnode
