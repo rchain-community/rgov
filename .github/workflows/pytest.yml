@@ -22,10 +22,6 @@ jobs:
           git clone https://github.com/rchain/pyrchain.git
           cd pyrchain
           pip3 install -e .[dev]
-        with:
-          python-version: ${{ matrix.python-version }}
-        env:
-          PYTHONPATH: $GITHUB_WORKFLOW
       - name: update protobufs and generated files
         run: |
           cd pyrchain
