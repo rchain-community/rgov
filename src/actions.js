@@ -168,6 +168,7 @@ export const actions = {
   newGroup: {
     fields: {
       name: { value: '', type: 'string' },
+      restricted: { value: 'false', type: "number" },
       lockerTag: { value: 'inbox', type: 'string' },
     },
     filename: 'actions/newGroup.rho',
