@@ -3,8 +3,7 @@ name: Run the python tests for rholang actions
 on: [ pull_request ]
 
 jobs:
-  build:
-
+  install:
     runs-on: ubuntu-latest
     strategy:
       matrix:
@@ -26,13 +25,6 @@ jobs:
           python-version: ${{ matrix.python-version }}
         env:
           PYTHONPATH: $GITHUB_WORKFLOW
-      - name: update protobufs and generated files
-        run: |
-          cd pyrchain
-          ./update-protobufs
-          ./update-generated || exit 0
-        env:
-          PYTHONPATH: $GITHUB_WORKSPACE
       - name: Install openjdk11
         run: |
           sudo apt install openjdk-11-jre-headless
@@ -40,15 +32,43 @@ jobs:
         run:  |
           wget https://github.com/rchain/rchain/releases/download/v0.10.2/rnode_0.10.2_all.deb
           sudo dpkg -i rnode_0.10.2_all.deb
-      - name: Bootstrap rnode
+
+  update:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - name: update protobufs and generated files
+        run: |
+          cd pyrchain
+          ./update-protobufs
+          ./update-generated || exit 0
+        env:
+          PYTHONPATH: $GITHUB_WORKSPACE
+  genesis:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Bootstrap rnode (genesis)
         run: |
           bootstrap/bootstrap
-      - name: Deploy RGOV
+  rgov:
+    needs: genesis
+    runs-on: ubuntu-latest
+    steps:
+      - name: rgov deployment
         run: |
           bootstrap/deploy-all
+  run-rnode:
+    needs: rgov
+    runs-on: ubuntu-latest
+    steps:
       - name: Run RGOV rnode
         run: |
           bootstrap/run-rnode
+  python-test:
+    needs: run-rnode
+    runs-on: ubuntu-latest
+    steps:
       - name: Test with pytest
         run: |
           ls -a .
