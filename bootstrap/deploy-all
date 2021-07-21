@@ -68,9 +68,13 @@ if [ -f "$ERRORLOG" ]; then
    exit 2;
 fi
 
-# deploy rgov
+# deploy rgov core
 find ../rholang/core -name "*.rho" | deployFiles
+
+# deploy rchain voters
 echo ./voter-insertion.rho | deployFiles
+
+# deploy rholang 'features' that depend on core
 find ../rholang/feature -name "*.rho" | deployFiles
 
 if [ -f "$ERRORLOG" ]; then
