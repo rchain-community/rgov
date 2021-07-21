@@ -3,34 +3,56 @@ name: Run the python tests for rholang actions
 on: [ push, pull_request ]
 
 jobs:
-  install:
+  checkout:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+
+  install-python:
     runs-on: ubuntu-latest
     strategy:
       matrix:
         python-version: [3.6.13]
-
     steps:
-      - uses: actions/checkout@v2
       - name: Set up Python ${{ matrix.python-version }}
         uses: actions/setup-python@v2
         with:
           python-version: ${{ matrix.python-version }}
-      - name: Install PyRchain
+  install-grpcio:
+    needs: install-python
+    runs-on: ubuntu-latest
+    steps:
+      - name: install-grpcio
         run: |
           pip3 install -U grpcio-tools
+
+  install-pyrchain:
+    needs: install-python
+    runs-on: ubuntu-latest
+    steps:
+      - name: Install PyRchain
+        run: |
           git clone https://github.com/rchain/pyrchain.git
           cd pyrchain
           pip3 install -e .[dev]
+  install-openjdk11:
+    runs-on: ubuntu-latest
+    steps:
       - name: Install openjdk11
         run: |
           sudo apt install openjdk-11-jre-headless
+  install-rnode:
+    runs-on: ubuntu-latest
+    steps:
       - name: Get rnode
         run:  |
           wget https://github.com/rchain/rchain/releases/download/v0.10.2/rnode_0.10.2_all.deb
+      - name: install package
+        run: |
           sudo dpkg -i rnode_0.10.2_all.deb
 
-  update:
-    needs: install
+  update-pyrchain:
+    needs: install-pyrchain
     runs-on: ubuntu-latest
     steps:
       - name: update protobufs and generated files
@@ -41,7 +63,7 @@ jobs:
         env:
           PYTHONPATH: $GITHUB_WORKSPACE
   genesis:
-    needs: install
+    needs: install-rnode
     runs-on: ubuntu-latest
     steps:
       - name: Bootstrap rnode (genesis)
@@ -62,7 +84,7 @@ jobs:
         run: |
           bootstrap/run-rnode
   python-test:
-    needs: run-rnode
+    needs: [ run-rnode, update-pyrchain ]
     runs-on: ubuntu-latest
     steps:
       - name: Test with pytest
