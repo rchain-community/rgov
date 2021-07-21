@@ -38,13 +38,14 @@ jobs:
   install-openjdk11:
     runs-on: ubuntu-latest
     steps:
-      - name: Install openjdk11
-        run: |
-          sudo apt install openjdk-11-jre-headless
+
   install-rnode:
     needs: install-openjdk11
     runs-on: ubuntu-latest
     steps:
+      - name: Install openjdk11
+        run: |
+          sudo apt install openjdk-11-jre-headless
       - name: Get rnode
         run:  |
           wget https://github.com/rchain/rchain/releases/download/v0.10.2/rnode_0.10.2_all.deb
