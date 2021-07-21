@@ -44,7 +44,6 @@ jobs:
           PYTHONPATH: $GITHUB_WORKSPACE
 
   install-rnode:
-    needs: install-openjdk11
     runs-on: ubuntu-latest
     steps:
       - name: Install openjdk11
