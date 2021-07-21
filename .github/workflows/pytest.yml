@@ -35,9 +35,6 @@ jobs:
           git clone https://github.com/rchain/pyrchain.git
           cd pyrchain
           pip3 install -e .[dev]
-  install-openjdk11:
-    runs-on: ubuntu-latest
-    steps:
 
   install-rnode:
     needs: install-openjdk11
