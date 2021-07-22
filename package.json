@@ -5,7 +5,7 @@
   "main": "Jakefile.js",
   "scripts": {
     "lint-fix": "eslint --fix '**/*.{js,jsx}'",
-    "lint-check": "eslint '**/*.{js,jsx}'",
+    "lint-check": "eslint --output-file eslint_report.json --format json '**/*.{js,jsx}'",
     "lint:types": "tsc -p jsconfig.json",
     "start": "webpack-dev-server --open",
     "build": "webpack",
