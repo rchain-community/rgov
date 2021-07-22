@@ -1,0 +1,78 @@
+new result, stdout(`rho:io:stdout`), stdoutAck(`rho:io:stdoutAck`), mq in {
+  contract mq(ret) = {
+    new head, tail, pub, sub in {
+      tail!(*head) |
+      ret!(*pub, *sub) |
+      contract sub(listener) = {
+        new loop, ack in {
+          loop!(*head) |
+          contract loop(curr) = {
+            for (value, next <<- curr) {
+              result!(["got next",*value]) |
+              listener!(*value, *ack) |
+              stdout!(["got next",*value]) |
+              result!("litener called for " ++ *value) |
+              for ( _ <- ack) {
+                result!(["sent",*value]) |
+                stdout!(["sent",*value]) |
+                loop!(*next)
+              }
+            }
+          }
+        }
+      } |
+      contract pub(value, ret) = {
+        new newTail in {
+          for (end <- tail) {
+            end!(*value, *newTail) |
+            tail!(*newTail) |
+            log!("pub: " ++ *value)|
+            for ( _ <<- tail) {
+              ret!(Nil)
+            }
+          }
+        }
+      }
+    }
+  }|
+  new listener, ret, logList, log, ack in {
+    contract listener(value, ret) = {
+      stdout!(*value ++ " listener")|
+      log!(*value, *ack ) |
+      for ( _ <- ack ) {
+        ret!(Nil)
+      }
+    } |
+    mq!(*ret) |
+    for ( pub, sub <- ret) {
+      sub!(*listener) |
+      pub!("one",*ret) |
+      for ( _ <- ret) {
+        pub!("two", *ret) |
+        for ( _ <- ret ) {
+          pub!("three", *ret) |
+          for ( _ <- ret ) {
+            pub!("four", *ret) |
+            for ( _ <- ret ) {
+              log!("done", *ret) |
+              for (_ <- ret; alist <- logList ) {
+                stdout!(*alist)|
+                result!({ "log":*alist})
+              }
+            }
+          }
+        }
+      }
+    } |
+    logList!([]) |
+    contract log(term, ack) = {
+      for ( prior <- logList) {
+        stdout!("logged: " ++ *term) |
+        logList!(*prior ++ [*term]) |
+        for ( _ <- stdoutAck) {
+            ack!(Nil)
+        }
+      }
+    }
+  }
+}
