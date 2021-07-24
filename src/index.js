@@ -8,7 +8,7 @@ import m from 'mithril';
 import { getEthProvider } from 'rchain-api';
 import Prism, { highlightElement } from 'prismjs';
 import 'prismjs/plugins/line-numbers/prism-line-numbers';
-import { unwrap, buildUI, makeBusy, ckControl, signIn } from './participate';
+import { unwrap, buildUI, makeBusy, ckControl } from './participate';
 
 // WARNING: ambient access
 // Deal with "disappearing" newlines
@@ -33,8 +33,30 @@ document.addEventListener('DOMContentLoaded', () => {
   /** @type HTMLCodeElement */
   const prismElement = unwrap(document.getElementById("highlighting-content"));
 
-  //const signIn = unwrap(document.getElementById("siginIn"));
+  // navRouter
+  /** @type HTMLElement*/
+  const devInterfaceDOM = unwrap(document.getElementById("devInterface"));
 
+  /** @type HTMLElement*/
+  const votingDOM = unwrap(document.getElementById("votingInterface"));
+
+  /** @type HTMLElement*/
+  const votingRouter = unwrap(document.getElementById("votingNav"));
+
+  votingDOM.style.display = 'none'
+
+  votingRouter.addEventListener("click", () => {
+    devInterfaceDOM.style.display = 'none';
+    votingDOM.style.display = 'block';
+  })
+  
+  /** @type HTMLElement*/
+  const devInterfaceRouter = unwrap(document.getElementById("devInterfaceNav"));
+
+  devInterfaceRouter.addEventListener("click", () => {
+    devInterfaceDOM.style.display = 'block';
+    votingDOM.style.display = 'none';
+  })
   
 
   /** @param text: string */
@@ -57,10 +79,6 @@ document.addEventListener('DOMContentLoaded', () => {
   editorElement.addEventListener('scroll', () => {
     syncScroll();
   });
-
-  // signIn.addEventListener('click', () => {
-  //   console.log('Enter');
-  //})
 
   buildUI({
     html,
