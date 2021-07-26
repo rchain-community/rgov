@@ -1,0 +1,21 @@
+match ["$inbox", "$ballot", "$choices"] {
+[lockerTag, ballot, choices] => {
+new
+   return(`rho:rchain:deployId`),
+   deployerId(`rho:rchain:deployerId`),
+   stdout(`rho:io:stdout`),
+   ch
+in {
+   for(@{"peek": *peek, ..._} <<- @[*deployerId, lockerTag]) {
+      peek!("voter", ballot, *ch) |
+      for (@[{"voterCap": voterCapability, ..._}] <- ch) {
+         if ( choices == "" ) {
+            @voterCapability!("voter", Nil, *return, *stdout)
+         } else {
+            @voterCapability!("voter", choices, *return, *stdout) |
+            @voterCapability!("ballot", *return, *stdout)
+         }
+      }
+   }
+}
+}} // end of match
