@@ -3,17 +3,51 @@
  * Based on “prism-funky.css” from http://jasonrivers.github.io/prism/
  * @author Bill Keuntje
  */
-
+ @import url('https://fonts.googleapis.com/css2?family=Poppins&display=swap');
 
 
  body {
 	 background-color: rgb(236, 234, 234);
 	 padding: 40px;
+	 font-family: 'Poppins', sans-serif;
  }
 
  h1 {
 	 font-weight: bold;
  }
+
+/* nav styles */
+.nav {
+	display: flex;
+	flex-direction: row;
+	list-style-type: none;
+	cursor: pointer;
+	top: 0;
+	position: absolute;
+	z-index: 999;
+	background-color: #424952;
+	width: 100%;
+	left: 0;
+	height: 60px;
+}
+
+
+.nav li a{
+	color: #fff;
+	float: right;
+}
+
+.nav li a:hover{
+	background-color: #424952;
+	text-decoration: underline;
+	text-decoration-thickness: 2px;
+}
+/* end of nav styles */
+
+/* devInterface styles */
+#devInterface {
+	margin-top: 20px;
+}
 
 code[class*="language-"],
 pre[class*="language-"] {
@@ -295,4 +329,22 @@ pre[class*="language-"].line-numbers > code {
 
 #explore:hover {
 	background-color: #AFB1A9;
+}
+
+/* voting Interface styles */
+#votingInterface {
+	margin-top: 50px;
+}
+
+.signin-btn {
+	float: right;
+	background-color: #424952;
+	color: #fff;
+	border: 1px solid #424952;
+	height: 40px;
+	border-radius: 5px;
+}
+
+.signin-btn:hover {
+	background-color: #515a66;
 }
