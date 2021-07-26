@@ -1,5 +1,5 @@
 {
-   "localhostNETWORK": {
-      "MasterURI": "`rho:id:localhost`"
-   }
-}
+    "localhostNETWORK": {
+       "MasterURI": "`rho:id:localhost`"
+    }
+ }

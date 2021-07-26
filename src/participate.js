@@ -360,6 +360,7 @@ export function buildUI({
     }),
   );
   mount('#groupControl', groupControl(state, { html }));
+  mount('#votingInterface', votingDOM({ html, getEthProvider}));
 }
 
 /**
@@ -724,3 +725,106 @@ function groupControl(state, { html }) {
     },
   });
 }
+
+/**
+ * 
+ * @param {HTMLBuilder & EthSignAccess} io 
+ * 
+ */
+//Voting Interface - Work In Progress
+export function votingDOM({ html, getEthProvider }) {
+  const metaMaskP = getEthProvider().then((ethereum) =>
+    MetaMaskAccount(ethereum),
+  );
+
+  return freeze({
+    view(){
+      return html`<div class="app container">
+      <div class="testNet">
+        <div>
+        <button class="signin-btn"
+      onclick=${(/** @type {Event} */ _event) => {
+        metaMaskP.then((mm) =>
+          mm.ethereumAddress().then((ethAddr) => {
+            const revAddr = getAddrFromEth(ethAddr);
+            if (!revAddr) throw new Error('bad ethAddr???');
+            console.log(revAddr);
+          }),
+        );
+        return false;
+      }}
+    >
+      Connect Wallet
+    </button>
+    <p></p>
+          <h4>RChain Annual Meeting 2021 Ballot <sup>(Beta Test2)</sup></h4>
+        </div>
+         <p>For background, see</p>
+        <ul>
+          <li><cite><a href="https://blog.rchain.coop/2020/07/09/notice-of-annual-meeting-2020/" id="meetingNotice">Notice
+                of Annual Meeting 2020</a> RChain Blog July 9</cite></li>
+        </ul>
+        <form id='ballotForm'>
+          <fieldset class="panel panel-default">
+            <div class="panel-body">
+              <br />
+              <table class="table table-condensed table-hover table-bordered">
+                <thead>
+                  <tr>
+                    <th>ID</th>
+                    <th>Short Description</th>
+                    <th>Oppose</th>
+                    <th>Abstain</th>
+                    <th>Support</th>
+                  </tr>
+                </thead>
+                <tbody id="questionList">
+                  <tr>
+                    <td>Notice</td>
+                    <td>Stand by for questions...
+                    </td>
+                    <td><input type="radio" class="choice" /></td>
+                    <td><input type="radio" class="choice" checked /></td>
+                    <td><input type="radio" class="choice" /></td>
+                  </tr>
+                </tbody>
+              </table>
+              <input type="hidden" id="agendaURI" value="rho:id:68e89eurstmgt1fhzrpsyzbmcqgnez5rofnezoqmfs7epy17mfzke5" />
+              <label id="agendaControl">
+                Agenda URI:
+              </label>
+              <div class="card">
+                <div class="card-body">
+                  <h3>Sign and Submit</h3>
+                  <p>Your response, in rholang:</p>
+                  <div id="responseControl"><textarea rows="4" cols="80"></textarea></div>
+                  <p>
+                    <em>For a full explanation of this rholang code,
+                      see <a href="https://blog.rchain.coop/2020/10/07/rchain-voting-in-rholang/">Voting
+                        in Rholang</a> presentation
+                      (<a
+                        href="https://docs.google.com/presentation/d/1LLwejP0QdhHwhjYd-LFIPBblj1owjBGHBgL_EWh80V8/edit?usp=sharing">slides</a>).</em>
+                  </p>
+                  <div class="setting" id="txInfo">
+                    <label id="txFee"><small>Max transaction fee: <input id="phloLimit" type="number"
+                          value="0.05" /></small></label><br />
+                  </div>
+                  <span id="submitControl">
+                    <input id="submitResponse" type="submit" value="Sign and Submit" />
+                  </span>
+                </div>
+              </div>
+            </div>
+          </fieldset>
+        </form>
+        <hr />
+        <address>
+          Sep 2020 by Dan Connolly<br />
+          and the <a href="https://github.com/rchain-community/">RChain Community</a><br />
+          <small>RCHAIN is a registered trademark of <a href="https://rchain.coop">RChain Cooperative</a>.</small>
+        </address>
+      </div>
+    </div>`;
+    }
+  })
+} 
