@@ -1,0 +1,70 @@
+new result, stdout(`rho:io:stdout`), stdoutAck(`rho:io:stdoutAck`), log, logList, mq in {
+  contract mq(ret) = {
+    new head, tail, pub, sub in {
+      tail!(*head) |
+      ret!(*pub, *sub) |
+      contract sub(listener) = {
+        new loop, ack in {
+          loop!(*head) |
+          contract loop(curr) = {
+            for (value, next <<- curr) {
+              result!(["got next",*value]) |
+              listener!(*value, *ack) |
+              stdout!(["got next",*value]) |
+              result!("listener called for " ++ *value) |
+              for ( _ <- ack) {
+                result!(["listener returned",*value]) |
+                stdout!(["sent",*value]) |
+                loop!(*next)
+              }
+            }
+          }
+        }
+      } |
+      contract pub(value, ret) = {
+        new newTail in {
+          for (end <- tail) {
+            end!(*value, *newTail) |
+            tail!(*newTail) |
+            log!("pub: " ++ *value, *ret)            
+          }
+        }
+      }
+    }
+  }|
+  new listener, ret in {
+    contract listener(value, ack) = {        
+        result!(*value ++ " listener")|
+        log!("received: " ++ *value, *ack )            
+    } |
+    mq!(*ret) |
+    for ( pub, sub <- ret) {
+      sub!(*listener) |
+      pub!("one",*ret) |
+      for ( _ <- ret) {
+        pub!("two", *ret) |
+        for ( _ <- ret ) {
+          pub!("three", *ret) |
+          for ( _ <- ret ) {
+            pub!("four", *ret) |
+            for ( _ <- ret ) {
+              log!("done", *ret) |
+              for (_ <- ret; alist <- logList ) {
+                stdout!(*alist)|
+                result!({ "log":*alist})
+              }
+            }
+          }
+        }
+      }
+    } |
+    logList!([]) |
+    contract log(term, ack) = {
+      for ( prior <- logList) {
+        stdout!("logged: " ++ *term) |
+        logList!(*prior ++ [*term]) |
+        ack!(Nil)
+      }
+    }
+  }
+}
