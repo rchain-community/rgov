@@ -1,14 +1,14 @@
-new result, stdout(`rho:io:stdout`), stdoutAck(`rho:io:stdoutAck`), mq in {
+new logList, result(`rho:io:stdout`), stdout(`rho:io:stdout`),  log, mq in {
+  result!("starting") |
   contract mq(ret) = {
-    new head, tail, pub, sub in {
+    new head, tail, pub, sub, isend in {
       tail!(*head) |
-      ret!(*pub, *sub) |
+      ret!(*pub, *sub, *isend) |
       contract sub(listener) = {
         new loop, ack in {
           loop!(*head) |
           contract loop(curr) = {
-            for (value, next <<- curr) {
-              result!(["got next",*value]) |
+            for (value, next <- curr) {
               listener!(*value, *ack) |
               stdout!(["got next",*value]) |
               result!("litener called for " ++ *value) |
@@ -32,6 +32,11 @@ new result, stdout(`rho:io:stdout`), stdoutAck(`rho:io:stdoutAck`), mq in {
             }
           }
         }
+      } |
+      contract isend(next, ret) = {
+        for (end <<- tail) {
+          ret!( *end == *next)
+        }
       }
     }
   }|
@@ -43,8 +48,9 @@ new result, stdout(`rho:io:stdout`), stdoutAck(`rho:io:stdoutAck`), mq in {
         ret!(Nil)
       }
     } |
+    result!("testing") |
     mq!(*ret) |
-    for ( pub, sub <- ret) {
+    for ( pub, sub, isend <- ret) {
       sub!(*listener) |
       pub!("one",*ret) |
       for ( _ <- ret) {
@@ -57,7 +63,8 @@ new result, stdout(`rho:io:stdout`), stdoutAck(`rho:io:stdoutAck`), mq in {
               log!("done", *ret) |
               for (_ <- ret; alist <- logList ) {
                 stdout!(*alist)|
-                result!({ "log":*alist})
+                result!({ "log":*alist}) |
+                logList!(*alist)
               }
             }
           }
@@ -69,7 +76,7 @@ new result, stdout(`rho:io:stdout`), stdoutAck(`rho:io:stdoutAck`), mq in {
       for ( prior <- logList) {
         stdout!("logged: " ++ *term) |
         logList!(*prior ++ [*term]) |
-        for ( _ <- stdoutAck) {
+        for ( _ <<- logList) {
             ack!(Nil)
         }
       }
