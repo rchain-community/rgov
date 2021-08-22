@@ -85,7 +85,67 @@
     <p>idea: show avatars for members; give emoji kudos <a href="https://emojipedia.org/red-heart/">❤️</a></p>
   </div>
   <div id="votingInterface" class="container">
+    <div class="app container">
+      <div class="testNet">
+        <div>
+          <div id="signIn"></div>
+          <p></p>
+          <h4>RChain Annual Meeting 2021 Ballot <sup>(Beta Test2)</sup></h4>
+        </div>
+        <p>For background, see</p>
+        <ul>
+          <li>
+            <cite><a href="https://blog.rchain.coop/2020/07/09/notice-of-annual-meeting-2020/"
+                id="meetingNotice">Notice of Annual Meeting 2020</a>
+              RChain Blog July 9</cite>
+          </li>
+        </ul>
+        <form id="ballotForm">
+          <fieldset class="panel panel-default">
+            <div class="panel-body">
+              <br />
+              <div id="exploreControl">
 
+              </div>
+              <input type="hidden" id="agendaURI"
+                value="rho:id:68e89eurstmgt1fhzrpsyzbmcqgnez5rofnezoqmfs7epy17mfzke5" />
+              <label id="agendaControl"> Agenda URI: </label>
+              <div class="card">
+                <div class="card-body">
+                  <h3>Sign and Submit</h3>
+                  <p>Your response, in rholang:</p>
+                  <div id="responseControl">
+                    <textarea rows="4" cols="80"></textarea>
+                  </div>
+                  <p>
+                    <em>For a full explanation of this rholang code, see
+                      <a href="https://blog.rchain.coop/2020/10/07/rchain-voting-in-rholang/">Voting in
+                        Rholang</a>
+                      presentation (<a
+                        href="https://docs.google.com/presentation/d/1LLwejP0QdhHwhjYd-LFIPBblj1owjBGHBgL_EWh80V8/edit?usp=sharing">slides</a>).</em>
+                  </p>
+                  <div class="setting" id="txInfo">
+                    <label id="txFee"><small>Max transaction fee:
+                        <input id="phloLimit" type="number" value="0.05" /></small></label><br />
+                  </div>
+                  <span id="submitControl">
+                    <input id="submitResponse" type="submit" value="Sign and Submit" />
+                  </span>
+                </div>
+              </div>
+            </div>
+          </fieldset>
+        </form>
+        <hr />
+        <address>
+          Sep 2020 by Dan Connolly<br />
+          and the
+          <a href="https://github.com/rchain-community/">RChain Community</a><br />
+          <small>RCHAIN is a registered trademark of
+            <a href="https://rchain.coop">RChain Cooperative</a>.</small>
+        </address>
+      </div>
+    </div>
   </div>
   <hr />
 </body>

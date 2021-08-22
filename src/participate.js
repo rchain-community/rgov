@@ -25,10 +25,13 @@ import { testnetNETWORK } from './MasterURI.testnet.json';
 import { rhobotNETWORK } from './MasterURI.rhobot.json';
 import { demoNETWORK } from './MasterURI.demo.json';
 
-const { freeze, keys, entries, fromEntries } = Object;
+const { freeze, keys, entries, fromEntries, values } = Object;
 
 // TODO: UI for phloLimit
 const maxFee = { phloPrice: 1, phloLimit: 0.05 * 100000000 };
+
+const DUST = 1;
+const REV = 1e8;
 
 // TODO: ISSUE: are networks really const? i.e. design-time data?
 const NETWORKS = {
@@ -197,6 +200,9 @@ function rhoBody(tmp) {
  *
  * @typedef { import('rchain-api/src/ethProvider').MetaMaskProvider } MetaMaskProvider
  * @typedef { import('prismjs').Grammar } Grammar
+ * @typedef {{ revAddr: string, ethAddr: string, name: string }} Account
+ * @typedef {{[refID: string]: { shortDesc: string, docLink?: string, yesAddr: string, noAddr: string, abstainAddr: string }}} QAs
+ * @typedef {{label: string, info?: any, rest?: any[], timestamp?: number }} LogEvent
  */
 export function buildUI({
   html,
@@ -232,12 +238,14 @@ export function buildUI({
     rhobot: {},
   };
 
+  //  const theElt = (id) => check.notNull(getElementById(id));
+
   setGrammar('rholang', RholangGrammar);
   codeTextArea.addEventListener('change', () => {
     const tmp = fixIndent(codeTextArea.value);
     state.term = tmp;
     updateHighlight(tmp);
-  })
+  });
 
   const state = {
     get shard() {
@@ -342,10 +350,19 @@ export function buildUI({
     },
     problem: undefined,
   };
+
   state.setAction(action); // compute initial term
   state.network = network; // set up shard of initial network
 
-  mount('#actionControl', actionControl(state, { html, getEthProvider, codeTextArea, updateHighlight }));
+  mount(
+    '#actionControl',
+    actionControl(state, {
+      html,
+      getEthProvider,
+      codeTextArea,
+      updateHighlight,
+    }),
+  );
   mount('#netControl', networkControl(state, { html }));
 
   mount(
@@ -360,7 +377,8 @@ export function buildUI({
     }),
   );
   mount('#groupControl', groupControl(state, { html }));
-  mount('#votingInterface', votingDOM({ html, getEthProvider}));
+  mount('#signIn', signIn(html, getEthProvider));
+  mount('#exploreControl', ballotControl(state, { html, formValue, busy }));
 }
 
 /**
@@ -404,7 +422,10 @@ function fixIndent(code) {
  * }} state
  * @param {HTMLBuilder & EthSignAccess & { codeTextArea: HTMLElement, updateHighlight: (text: string | null) => void }} io
  */
-function actionControl(state, { html, getEthProvider, codeTextArea, updateHighlight }) {
+function actionControl(
+  state,
+  { html, getEthProvider, codeTextArea, updateHighlight },
+) {
   const options = (/** @type {string[]} */ ids) =>
     ids.map(
       (id) =>
@@ -726,105 +747,111 @@ function groupControl(state, { html }) {
   });
 }
 
+// Voting Interface - Work In Progress
 /**
- * 
- * @param {HTMLBuilder & EthSignAccess} io 
- * 
+ *
+ * * @param {HTMLBuilder & EthSignAccess } io
+ *
+ * @param {any} html
+ * @param {{ (): Promise<import("rchain-api/src/ethProvider").MetaMaskProvider>; (): Promise<any>; }} getEthProvider
  */
-//Voting Interface - Work In Progress
-export function votingDOM({ html, getEthProvider }) {
+function signIn(html, getEthProvider) {
   const metaMaskP = getEthProvider().then((ethereum) =>
     MetaMaskAccount(ethereum),
   );
 
   return freeze({
-    view(){
-      return html`<div class="app container">
-      <div class="testNet">
-        <div>
-        <button class="signin-btn"
-      onclick=${(/** @type {Event} */ _event) => {
-        metaMaskP.then((mm) =>
-          mm.ethereumAddress().then((ethAddr) => {
-            const revAddr = getAddrFromEth(ethAddr);
-            if (!revAddr) throw new Error('bad ethAddr???');
-            console.log(revAddr);
-          }),
-        );
-        return false;
-      }}
-    >
-      Connect Wallet
-    </button>
-    <p></p>
-          <h4>RChain Annual Meeting 2021 Ballot <sup>(Beta Test2)</sup></h4>
-        </div>
-         <p>For background, see</p>
-        <ul>
-          <li><cite><a href="https://blog.rchain.coop/2020/07/09/notice-of-annual-meeting-2020/" id="meetingNotice">Notice
-                of Annual Meeting 2020</a> RChain Blog July 9</cite></li>
-        </ul>
-        <form id='ballotForm'>
-          <fieldset class="panel panel-default">
-            <div class="panel-body">
-              <br />
-              <table class="table table-condensed table-hover table-bordered">
-                <thead>
-                  <tr>
-                    <th>ID</th>
-                    <th>Short Description</th>
-                    <th>Oppose</th>
-                    <th>Abstain</th>
-                    <th>Support</th>
-                  </tr>
-                </thead>
-                <tbody id="questionList">
-                  <tr>
-                    <td>Notice</td>
-                    <td>Stand by for questions...
-                    </td>
-                    <td><input type="radio" class="choice" /></td>
-                    <td><input type="radio" class="choice" checked /></td>
-                    <td><input type="radio" class="choice" /></td>
-                  </tr>
-                </tbody>
-              </table>
-              <input type="hidden" id="agendaURI" value="rho:id:68e89eurstmgt1fhzrpsyzbmcqgnez5rofnezoqmfs7epy17mfzke5" />
-              <label id="agendaControl">
-                Agenda URI:
-              </label>
-              <div class="card">
-                <div class="card-body">
-                  <h3>Sign and Submit</h3>
-                  <p>Your response, in rholang:</p>
-                  <div id="responseControl"><textarea rows="4" cols="80"></textarea></div>
-                  <p>
-                    <em>For a full explanation of this rholang code,
-                      see <a href="https://blog.rchain.coop/2020/10/07/rchain-voting-in-rholang/">Voting
-                        in Rholang</a> presentation
-                      (<a
-                        href="https://docs.google.com/presentation/d/1LLwejP0QdhHwhjYd-LFIPBblj1owjBGHBgL_EWh80V8/edit?usp=sharing">slides</a>).</em>
-                  </p>
-                  <div class="setting" id="txInfo">
-                    <label id="txFee"><small>Max transaction fee: <input id="phloLimit" type="number"
-                          value="0.05" /></small></label><br />
-                  </div>
-                  <span id="submitControl">
-                    <input id="submitResponse" type="submit" value="Sign and Submit" />
-                  </span>
-                </div>
-              </div>
-            </div>
-          </fieldset>
-        </form>
-        <hr />
-        <address>
-          Sep 2020 by Dan Connolly<br />
-          and the <a href="https://github.com/rchain-community/">RChain Community</a><br />
-          <small>RCHAIN is a registered trademark of <a href="https://rchain.coop">RChain Cooperative</a>.</small>
-        </address>
-      </div>
-    </div>`;
+    view() {
+      return html`
+        <button
+          class="signin-btn"
+          onclick=${(/** @type {Event} */ _event) => {
+            metaMaskP.then((mm) =>
+              mm.ethereumAddress().then((ethAddr) => {
+                const revAddr = getAddrFromEth(ethAddr);
+                if (!revAddr) throw new Error('bad ethAddr???');
+                console.log(revAddr);
+              }),
+            );
+            return false;
+          }}
+        >
+          Connect Wallet
+        </button>
+      `;
+    },
+  });
+}
+
+/**
+ * @param {{
+ *   shard: { observer: Observer, validator: Validator, admin: import('rchain-api/src/rnode').RNodeAdmin },
+ *   term: string?,
+ *   results: RhoExpr[],
+ *   problem?: string,
+ *   action: any
+ * }} state
+ * @param { HTMLBuilder & FormAccess<any> } io
+ */
+function ballotControl(state, { html, busy }) {
+  let data;
+  const VOTERS_URI = '';
+  const AGENDA_URI = '';
+
+  const term = `
+      new     
+    return,
+    lookup(\`rho:registry:lookup\`),
+    stdout(\`rho:io:stdout\`),
+    lookupCh1, 
+    lookupCh2
+    in {
+      lookup!(\`rho:id:1bagitnzth9qx5w1zgfg9hogfek3bcs1dox7gw94ybfwu1szr94brw\`, *lookupCh1) |
+      for (u1 <- lookupCh1) {
+        lookup!(\`rho:id:ws1ffadexhskn161z3543kedxyq41nw86izz98yxtc1mawgudjf9dq\`, *lookupCh2) |
+        for (u2 <- lookupCh2) {
+            return!(*u1)
+          }
+      }
     }
-  })
-} 
+    `;
+
+  async function explore(/** @type {string?} */ term) {
+    if (!term) {
+      return;
+    }
+    const obs = state.shard.observer;
+    state.problem = undefined;
+    state.results = [];
+    try {
+      console.log('explore...');
+      const { expr, _block } = await busy(
+        '#explore',
+        obs.exploratoryDeploy(term),
+      );
+      state.results = expr;
+      data = JSON.stringify(state.results.map(RhoExpr.parse));
+      console.log(data);
+    } catch (err) {
+      state.problem = err.message;
+    }
+  }
+
+  return freeze({
+    view() {
+      return html`
+        <button
+          class="signin-btn"
+          disabled=${term === null}
+          onclick=${async (/** @type {Event} */ event) => {
+            event.preventDefault();
+            explore(term);
+          }}
+        >
+          Explore
+        </button>
+        <div>${data}</div>
+      `;
+    },
+  });
+}

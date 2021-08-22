@@ -25,39 +25,38 @@ document.addEventListener('DOMContentLoaded', () => {
   const html = htm.bind(m);
 
   /** @type HTMLTextAreaElement */
-  const editorElement = unwrap(document.getElementById("editor"));
+  const editorElement = unwrap(document.getElementById('editor'));
 
   /** @type HTMLPreElement */
-  const highlightingElement = unwrap(document.getElementById("highlighting"));
+  const highlightingElement = unwrap(document.getElementById('highlighting'));
 
   /** @type HTMLCodeElement */
-  const prismElement = unwrap(document.getElementById("highlighting-content"));
+  const prismElement = unwrap(document.getElementById('highlighting-content'));
 
   // navRouter
-  /** @type HTMLElement*/
-  const devInterfaceDOM = unwrap(document.getElementById("devInterface"));
+  /** @type HTMLElement */
+  const devInterfaceDOM = unwrap(document.getElementById('devInterface'));
 
-  /** @type HTMLElement*/
-  const votingDOM = unwrap(document.getElementById("votingInterface"));
+  /** @type HTMLElement */
+  const votingDOM = unwrap(document.getElementById('votingInterface'));
 
-  /** @type HTMLElement*/
-  const votingRouter = unwrap(document.getElementById("votingNav"));
+  /** @type HTMLElement */
+  const votingRouter = unwrap(document.getElementById('votingNav'));
 
-  votingDOM.style.display = 'none'
+  votingDOM.style.display = 'none';
 
-  votingRouter.addEventListener("click", () => {
+  votingRouter.addEventListener('click', () => {
     devInterfaceDOM.style.display = 'none';
     votingDOM.style.display = 'block';
-  })
-  
-  /** @type HTMLElement*/
-  const devInterfaceRouter = unwrap(document.getElementById("devInterfaceNav"));
+  });
 
-  devInterfaceRouter.addEventListener("click", () => {
+  /** @type HTMLElement */
+  const devInterfaceRouter = unwrap(document.getElementById('devInterfaceNav'));
+
+  devInterfaceRouter.addEventListener('click', () => {
     devInterfaceDOM.style.display = 'block';
     votingDOM.style.display = 'none';
-  })
-  
+  });
 
   /** @param text: string */
   function updateHighlight(text) {
@@ -91,9 +90,9 @@ document.addEventListener('DOMContentLoaded', () => {
     mount: (selector, control) => m.mount($(selector), control),
     hostname: document.location.hostname,
     /**
-         * @param {string} language
-         * @param {import('prismjs').Grammar} grammar
-         */
+     * @param {string} language
+     * @param {import('prismjs').Grammar} grammar
+     */
     setGrammar: (language, grammar) => {
       Prism.languages[language] = grammar;
     },

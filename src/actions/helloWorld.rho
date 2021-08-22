@@ -1,10 +1,10 @@
-match [] {
-[] => {
-new
-   world
-in {
-// Hit Explore. Result will be from first new name  //
-   world!("Hello!")
+match [`rho:id:s5k4ghyjppnehrwk8s3fria5febwck3ekpbuki9wdm9grbmbdiy8js`] {
+  [ReadcapURI] => {
+    new
+    channel(`rho:io:stdout`)
+    in {
+      channel!("Hello")
+    
+  }
 }
-
-}} // end of match
+}

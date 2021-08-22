@@ -48,6 +48,12 @@ export const actions = {
     },
     filename: 'actions/receiveFromInbox.rho',
   },
+  createInboxandCastVote: {
+    fields: {
+      ReadcapURI: { value: '', type: 'MasterURI' },
+    },
+    filename: 'actions/createInboxAndCastVote.rho',
+  },
   ______________________________: {
     fields: {},
   },
@@ -57,7 +63,7 @@ export const actions = {
       name: { type: 'string', value: '' },
       // choice, choice, choice, ...
       ballot: {
-        type: "number",
+        type: 'number',
         value: '',
       },
     },
@@ -251,5 +257,4 @@ export const actions = {
     fields: { height: { value: '3', type: 'number' } },
     filename: 'actions/towers.rho',
   },
-  
 };
