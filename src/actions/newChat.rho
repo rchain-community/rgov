@@ -1,0 +1,30 @@
+match [""] {
+[channel] => {
+new
+   trace,
+   lookupCh,
+   bCh,
+   ch1,
+   ret,
+   listener,
+   lookup(`rho:registry:lookup`),
+   return(`rho:rchain:deployId`),
+   deployerId(`rho:rchain:deployerId`) in {
+      for (@{"read": *MCA, ..._} <<- @[*deployerId, "dictionary"]) {
+         return!(["MCA", *MCA]) |
+         MCA!("Chat", *lookupCh)
+      } |
+      for(Chat <- lookupCh) {
+         return!(["Chat", *Chat]) |
+         Chat!(*bCh) |
+         for(pub, sub, isend <- bCh) {
+            for (@{"inbox": *inbox, "URI": uri ..._} <<- @[*deployerId, "inbox"]) {
+               return!(["chatAdmin", channel, { "pub": *pub, "sub": *sub, "isend": *isend }]) |
+               inbox!(["chatAdmin", channel, {"pub": *pub, "sub": *sub, "isend": *isend }], *return) |
+               inbox!("chat", channel, {"listener": *listener }) |
+               sub!(*listener)
+               } 
+            }
+         }
+      }
+   }
