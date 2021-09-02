@@ -21,7 +21,7 @@ new
             for (@{"inbox": *inbox, "URI": uri ..._} <<- @[*deployerId, "inbox"]) {
                return!(["chatAdmin", channel, { "pub": *pub, "sub": *sub, "isend": *isend }]) |
                inbox!(["chatAdmin", channel, {"pub": *pub, "sub": *sub, "isend": *isend }], *return) |
-               inbox!("chat", channel, {"listener": *listener }) |
+               inbox!(["chat", channel, {"listener": *listener }], *return) |
                sub!(*listener)
                } 
             }
