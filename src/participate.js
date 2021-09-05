@@ -4,12 +4,12 @@
 // @ts-check
 import {
   RNode,
-  RhoExpr,
   MetaMaskAccount,
   getAddrFromEth,
   signMetaMask,
   startTerm,
   listenAtDeployId,
+  RhoExpr,
 } from 'rchain-api';
 import { actions } from './actions.js';
 import { RholangGrammar } from './prism-rholang';
@@ -32,6 +32,14 @@ const maxFee = { phloPrice: 1, phloLimit: 0.05 * 100000000 };
 
 const DUST = 1;
 const REV = 1e8;
+
+let data;
+
+/** @type {string?} */
+let revAddr = '';
+
+/** @type {boolean} */
+let verify = false;
 
 // TODO: ISSUE: are networks really const? i.e. design-time data?
 const NETWORKS = {
@@ -237,6 +245,8 @@ export function buildUI({
     demo: {},
     rhobot: {},
   };
+  let ballotData = [];
+  let verifyUser = [];
 
   //  const theElt = (id) => check.notNull(getElementById(id));
 
@@ -349,6 +359,37 @@ export function buildUI({
       });
     },
     problem: undefined,
+    address: revAddr,
+    get ballotData() {
+      return ballotData;
+    },
+    set ballotData(/** @type {RhoExpr[]} */ value) {
+      ballotData = value;
+      ballotData.forEach((expr) => {
+        const decl = RhoExpr.parse(expr);
+        if (Array.isArray(decl)) {
+          const [kw, name, rhs] = decl;
+          if (kw !== '#define') return;
+          if (typeof name !== 'string') return;
+          state.bindings[name] = rhs;
+        }
+      });
+    },
+    get verifyUser() {
+      return verifyUser;
+    },
+    set verifyUser(/** @type {RhoExpr[]} */ value) {
+      verifyUser = value;
+      verifyUser.forEach((expr) => {
+        const decl = RhoExpr.parse(expr);
+        if (Array.isArray(decl)) {
+          const [kw, name, rhs] = decl;
+          if (kw !== '#define') return;
+          if (typeof name !== 'string') return;
+          state.bindings[name] = rhs;
+        }
+      });
+    },
   };
 
   state.setAction(action); // compute initial term
@@ -377,7 +418,7 @@ export function buildUI({
     }),
   );
   mount('#groupControl', groupControl(state, { html }));
-  mount('#signIn', signIn(html, getEthProvider));
+  mount('#signIn', signIn(state, { html, formValue, busy, getEthProvider }));
   mount('#exploreControl', ballotControl(state, { html, formValue, busy }));
 }
 
@@ -727,7 +768,12 @@ function groupControl(state, { html }) {
                   data-revAddr=${revAddr}
                   class="card avatar"
                 >
-                  <img valign="middle" src=${avatar(revAddr)} />
+                  <img
+                    valign="middle"
+                    src=${avatar(revAddr)}
+                    width="20"
+                    height="20"
+                  />
                   <button
                     class="like"
                     onclick=${() => {
@@ -749,35 +795,113 @@ function groupControl(state, { html }) {
 
 // Voting Interface - Work In Progress
 /**
+ *@param {{
+ *   shard: { observer: Observer, validator: Validator, admin: import('rchain-api/src/rnode').RNodeAdmin },
+ *   term: string?,
+ *   verifyUser: RhoExpr[],
+ *   ballotData: RhoExpr[],
+ *   problem?: string,
+ *   action: any, bindings: Record<string, unknown>,
+ *  answers?: {[id: string]: string},
+ * address: string,
+ * }} state
+ * @param {HTMLBuilder & FormAccess<any> & EthSignAccess } io
  *
- * * @param {HTMLBuilder & EthSignAccess } io
- *
- * @param {any} html
- * @param {{ (): Promise<import("rchain-api/src/ethProvider").MetaMaskProvider>; (): Promise<any>; }} getEthProvider
  */
-function signIn(html, getEthProvider) {
+function signIn(state, { html, busy, getEthProvider }) {
   const metaMaskP = getEthProvider().then((ethereum) =>
     MetaMaskAccount(ethereum),
   );
 
+  async function exploreVerify(/** @type {string?} */ term) {
+    if (!term) {
+      return;
+    }
+    const obs = state.shard.observer;
+    state.problem = undefined;
+    state.verifyUser = [];
+    try {
+      console.log('explore...');
+      const { expr, _block } = await busy(
+        '#explore',
+        obs.exploratoryDeploy(term),
+      );
+      state.verifyUser = expr;
+      verify = state.verifyUser.map(RhoExpr.parse)[0];
+    } catch (err) {
+      state.problem = err.message;
+    }
+  }
+
+  async function exploreBallot(/** @type {string?} */ term) {
+    if (!term) {
+      return;
+    }
+    const obs = state.shard.observer;
+    state.problem = undefined;
+    state.ballotData = [];
+    try {
+      console.log('explore...');
+      const { expr, _block } = await busy(
+        '#explore',
+        obs.exploratoryDeploy(term),
+      );
+      state.ballotData = expr;
+      data = state.ballotData.map(RhoExpr.parse)[0];
+    } catch (err) {
+      state.problem = err.message;
+    }
+  }
+
   return freeze({
     view() {
       return html`
-        <button
-          class="signin-btn"
+        <a
           onclick=${(/** @type {Event} */ _event) => {
             metaMaskP.then((mm) =>
               mm.ethereumAddress().then((ethAddr) => {
-                const revAddr = getAddrFromEth(ethAddr);
+                revAddr = getAddrFromEth(ethAddr);
                 if (!revAddr) throw new Error('bad ethAddr???');
-                console.log(revAddr);
+                state.address = revAddr;
+                console.log(state.address);
+
+                const term1 = `
+                    new
+                    return,
+                    lookup(\`rho:registry:lookup\`),
+                    stdout(\`rho:io:stdout\`),
+                    lookupCh
+                    in {
+                      lookup!(\`rho:id:9di3j4okw4ehrrfn9wsa3sic1zq5n8rem1p13iep3xudcnfsfymawd\`, *lookupCh) |
+                      for (@u <- lookupCh) {
+                        return!(u.contains("${state.address}"))
+                      }
+                    }
+  `;
+
+                const term2 = `
+                  new     
+                return,
+                lookup(\`rho:registry:lookup\`),
+                stdout(\`rho:io:stdout\`),
+                lookupCh 
+                in {
+                  lookup!(\`rho:id:1bagitnzth9qx5w1zgfg9hogfek3bcs1dox7gw94ybfwu1szr94brw\`, *lookupCh) |
+                  for (u <- lookupCh) {
+                        return!(*u)
+                  }
+                }
+    `;
+                exploreVerify(term1);
+
+                if (verify === true) exploreBallot(term2);
               }),
             );
             return false;
           }}
         >
-          Connect Wallet
-        </button>
+          Connect Metamask
+        </a>
       `;
     },
   });
@@ -787,71 +911,64 @@ function signIn(html, getEthProvider) {
  * @param {{
  *   shard: { observer: Observer, validator: Validator, admin: import('rchain-api/src/rnode').RNodeAdmin },
  *   term: string?,
- *   results: RhoExpr[],
+ *   ballotData: RhoExpr[],
  *   problem?: string,
- *   action: any
+ *   action: any, bindings: Record<string, unknown>,
+ *  answers?: {[id: string]: string},
  * }} state
  * @param { HTMLBuilder & FormAccess<any> } io
  */
 function ballotControl(state, { html, busy }) {
-  let data;
-  const VOTERS_URI = '';
-  const AGENDA_URI = '';
-
-  const term = `
-      new     
-    return,
-    lookup(\`rho:registry:lookup\`),
-    stdout(\`rho:io:stdout\`),
-    lookupCh1, 
-    lookupCh2
-    in {
-      lookup!(\`rho:id:1bagitnzth9qx5w1zgfg9hogfek3bcs1dox7gw94ybfwu1szr94brw\`, *lookupCh1) |
-      for (u1 <- lookupCh1) {
-        lookup!(\`rho:id:ws1ffadexhskn161z3543kedxyq41nw86izz98yxtc1mawgudjf9dq\`, *lookupCh2) |
-        for (u2 <- lookupCh2) {
-            return!(*u1)
-          }
-      }
-    }
-    `;
-
-  async function explore(/** @type {string?} */ term) {
-    if (!term) {
-      return;
-    }
-    const obs = state.shard.observer;
-    state.problem = undefined;
-    state.results = [];
-    try {
-      console.log('explore...');
-      const { expr, _block } = await busy(
-        '#explore',
-        obs.exploratoryDeploy(term),
-      );
-      state.results = expr;
-      data = JSON.stringify(state.results.map(RhoExpr.parse));
-      console.log(data);
-    } catch (err) {
-      state.problem = err.message;
-    }
-  }
+  console.log(data);
 
   return freeze({
     view() {
-      return html`
-        <button
-          class="signin-btn"
-          disabled=${term === null}
-          onclick=${async (/** @type {Event} */ event) => {
-            event.preventDefault();
-            explore(term);
-          }}
-        >
-          Explore
-        </button>
-        <div>${data}</div>
-      `;
+      // /** @type { (value: string) => any } */
+      // const radio = (value) => html` <td class="choice">
+      //   <input
+      //     type="radio"
+      //     ...${answers === value ? { checked: true } : {}}
+      //     onclick=${(ev) => {
+      //       answers = ev.target.value;
+      //     }}
+      //   />
+      // </td>`;
+      if (!Array.isArray(data))
+        return html` <div class="default"><h3>Connect REV address to view ballot</h3></div `;
+      console.log(data);
+
+      return html` <h4>Ballot Issues</h4>
+        <div class="ballot-container">
+          ${data.map(
+            (result) => html`
+              <div class="card-group">
+                <div class="card">
+                  <div class="card-body">
+                    <h5 class="card-title">${result.label}</h5>
+                    <p class="card-text">${result.shortDesc}</p>
+                    <a>${result.docLink}</a>
+                  </div>
+                  <div class="card-footer">
+                    <small class="text-muted"
+                      >${result.proposals.map(
+                        (/** @type {any} */ answers) => html`
+                          <input
+                            type="radio"
+                            id="answers"
+                            name="answers"
+                            value="${answers}"
+                          />
+                          <label for="answers">${answers}</label>
+                        `,
+                      )}</small
+                    >
+                  </div>
+                </div>
+              </div>
+              <hr />
+            `,
+          )}
+        </div>`;
     },
   });
 }
