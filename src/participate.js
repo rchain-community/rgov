@@ -43,7 +43,15 @@ const NETWORKS = {
     hostPattern: 'test',
     observerBase: 'https://observer.testnet.rchain.coop',
     // TODO: rotate validators
-    validatorBase: 'https://node0.testnet.rchain-dev.tk',
+    validatorBase: 'https://node0.testnet.rchain.coop',
+    adminBase: '',
+    MasterURI: testnetNETWORK.MasterURI,
+  },
+  testnet2: {
+    hostPattern: 'test',
+    observerBase: 'https://observer.bm.testnet.rchain.coop',
+    // TODO: rotate validators
+    validatorBase: 'https://node0.bm.testnet.rchain.coop',
     adminBase: '',
     MasterURI: testnetNETWORK.MasterURI,
   },
@@ -450,7 +458,6 @@ function actionControl(state, { html, getEthProvider, codeTextArea, updateHighli
             >${name}:
             <input
               name=${name}
-              disabled=${fty(action, name) === 'MasterURI'}
               value=${fty(action, name) === 'MasterURI'
                 ? state.shard.MasterURI
                 : value}
