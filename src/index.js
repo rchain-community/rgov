@@ -33,6 +33,32 @@ document.addEventListener('DOMContentLoaded', () => {
   /** @type HTMLCodeElement */
   const prismElement = unwrap(document.getElementById("highlighting-content"));
 
+  // navRouter
+  /** @type HTMLElement*/
+  const devInterfaceDOM = unwrap(document.getElementById("devInterface"));
+
+  /** @type HTMLElement*/
+  const votingDOM = unwrap(document.getElementById("votingInterface"));
+
+  /** @type HTMLElement*/
+  const votingRouter = unwrap(document.getElementById("votingNav"));
+
+  votingDOM.style.display = 'none'
+
+  votingRouter.addEventListener("click", () => {
+    devInterfaceDOM.style.display = 'none';
+    votingDOM.style.display = 'block';
+  })
+  
+  /** @type HTMLElement*/
+  const devInterfaceRouter = unwrap(document.getElementById("devInterfaceNav"));
+
+  devInterfaceRouter.addEventListener("click", () => {
+    devInterfaceDOM.style.display = 'block';
+    votingDOM.style.display = 'none';
+  })
+  
+
   /** @param text: string */
   function updateHighlight(text) {
     prismElement.innerHTML = text;
