@@ -819,8 +819,7 @@ export function votingDOM({ html, getEthProvider }) {
         </form>
         <hr />
         <address>
-          Sep 2020 by Dan Connolly<br />
-          and the <a href="https://github.com/rchain-community/">RChain Community</a><br />
+          Sep 2021 by the <a href="https://github.com/rchain-community/">RChain Community</a><br />
           <small>RCHAIN is a registered trademark of <a href="https://rchain.coop">RChain Cooperative</a>.</small>
         </address>
       </div>
