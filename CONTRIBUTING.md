@@ -8,7 +8,7 @@ This project uses [```shellcheck```](https://github.com/koalaman/shellcheck) for
 Shell script contributors using vscode are encouraged to install the vscode extension https://marketplace.visualstudio.com/items?itemName=timonwong.shellcheck.
 ```shellcheck``` is also available in the Ubuntu package ```shellcheck```
 
-[We](https://docs.google.com/document/d/1UfoBMB_OFm-pkjid0u9d0GddB2bWXjc8u-bo4Es0isU/edit#) also suggest all contributions should pass:
+We also suggest all contributions should pass:
 
 Pull requests involving javascript are tested using https://eslint.org/.
 eslint can be run using:
