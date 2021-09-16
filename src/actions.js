@@ -48,6 +48,28 @@ export const actions = {
     },
     filename: 'actions/receiveFromInbox.rho',
   },
+  _________________________: {
+  fields: {},  
+  },
+  newChat: {
+    fields: {
+      channel: { value: '', type: 'string' },
+    },
+    filename: 'actions/newChat.rho'
+  },
+  sendChat: {
+    fields: {
+      channel: { value: '', type: 'string' },
+      message: { value: '', type: 'string' },
+    },
+    filename: 'actions/sendChat.rho'
+  },
+  readChat: {
+    fields: {
+      channel: { value: '', type: 'string' },  
+    },
+    filename: 'actions/readChat.rho'
+  },  
   ______________________________: {
     fields: {},
   },
