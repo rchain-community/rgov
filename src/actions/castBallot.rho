@@ -10,10 +10,9 @@ in {
       peek!("voter", ballot, *ch) |
       for (@[{"voterCap": voterCapability, ..._}] <- ch) {
          if ( choices == "" ) {
-            @voterCapability!("voter", Nil, *return, *stdout)
+            @voterCapability!("vote", Nil, *return, *stdout)
          } else {
-            @voterCapability!("voter", choices, *return, *stdout) |
-            @voterCapability!("ballot", *return, *stdout)
+            @voterCapability!("vote", choices, *return, *stdout) 
          }
       }
    }

@@ -41,6 +41,9 @@ let revAddr = '';
 /** @type {boolean} */
 let verify = false;
 
+
+let answers = [];
+
 // TODO: ISSUE: are networks really const? i.e. design-time data?
 const NETWORKS = {
   localhost: {
@@ -892,9 +895,7 @@ function signIn(state, { html, busy, getEthProvider }) {
                   }
                 }
     `;
-                exploreVerify(term1);
-
-                if (verify === true) exploreBallot(term2);
+                exploreBallot(term2);
               }),
             );
             return false;
@@ -919,23 +920,20 @@ function signIn(state, { html, busy, getEthProvider }) {
  * @param { HTMLBuilder & FormAccess<any> } io
  */
 function ballotControl(state, { html, busy }) {
-  console.log(data);
+  const answerMap = new Map();
 
+  function getRadioValue(label, value) {
+    answerMap.set(label, value);
+
+    if (answerMap.size === 5) {
+      console.log(Array.from(answerMap.values()));
+    }
+  }
+  console.log(answers);
   return freeze({
     view() {
-      // /** @type { (value: string) => any } */
-      // const radio = (value) => html` <td class="choice">
-      //   <input
-      //     type="radio"
-      //     ...${answers === value ? { checked: true } : {}}
-      //     onclick=${(ev) => {
-      //       answers = ev.target.value;
-      //     }}
-      //   />
-      // </td>`;
       if (!Array.isArray(data))
         return html` <div class="default"><h3>Connect REV address to view ballot</h3></div `;
-      console.log(data);
 
       return html` <h4>Ballot Issues</h4>
         <div class="ballot-container">
@@ -949,19 +947,27 @@ function ballotControl(state, { html, busy }) {
                     <a>${result.docLink}</a>
                   </div>
                   <div class="card-footer">
-                    <small class="text-muted"
-                      >${result.proposals.map(
-                        (/** @type {any} */ answers) => html`
-                          <input
-                            type="radio"
-                            id="answers"
-                            name="answers"
-                            value="${answers}"
-                          />
-                          <label for="answers">${answers}</label>
-                        `,
-                      )}</small
-                    >
+                    <fieldset id="${result.label}">
+                      <small class="text-muted">
+                        ${result.proposals.map(
+                          (/** @type {any} */ answers) => html`
+                            <input
+                              type="radio"
+                              id="${result.label + answers}"
+                              name="${result.label}"
+                              value="${answers}"
+                              onclick=${() => {
+                                getRadioValue(result.label, answers);
+                              }}
+                              selected
+                            />
+                            <label for="${result.label + answers}"
+                              >${answers}</label
+                            >
+                          `,
+                        )}</small
+                      >
+                    </fieldset>
                   </div>
                 </div>
               </div>
