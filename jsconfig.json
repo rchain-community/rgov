@@ -1,6 +1,7 @@
 // This file can contain .js-specific Typescript compiler config.
 {
   "compilerOptions": {
+    "jsx": "react",
     "target": "es2020",
     "lib": [
       "es2020",
