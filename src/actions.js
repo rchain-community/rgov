@@ -23,6 +23,14 @@ export const actions = {
     },
     filename: 'actions/transfer.rho',
   },
+  lookupURI: {
+    fields: { URI: { value: '', type: 'uri' } },
+    filename: 'actions/lookupURI.rho',
+  },
+  createURI: {
+    fields: { value: { value: 'Nil', type: 'number' } },
+    filename: 'actions/createURI.rho',
+  },
   _____________________________: {
     fields: {},
   },
@@ -80,29 +88,6 @@ export const actions = {
   },  
 
   ______________________________: {
-    fields: {},
-  },
-  newBallot: {
-    fields: {
-      lockerTag: { value: 'inbox', type: 'string' },
-      name: { type: 'string', value: '' },
-      // choice, choice, choice, ...
-      ballot: {
-        type: 'number',
-        value: '',
-      },
-    },
-    filename: 'actions/newBallot.rho',
-  },
-  castBallot: {
-    fields: {
-      lockerTag: { value: 'inbox', type: 'string' },
-      ballot: { value: '', type: 'string' },
-      choices: { value: '', type: 'number' },
-    },
-    filename: 'actions/castBallot.rho',
-  },
-  _________________________: {
     fields: {},
   },
   newIssue: {
@@ -192,6 +177,7 @@ export const actions = {
   newGroup: {
     fields: {
       name: { value: '', type: 'string' },
+      restricted: { value: 'false', type: "number" },
       lockerTag: { value: 'inbox', type: 'string' },
     },
     filename: 'actions/newGroup.rho',
@@ -215,6 +201,36 @@ export const actions = {
     filename: 'actions/addMember.rho',
   },
   ___________________________: {
+    fields: {},
+  },
+  newBallot: {
+    fields: {
+      lockerTag: { value: 'inbox', type: 'string' },
+      name: { type: 'string', value: '' },
+      // choice, choice, choice, ...
+      ballot: {
+        type: "number",
+        value: '[]',
+      },
+    },
+    filename: 'actions/newBallot.rho',
+  },
+  castBallot: {
+    fields: {
+      lockerTag: { value: 'inbox', type: 'string' },
+      ballot: { value: '', type: 'string' },
+      choices: { value: '', type: 'number' },
+    },
+    filename: 'actions/castBallot.rho',
+  },
+  tallyBallot: {
+    fields: {
+      lockerTag: { value: 'inbox', type: 'string' },
+      ballot: { value: '', type: 'string' },
+    },
+    filename: 'actions/tallyBallot.rho',
+  },
+  _______________________________: {
     fields: {},
   },
   newMemberDirectory: {
@@ -258,14 +274,6 @@ export const actions = {
       myGovRevAddr: { type: 'walletRevAddr' },
     },
     filename: 'actions/checkRegistration.rho',
-  },
-  lookupURI: {
-    fields: { URI: { value: '', type: 'uri' } },
-    filename: 'actions/lookupURI.rho',
-  },
-  createURI: {
-    fields: { value: { value: '', type: 'number' } },
-    filename: 'actions/createURI.rho',
   },
   doit: {
     fields: {

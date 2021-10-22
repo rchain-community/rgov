@@ -33,7 +33,7 @@ in {
     }
   } |
 
-  contract Group (@"new", @name, inbox, return) = {
+  contract Group (@"new", @name, restricted, inbox, return) = {
     new
     admin,
     inboxURIsCh,
@@ -117,18 +117,23 @@ in {
                 for ( allowed <<- allowedRevAddrsCh) {
                   log!({"allowed": *allowed.contains(*revAddr), "all": *allowed.toList()}) |
                   if (*allowed.contains(*revAddr)) {
-                    log!(["revAddr is registered, adding.", *revAddr])
-                  } else {
-                    log!(["revAddr not registered, adding anyway for now.", *revAddr])
+                    log!(["revAddr is registered, adding.", *revAddr]) |
+                    admin!("add user", userid, *revAddr, *memberInbox, *return, *log)
+                  } else { 
+                    if ( *restricted ) {
+                      log!("rejected: not registered")
+                      } else {
+                        log!(["revAddr not registered, adding anyway.", *revAddr])|
+                        admin!("add user", userid, *revAddr, *memberInbox, *return, *log)
+                      }
+                    } 
                   }
-                } |
-                admin!("add user", userid, *revAddr, *memberInbox, *return, *log)
+                } 
               }
             }
           }
         }
       }
-    }
   } |
   stdout!("request") |
   contract Group (@"request", @name, @userid, memberInbox, @deployerId, return, log) = {
@@ -162,7 +167,7 @@ in {
   } |
   new return(`rho:io:stdout`), ret, ret2 in {
     stdout!("testing,") |
-    Group!("new","test", Nil, *ret) |
+    Group!("new","test", false, Nil, *ret) |
     Group!("new","test2", Nil, *ret2) |
     for ( @{"admin": admin, "read": read, "write": write, "grant": grant} <- ret; _ <- ret2 ) {
       stdout!("got em") |
