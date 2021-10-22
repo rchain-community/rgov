@@ -4,12 +4,12 @@
 // @ts-check
 import {
   RNode,
-  RhoExpr,
   MetaMaskAccount,
   getAddrFromEth,
   signMetaMask,
   startTerm,
   listenAtDeployId,
+  RhoExpr,
 } from 'rchain-api';
 import { actions } from './actions.js';
 import { RholangGrammar } from './prism-rholang';
@@ -25,10 +25,24 @@ import { testnetNETWORK } from './MasterURI.testnet.json';
 import { rhobotNETWORK } from './MasterURI.rhobot.json';
 import { demoNETWORK } from './MasterURI.demo.json';
 
-const { freeze, keys, entries, fromEntries } = Object;
+const { freeze, keys, entries, fromEntries, values } = Object;
 
 // TODO: UI for phloLimit
 const maxFee = { phloPrice: 1, phloLimit: 0.05 * 100000000 };
+
+const DUST = 1;
+const REV = 1e8;
+
+let data;
+
+/** @type {string?} */
+let revAddr = '';
+
+/** @type {boolean} */
+let verify = false;
+
+
+let answers = [];
 
 // TODO: ISSUE: are networks really const? i.e. design-time data?
 const NETWORKS = {
@@ -197,6 +211,9 @@ function rhoBody(tmp) {
  *
  * @typedef { import('rchain-api/src/ethProvider').MetaMaskProvider } MetaMaskProvider
  * @typedef { import('prismjs').Grammar } Grammar
+ * @typedef {{ revAddr: string, ethAddr: string, name: string }} Account
+ * @typedef {{[refID: string]: { shortDesc: string, docLink?: string, yesAddr: string, noAddr: string, abstainAddr: string }}} QAs
+ * @typedef {{label: string, info?: any, rest?: any[], timestamp?: number }} LogEvent
  */
 export function buildUI({
   html,
@@ -231,13 +248,17 @@ export function buildUI({
     demo: {},
     rhobot: {},
   };
+  let ballotData = [];
+  let verifyUser = [];
+
+  //  const theElt = (id) => check.notNull(getElementById(id));
 
   setGrammar('rholang', RholangGrammar);
   codeTextArea.addEventListener('change', () => {
     const tmp = fixIndent(codeTextArea.value);
     state.term = tmp;
     updateHighlight(tmp);
-  })
+  });
 
   const state = {
     get shard() {
@@ -341,11 +362,51 @@ export function buildUI({
       });
     },
     problem: undefined,
+    address: revAddr,
+    get ballotData() {
+      return ballotData;
+    },
+    set ballotData(/** @type {RhoExpr[]} */ value) {
+      ballotData = value;
+      ballotData.forEach((expr) => {
+        const decl = RhoExpr.parse(expr);
+        if (Array.isArray(decl)) {
+          const [kw, name, rhs] = decl;
+          if (kw !== '#define') return;
+          if (typeof name !== 'string') return;
+          state.bindings[name] = rhs;
+        }
+      });
+    },
+    get verifyUser() {
+      return verifyUser;
+    },
+    set verifyUser(/** @type {RhoExpr[]} */ value) {
+      verifyUser = value;
+      verifyUser.forEach((expr) => {
+        const decl = RhoExpr.parse(expr);
+        if (Array.isArray(decl)) {
+          const [kw, name, rhs] = decl;
+          if (kw !== '#define') return;
+          if (typeof name !== 'string') return;
+          state.bindings[name] = rhs;
+        }
+      });
+    },
   };
+
   state.setAction(action); // compute initial term
   state.network = network; // set up shard of initial network
 
-  mount('#actionControl', actionControl(state, { html, getEthProvider, codeTextArea, updateHighlight }));
+  mount(
+    '#actionControl',
+    actionControl(state, {
+      html,
+      getEthProvider,
+      codeTextArea,
+      updateHighlight,
+    }),
+  );
   mount('#netControl', networkControl(state, { html }));
 
   mount(
@@ -360,7 +421,8 @@ export function buildUI({
     }),
   );
   mount('#groupControl', groupControl(state, { html }));
-  mount('#votingInterface', votingDOM({ html, getEthProvider}));
+  mount('#signIn', signIn(state, { html, formValue, busy, getEthProvider }));
+  mount('#exploreControl', ballotControl(state, { html, formValue, busy }));
 }
 
 /**
@@ -404,7 +466,10 @@ function fixIndent(code) {
  * }} state
  * @param {HTMLBuilder & EthSignAccess & { codeTextArea: HTMLElement, updateHighlight: (text: string | null) => void }} io
  */
-function actionControl(state, { html, getEthProvider, codeTextArea, updateHighlight }) {
+function actionControl(
+  state,
+  { html, getEthProvider, codeTextArea, updateHighlight },
+) {
   const options = (/** @type {string[]} */ ids) =>
     ids.map(
       (id) =>
@@ -706,7 +771,12 @@ function groupControl(state, { html }) {
                   data-revAddr=${revAddr}
                   class="card avatar"
                 >
-                  <img valign="middle" src=${avatar(revAddr)} />
+                  <img
+                    valign="middle"
+                    src=${avatar(revAddr)}
+                    width="20"
+                    height="20"
+                  />
                   <button
                     class="like"
                     onclick=${() => {
@@ -726,105 +796,185 @@ function groupControl(state, { html }) {
   });
 }
 
+// Voting Interface - Work In Progress
 /**
- * 
- * @param {HTMLBuilder & EthSignAccess} io 
- * 
+ *@param {{
+ *   shard: { observer: Observer, validator: Validator, admin: import('rchain-api/src/rnode').RNodeAdmin },
+ *   term: string?,
+ *   verifyUser: RhoExpr[],
+ *   ballotData: RhoExpr[],
+ *   problem?: string,
+ *   action: any, bindings: Record<string, unknown>,
+ *  answers?: {[id: string]: string},
+ * address: string,
+ * }} state
+ * @param {HTMLBuilder & FormAccess<any> & EthSignAccess } io
+ *
  */
-//Voting Interface - Work In Progress
-export function votingDOM({ html, getEthProvider }) {
+function signIn(state, { html, busy, getEthProvider }) {
   const metaMaskP = getEthProvider().then((ethereum) =>
     MetaMaskAccount(ethereum),
   );
 
+  async function exploreVerify(/** @type {string?} */ term) {
+    if (!term) {
+      return;
+    }
+    const obs = state.shard.observer;
+    state.problem = undefined;
+    state.verifyUser = [];
+    try {
+      console.log('explore...');
+      const { expr, _block } = await busy(
+        '#explore',
+        obs.exploratoryDeploy(term),
+      );
+      state.verifyUser = expr;
+      verify = state.verifyUser.map(RhoExpr.parse)[0];
+    } catch (err) {
+      state.problem = err.message;
+    }
+  }
+
+  async function exploreBallot(/** @type {string?} */ term) {
+    if (!term) {
+      return;
+    }
+    const obs = state.shard.observer;
+    state.problem = undefined;
+    state.ballotData = [];
+    try {
+      console.log('explore...');
+      const { expr, _block } = await busy(
+        '#explore',
+        obs.exploratoryDeploy(term),
+      );
+      state.ballotData = expr;
+      data = state.ballotData.map(RhoExpr.parse)[0];
+    } catch (err) {
+      state.problem = err.message;
+    }
+  }
+
   return freeze({
-    view(){
-      return html`<div class="app container">
-      <div class="testNet">
-        <div>
-        <button class="signin-btn"
-      onclick=${(/** @type {Event} */ _event) => {
-        metaMaskP.then((mm) =>
-          mm.ethereumAddress().then((ethAddr) => {
-            const revAddr = getAddrFromEth(ethAddr);
-            if (!revAddr) throw new Error('bad ethAddr???');
-            console.log(revAddr);
-          }),
-        );
-        return false;
-      }}
-    >
-      Connect Wallet
-    </button>
-    <p></p>
-          <h4>RChain Annual Meeting 2021 Ballot <sup>(Beta Test2)</sup></h4>
-        </div>
-         <p>For background, see</p>
-        <ul>
-          <li><cite><a href="https://blog.rchain.coop/2020/07/09/notice-of-annual-meeting-2020/" id="meetingNotice">Notice
-                of Annual Meeting 2020</a> RChain Blog July 9</cite></li>
-        </ul>
-        <form id='ballotForm'>
-          <fieldset class="panel panel-default">
-            <div class="panel-body">
-              <br />
-              <table class="table table-condensed table-hover table-bordered">
-                <thead>
-                  <tr>
-                    <th>ID</th>
-                    <th>Short Description</th>
-                    <th>Oppose</th>
-                    <th>Abstain</th>
-                    <th>Support</th>
-                  </tr>
-                </thead>
-                <tbody id="questionList">
-                  <tr>
-                    <td>Notice</td>
-                    <td>Stand by for questions...
-                    </td>
-                    <td><input type="radio" class="choice" /></td>
-                    <td><input type="radio" class="choice" checked /></td>
-                    <td><input type="radio" class="choice" /></td>
-                  </tr>
-                </tbody>
-              </table>
-              <input type="hidden" id="agendaURI" value="rho:id:68e89eurstmgt1fhzrpsyzbmcqgnez5rofnezoqmfs7epy17mfzke5" />
-              <label id="agendaControl">
-                Agenda URI:
-              </label>
-              <div class="card">
-                <div class="card-body">
-                  <h3>Sign and Submit</h3>
-                  <p>Your response, in rholang:</p>
-                  <div id="responseControl"><textarea rows="4" cols="80"></textarea></div>
-                  <p>
-                    <em>For a full explanation of this rholang code,
-                      see <a href="https://blog.rchain.coop/2020/10/07/rchain-voting-in-rholang/">Voting
-                        in Rholang</a> presentation
-                      (<a
-                        href="https://docs.google.com/presentation/d/1LLwejP0QdhHwhjYd-LFIPBblj1owjBGHBgL_EWh80V8/edit?usp=sharing">slides</a>).</em>
-                  </p>
-                  <div class="setting" id="txInfo">
-                    <label id="txFee"><small>Max transaction fee: <input id="phloLimit" type="number"
-                          value="0.05" /></small></label><br />
+    view() {
+      return html`
+        <a
+          onclick=${(/** @type {Event} */ _event) => {
+            metaMaskP.then((mm) =>
+              mm.ethereumAddress().then((ethAddr) => {
+                revAddr = getAddrFromEth(ethAddr);
+                if (!revAddr) throw new Error('bad ethAddr???');
+                state.address = revAddr;
+                console.log(state.address);
+
+                const term1 = `
+                    new
+                    return,
+                    lookup(\`rho:registry:lookup\`),
+                    stdout(\`rho:io:stdout\`),
+                    lookupCh
+                    in {
+                      lookup!(\`rho:id:9di3j4okw4ehrrfn9wsa3sic1zq5n8rem1p13iep3xudcnfsfymawd\`, *lookupCh) |
+                      for (@u <- lookupCh) {
+                        return!(u.contains("${state.address}"))
+                      }
+                    }
+  `;
+
+                const term2 = `
+                  new     
+                return,
+                lookup(\`rho:registry:lookup\`),
+                stdout(\`rho:io:stdout\`),
+                lookupCh 
+                in {
+                  lookup!(\`rho:id:1bagitnzth9qx5w1zgfg9hogfek3bcs1dox7gw94ybfwu1szr94brw\`, *lookupCh) |
+                  for (u <- lookupCh) {
+                        return!(*u)
+                  }
+                }
+    `;
+                exploreBallot(term2);
+              }),
+            );
+            return false;
+          }}
+        >
+          Connect Metamask
+        </a>
+      `;
+    },
+  });
+}
+
+/**
+ * @param {{
+ *   shard: { observer: Observer, validator: Validator, admin: import('rchain-api/src/rnode').RNodeAdmin },
+ *   term: string?,
+ *   ballotData: RhoExpr[],
+ *   problem?: string,
+ *   action: any, bindings: Record<string, unknown>,
+ *  answers?: {[id: string]: string},
+ * }} state
+ * @param { HTMLBuilder & FormAccess<any> } io
+ */
+function ballotControl(state, { html, busy }) {
+  const answerMap = new Map();
+
+  function getRadioValue(label, value) {
+    answerMap.set(label, value);
+
+    if (answerMap.size === 5) {
+      console.log(Array.from(answerMap.values()));
+    }
+  }
+  console.log(answers);
+  return freeze({
+    view() {
+      if (!Array.isArray(data))
+        return html` <div class="default"><h3>Connect REV address to view ballot</h3></div `;
+
+      return html` <h4>Ballot Issues</h4>
+        <div class="ballot-container">
+          ${data.map(
+            (result) => html`
+              <div class="card-group">
+                <div class="card">
+                  <div class="card-body">
+                    <h5 class="card-title">${result.label}</h5>
+                    <p class="card-text">${result.shortDesc}</p>
+                    <a>${result.docLink}</a>
                   </div>
-                  <span id="submitControl">
-                    <input id="submitResponse" type="submit" value="Sign and Submit" />
-                  </span>
+                  <div class="card-footer">
+                    <fieldset id="${result.label}">
+                      <small class="text-muted">
+                        ${result.proposals.map(
+                          (/** @type {any} */ answers) => html`
+                            <input
+                              type="radio"
+                              id="${result.label + answers}"
+                              name="${result.label}"
+                              value="${answers}"
+                              onclick=${() => {
+                                getRadioValue(result.label, answers);
+                              }}
+                              selected
+                            />
+                            <label for="${result.label + answers}"
+                              >${answers}</label
+                            >
+                          `,
+                        )}</small
+                      >
+                    </fieldset>
+                  </div>
                 </div>
               </div>
-            </div>
-          </fieldset>
-        </form>
-        <hr />
-        <address>
-          Sep 2020 by Dan Connolly<br />
-          and the <a href="https://github.com/rchain-community/">RChain Community</a><br />
-          <small>RCHAIN is a registered trademark of <a href="https://rchain.coop">RChain Cooperative</a>.</small>
-        </address>
-      </div>
-    </div>`;
-    }
-  })
-} 
+              <hr />
+            `,
+          )}
+        </div>`;
+    },
+  });
+}
