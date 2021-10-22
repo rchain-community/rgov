@@ -1,0 +1,21 @@
+match ["$channel", "$message"] {
+[channel, message] => {
+new
+   return(`rho:rchain:deployId`),
+   deployerId(`rho:rchain:deployerId`),
+   stdout(`rho:io:stdout`),
+   ch
+in {
+   for(@{"peek": *peek, ..._} <<- @[*deployerId, "inbox"]) {
+       return!("retrun one") |
+      peek!("chatAdmin", channel, *ch) |
+      for (@[{"pub": pub, ..._}] <- ch) {
+       return!("return two") |
+          @pub!(message, *ch) |
+          for (_ <- ch) {
+              return!("Chat sent!")
+          }
+      }
+   }
+}
+}} // end of match

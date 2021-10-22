@@ -23,7 +23,7 @@ in {
             inbox!(["Ballot", name, {"admin": *admin, "tally": *tally}], *return) |
             admin!("giveRightToVote", uri, *ch1, *return) |
             for (voterCap <- ch1) {
-               inbox!(["voter", name, {"voterCap": *voterCap}], *return) 
+               inbox!(["voter", name, {"voterCap": *voterCap, "tally": *tally}], *return) 
             }
 
          }
