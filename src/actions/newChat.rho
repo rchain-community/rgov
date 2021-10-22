@@ -15,18 +15,25 @@ new
          return!(["MCA", *MCA]) |
          MCA!("Chat", *lookupCh)
       } |
+      contract myListener(value, ret) = {
+         stdout!(*value ++ " listener")|
+         log!(*value, *ack ) |
+         for ( _ <- ack ) {
+         ret!(Nil)
+         }
+      } |
       for(Chat <- lookupCh) {
          return!(["Chat", *Chat]) |
          Chat!(*bCh) |
-         for(pub, sub, isend <- bCh) {
+         for(pub, sub <- bCh) {
             for (@{"inbox": *inbox, "URI": uri ..._} <<- @[*deployerId, "inbox"]) {
-               return!(["chatAdmin", channel, { "pub": *pub, "sub": *sub, "isend": *isend }]) |
+               return!(["chatAdmin", channel, { "pub": *pub, "sub": *sub }]) |
                inbox!(["chatAdmin", channel, {"pub": *pub, "sub": *sub }], *return) |
-               sub!(*listener, *isEndCh) |
+               sub!(*myListener, *isEndCh) |
                for ( isEnd <- isEndCh) {
-                  inbox!(["chat", channel, {"listener": *listener, "isEnd": *isEnd }], *return)
-               } 
-            } 
+                  inbox!(["chat", channel, {"listener": *myListener, "isEnd": *isEnd }], *return)
+               }
+            }
          }
       }
    }

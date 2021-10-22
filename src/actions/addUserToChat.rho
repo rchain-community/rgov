@@ -16,7 +16,7 @@ in {
          stdout!(["chatAdmin", *admin]) |
          admin!("chatAdmin", toInboxURI, *ch1, *return) |
          for (voterCap <- ch1) {
-            stdout!(["voterC*ap", *voterCap]) |
+            stdout!(["voterCap", *voterCap]) |
             inboxLookup!(toInboxURI, *inboxCh) |
             for (inbox <- inboxCh) {
                stdout!(["inbox", *inbox]) |

@@ -39,22 +39,17 @@ new insertArbitrary(`rho:registry:insertArbitrary`), uriCh in {
           }
         }
       } |
-      contract pub(msg, ret) = {
+      contract pub(msg) = {
         new newTail, ack in {
           for (end <- tail) {
             end!(*msg, *newTail) |
             tail!(*newTail) |
-            log!("pub: " ++ *msg, *ack)|
-            //for ( _ <- ack){ 
-                for( _ <<- tail) {
-                    ret!(Nil)
-                }
-            //}
+            log!("pub: " ++ *msg, *ack)
           }
         }
       } 
     }
-  }|
+  } |
   new listener, ret, logList, log, ack, theEnd in {
     contract listener(value, ret) = {
       stdout!(*value ++ " listener")|
