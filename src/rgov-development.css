@@ -3,17 +3,39 @@
  * Based on “prism-funky.css” from http://jasonrivers.github.io/prism/
  * @author Bill Keuntje
  */
-
-
+@import url('https://fonts.googleapis.com/css2?family=Poppins&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Raleway:wght@400;700&display=swap');
 
  body {
 	 background-color: rgb(236, 234, 234);
 	 padding: 40px;
+	 font-family: 'Raleway', sans-serif;
  }
 
- h1 {
+ h1, h2, h3, h4, h5 {
 	 font-weight: bold;
  }
+
+/* nav styles */
+.navbar-custom {
+	top: 0;
+	position: absolute;
+}
+
+.navbar-nav {
+	float: right;
+	margin-left: 600px;
+}
+
+.navbar-brand, .nav-link {
+	color: #121212;
+}
+/* end of nav styles */
+
+/* devInterface styles */
+#devInterface {
+	margin-top: 100px;
+}
 
 code[class*="language-"],
 pre[class*="language-"] {
@@ -296,3 +318,116 @@ pre[class*="language-"].line-numbers > code {
 #explore:hover {
 	background-color: #AFB1A9;
 }
+
+/* voting Interface styles */
+#votingInterface {
+	margin-top: 50px;
+	font-family: 'Raleway', sans-serif;
+}
+
+#votingInterface h3, h4 {
+	font-weight: bold;
+}
+
+.signin-btn {
+	float: right;
+	background-color: #424952;
+	color: #fff;
+	border: 1px solid #424952;
+	height: 40px;
+	border-radius: 5px;
+}
+
+.signin-btn:hover {
+	background-color: #515a66;
+}
+
+.default {
+	color: #951528;
+	margin: 100px;
+}
+
+.ballot-container {
+	width: 100%;
+    display: grid;
+    gap: 10px 10px;
+	justify-content: space-evenly;
+}
+
+.card-title {
+	color: #951528;
+}
+
+a:hover {
+	cursor: pointer;
+}
+
+#answers {
+	margin-left: 10px;
+	margin-top: 10px;
+}
+
+/* Signin Modal */
+/* The Modal (background) */
+.modal {
+  display: none; /* Hidden by default */
+  position: fixed; /* Stay in place */
+  z-index: 1; /* Sit on top */
+  padding-top: 100px; /* Location of the box */
+  left: 0;
+  top: 0;
+  width: 100%; /* Full width */
+  height: 100%; /* Full height */
+  overflow: auto; /* Enable scroll if needed */
+  background-color: rgb(0,0,0); /* Fallback color */
+  background-color: rgba(0,0,0,0.4); /* Black w/ opacity */
+}
+
+/* Modal Content */
+.modal-content {
+  position: relative;
+  background-color: #fefefe;
+  margin: auto;
+  padding: 0;
+  border: 1px solid #888;
+  width: 30%;
+  box-shadow: 0 4px 8px 0 rgba(0,0,0,0.2),0 6px 20px 0 rgba(0,0,0,0.19);
+  -webkit-animation-name: animatetop;
+  -webkit-animation-duration: 0.5s;
+  animation-name: animatetop;
+  animation-duration: 0.5s
+}
+
+/* Add Animation */
+@-webkit-keyframes animatetop {
+  from {top:-300px; opacity:0} 
+  to {top:0; opacity:1}
+}
+
+@keyframes animatetop {
+  from {top:-300px; opacity:0}
+  to {top:0; opacity:1}
+}
+
+/* The Close Button */
+.close {
+  color: grey;
+  float: right;
+  font-size: 28px;
+  font-weight: bold;
+}
+
+.close:hover,
+.close:focus {
+  color: #000;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.modal-header {
+  padding: 2px 16px;
+  background-color: #fff;
+  color: #121212;
+}
+
+.modal-body {padding: 2px 16px;}

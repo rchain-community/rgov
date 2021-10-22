@@ -9,3 +9,4 @@ ReadcapURI.json
 testing/unit_test/__pycache__
 **/.pytest_cache
 **/__pycache__
+MasterURI.localhost.json

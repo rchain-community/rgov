@@ -4,14 +4,52 @@
 <head>
   <title>RGOV developer interface</title>
   <link rel="shortcut icon" href="favicon.ico">
-  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css"
-    integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.0/dist/css/bootstrap.min.css"
+    rel="stylesheet"
+    integrity="sha384-KyZXEAg3QhqLMpG8r+8fhAXLRk2vvoC2f3B09zVXn8CA5QIVfZOJ3BCsw2P0p/We"
+    crossorigin="anonymous">
   <link rel="stylesheet" href="rgov-development.css" />
 </head>
 
 <body>
-  <div class="container actionSelection">
-    <h1><a ref="https://github.com/rchain-community/rgov/blob/master/README.md" >RGOV</a> development interface</h1>
+  <nav class="navbar navbar-expand-lg navbar-custom">
+    <a class="navbar-brand" href="#">RChain Governance</a>
+    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav"
+      aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse" id="navbarNav">
+      <ul class="navbar-nav mr-auto">
+        <li class="nav-item active">
+          <a class="nav-link" id="devInterfaceNav">Developer Interface</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" id="votingNav">Voting Interface</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link"><div id="signIn"></div></a>
+        </li>
+      </ul>
+    </div>
+  </nav>
+
+  <!-- TODO - Allow users sign in using an input form -->
+  <!-- Signin modal -->
+  <div id="myModal" class="modal">
+  
+    <!-- Modal content -->
+    <div class="modal-content">
+      <div class="modal-header">
+        <span class="close">&times;</span>
+      </div>
+      <div class="modal-body" id="">
+    
+      </div>
+    </div>
+  
+  </div>
+  <div id="devInterface" class="container actionSelection">
+    <h2><a ref="https://github.com/rchain-community/rgov/blob/master/README.md" >RGOV</a> development interface</h2>
     <address>
       by Dan Connolly, Jim Whitescarver, Bill Keuntje
       <br />
@@ -78,8 +116,72 @@
     </div>
     <p>idea: show avatars for members; give emoji kudos <a href="https://emojipedia.org/red-heart/">❤️</a></p>
   </div>
+  <div id="votingInterface" class="container">
+    <div class="app container">
+      <div class="testNet">
+        <div>
+          <p></p>
+          <h4>RChain Annual Meeting 2021 Ballot <sup>(Beta Test2)</sup></h4>
+        </div>
+        <p>For background, see</p>
+        <ul>
+          <li>
+            <cite><a href="https://blog.rchain.coop/2020/07/09/notice-of-annual-meeting-2020/"
+                id="meetingNotice">Notice of Annual Meeting 2020</a>
+              RChain Blog July 9</cite>
+          </li>
+        </ul>
+        <form id="ballotForm">
+          <fieldset class="panel panel-default">
+            <div class="panel-body">
+              <br />
+              <div id="exploreControl">
+                <div>Sign In to view Ballot</div>
+              </div>
+              <input type="hidden" id="agendaURI"
+                value="rho:id:68e89eurstmgt1fhzrpsyzbmcqgnez5rofnezoqmfs7epy17mfzke5" />
+              <label id="agendaControl"> Agenda URI: </label>
+              <div class="card">
+                <div class="card-body">
+                  <h3>Sign and Submit</h3>
+                  <p>Your response, in rholang:</p>
+                  <div id="responseControl">
+                    <textarea rows="4" cols="80"></textarea>
+                  </div>
+                  <p>
+                    <em>For a full explanation of this rholang code, see
+                      <a href="https://blog.rchain.coop/2020/10/07/rchain-voting-in-rholang/">Voting in
+                        Rholang</a>
+                      presentation (<a
+                        href="https://docs.google.com/presentation/d/1LLwejP0QdhHwhjYd-LFIPBblj1owjBGHBgL_EWh80V8/edit?usp=sharing">slides</a>).</em>
+                  </p>
+                  <div class="setting" id="txInfo">
+                    <label id="txFee"><small>Max transaction fee:
+                        <input id="phloLimit" type="number" value="0.05" /></small></label><br />
+                  </div>
+                  <span id="submitControl">
+                    <input id="submitResponse" type="submit" value="Sign and Submit" />
+                  </span>
+                </div>
+              </div>
+            </div>
+          </fieldset>
+        </form>
+        <hr />
+        <address>
+          Sep 2021 by David Asamonye<br />
+          and the
+          <a href="https://github.com/rchain-community/">RChain Community</a><br />
+          <small>RCHAIN is a registered trademark of
+            <a href="https://rchain.coop">RChain Cooperative</a>.</small>
+        </address>
+      </div>
+    </div>
+  </div>
   <hr />
-
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.0/dist/js/bootstrap.bundle.min.js"
+    integrity="sha384-U1DAWAznBHeqEIlVSCgzq+c9gqGAJn5c/t99JyeKa9xxaYpSvHU5awsuZVVFIhvj"
+    crossorigin="anonymous"></script>
 </body>
 
 </html>

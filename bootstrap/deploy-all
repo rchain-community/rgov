@@ -49,7 +49,7 @@ tail -F "$LOGFILE"|sed -e '/Making a transition to Running state./q' | sed "s/^/
 deployFiles() {
    WAITPID=""
    while read -r t;do
-      $DEPLOY "$t" &
+      $DEPLOY "$t"
       # shellcheck disable=SC2030
       WAITPID="$WAITPID $!"
    done |tee -a log/deployment.log 2>&1
@@ -68,20 +68,11 @@ if [ -f "$ERRORLOG" ]; then
    exit 2;
 fi
 
-# deploy rgov
-find \
-../Ballot.rho \
-../Group.rho \
-../CrowdFund.rho \
-../Directory.rho \
-../Inbox.rho \
-../Issue.rho \
-../Kudos.rho \
-../memberIdGovRev.rho \
-../RevIssuer.rho \
-../Echo.rho \
-./voter-insertion.rho \
-| deployFiles
+# deploy rgov core
+find ../rholang/core -name "*.rho" | deployFiles
+
+# deploy rchain voters
+echo ./voter-insertion.rho | deployFiles
 
 if [ -f "$ERRORLOG" ]; then
    echo "$ME: DeployFiles error:";
@@ -111,12 +102,13 @@ s/^/"/
 '>> ../src/MasterURI.localhost.json
 echo "}}" >> ../src/MasterURI.localhost.json
 
+# double-check the directory was created.
 echo "$ME: listing master directory"
 ./deploy listMasterURI.rho
 rnode --grpc-port 40402 propose 2>&1 | tee -a log/deployment.log
 
-echo "$ME: creating member directory"
-./deploy ../MemberDirectory.rho
+# deploy rholang 'features' that depend on core
+find ../rholang/feature -name "*.rho" | deployFiles
 rnode --grpc-port 40402 propose 2>&1 | tee -a log/deployment.log
 
 echo "$ME: Waiting for rnode to finalize (10s)" && sleep 10 && echo "$ME: Stopping deployment rnode"

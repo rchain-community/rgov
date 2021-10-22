@@ -1,0 +1,19 @@
+match ["$channel"] {
+[channel] => {
+new
+   return(`rho:rchain:deployId`),
+   deployerId(`rho:rchain:deployerId`),
+   ch
+in {
+   for(@{"peek": *peek, ..._} <<- @[*deployerId, "inbox"]) {
+      peek!("chat", channel, *ch) |
+      for (@[{"listener": *listener}] <- ch) {
+        for(value, ack <- listener) {
+            return!("message: " ++ *value) |
+            ack!(Nil)
+        }
+      }
+   }
+}
+
+}} // end of match
