@@ -1,5 +1,5 @@
-match ["$inbox", `$voterURI`, "$issue"] {
-[lockerTag, toInboxURI, issue] => {
+match [`$URI`, "$channel"] {
+[toInboxURI, channel] => {
 new
    return(`rho:rchain:deployId`),
    deployerId(`rho:rchain:deployerId`),
@@ -9,12 +9,12 @@ new
    ch1,
    inboxCh
 in {
-   for (@{ "peek": *peek, ..._ } <<- @[*deployerId, lockerTag]) {
+   for (@{ "peek": *peek, ..._ } <<- @[*deployerId, "inbox"]) {
       stdout!(["peek", *peek]) |
-      peek!("issue", issue, *ch) |
-      for (@[{ "admin": *admin, "tally": *tally, ..._ }] <- ch) {
-         stdout!(["admin", *admin]) |
-         admin!("giveRightToVote", toInboxURI, *ch1, *return) |
+      peek!("chat", channel, *ch) |
+      for (@[{ "chatAdmin": *admin, "sub": *sub, ..._ }] <- ch) {
+         stdout!(["chatAdmin", *admin]) |
+         admin!("chatAdmin", toInboxURI, *ch1, *return) |
          for (voterCap <- ch1) {
             stdout!(["voterC*ap", *voterCap]) |
             inboxLookup!(toInboxURI, *inboxCh) |

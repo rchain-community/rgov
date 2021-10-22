@@ -7,6 +7,7 @@ new
    ch1,
    ret,
    listener,
+   isEndCh,
    lookup(`rho:registry:lookup`),
    return(`rho:rchain:deployId`),
    deployerId(`rho:rchain:deployerId`) in {
@@ -20,11 +21,13 @@ new
          for(pub, sub, isend <- bCh) {
             for (@{"inbox": *inbox, "URI": uri ..._} <<- @[*deployerId, "inbox"]) {
                return!(["chatAdmin", channel, { "pub": *pub, "sub": *sub, "isend": *isend }]) |
-               inbox!(["chatAdmin", channel, {"pub": *pub, "sub": *sub, "isend": *isend }], *return) |
-               inbox!(["chat", channel, {"listener": *listener }], *return) |
-               sub!(*listener)
+               inbox!(["chatAdmin", channel, {"pub": *pub, "sub": *sub }], *return) |
+               sub!(*listener, *isEndCh) |
+               for ( isEnd <- isEndCh) {
+                  inbox!(["chat", channel, {"listener": *listener, "isEnd": *isEnd }], *return)
                } 
-            }
+            } 
          }
       }
    }
+}
