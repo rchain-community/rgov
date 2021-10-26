@@ -7,23 +7,17 @@ new
    stdout(`rho:io:stdout`),
    ch,
    ch1,
-   inboxCh
+   inboxCh,
+   isEndCh,
+   myListener
 in {
-   for (@{ "peek": *peek, ..._ } <<- @[*deployerId, "inbox"]) {
+   for (@{ "peek": *peek, "inbox": *inbox ..._ } <<- @[*deployerId, "inbox"]) {
       stdout!(["peek", *peek]) |
-      peek!("chat", channel, *ch) |
-      for (@[{ "chatAdmin": *admin, "sub": *sub, ..._ }] <- ch) {
-         stdout!(["chatAdmin", *admin]) |
-         admin!("chatAdmin", toInboxURI, *ch1, *return) |
-         for (voterCap <- ch1) {
-            stdout!(["voterCap", *voterCap]) |
-            inboxLookup!(toInboxURI, *inboxCh) |
-            for (inbox <- inboxCh) {
-               stdout!(["inbox", *inbox]) |
-               inbox!(["vote", issue, {"voterCap": *voterCap}], *return) |
-               inbox!(["issue", issue, {"tally": *tally}], *stdout)
-
-            }
+      peek!("chatAdmin", channel, *ch) |
+      for (@[{"sub": *sub, "pub": *pub ..._ }] <- ch) {
+         sub!(*myListener, *isEndCh) |
+         for ( isEnd <- isEndCh) {
+            inbox!(["chat", channel, {"listener": *myListener, "isEnd": *isEnd, "pub": *pub }], *return)
          }
       }
    }

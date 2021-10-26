@@ -6,7 +6,7 @@ new
    bCh,
    ch1,
    ret,
-   listener,
+   myListener,
    isEndCh,
    lookup(`rho:registry:lookup`),
    return(`rho:rchain:deployId`),
@@ -14,13 +14,6 @@ new
       for (@{"read": *MCA, ..._} <<- @[*deployerId, "dictionary"]) {
          return!(["MCA", *MCA]) |
          MCA!("Chat", *lookupCh)
-      } |
-      contract myListener(value, ret) = {
-         stdout!(*value ++ " listener")|
-         log!(*value, *ack ) |
-         for ( _ <- ack ) {
-         ret!(Nil)
-         }
       } |
       for(Chat <- lookupCh) {
          return!(["Chat", *Chat]) |
@@ -31,7 +24,7 @@ new
                inbox!(["chatAdmin", channel, {"pub": *pub, "sub": *sub }], *return) |
                sub!(*myListener, *isEndCh) |
                for ( isEnd <- isEndCh) {
-                  inbox!(["chat", channel, {"listener": *myListener, "isEnd": *isEnd }], *return)
+                  inbox!(["chat", channel, {"listener": *myListener, "isEnd": *isEnd, "pub": *pub }], *return)
                }
             }
          }

@@ -73,6 +73,13 @@ export const actions = {
     },
     filename: 'actions/newChat.rho'
   },
+  addUserToChat: {
+    fields: {
+      channel: { value: '', type: 'string' },
+      InboxURI: { value: '', type: 'uri' },
+    },
+    filename: 'actions/addUserToChat.rho'
+  },  
   sendChat: {
     fields: {
       channel: { value: '', type: 'string' },
