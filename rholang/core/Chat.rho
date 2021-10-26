@@ -9,17 +9,27 @@ new insertArbitrary(`rho:registry:insertArbitrary`), uriCh in {
 } | 
   result!("starting") |
   contract chat(ret) = {
-    new head, tail, pub, sub, isend in {
+    new head, tail, pub, sub, nextCh in {
       tail!(*head) |
-      ret!(*pub, *sub, *isend) |
-      contract sub(listener) = {
+      nextCh!(*head) |
+      ret!(*pub, *sub) |
+      new isEnd in
+      contract sub(listener, endCap) = {
+        contract isEnd(ret) = {
+          for (next <<- nextCh) {
+            for (end <<- tail) {
+              ret!(*end == *next)
+            }
+          }
+        } | endCap!(*isEnd) |
         new loop, ack in {
           loop!(*head) |
           contract loop(curr) = {
-            for (value, next <- curr) {
+            for (value, next <- curr ; _ <- nextCh) {
               listener!(*value, *ack) |
+              nextCh!(*next) |
               stdout!(["got next",*value]) |
-              result!("litener called for " ++ *value) |
+              result!("listener called for " ++ *value) |
               for ( _ <- ack) {
                 result!(["sent",*value]) |
                 stdout!(["sent",*value]) |
@@ -29,28 +39,18 @@ new insertArbitrary(`rho:registry:insertArbitrary`), uriCh in {
           }
         }
       } |
-      contract pub(msg, ret) = {
+      contract pub(msg) = {
         new newTail, ack in {
           for (end <- tail) {
             end!(*msg, *newTail) |
             tail!(*newTail) |
-            log!("pub: " ++ *msg, *ack)|
-            //for ( _ <- ack){ 
-                for( _ <<- tail) {
-                    ret!(Nil)
-                }
-            //}
+            log!("pub: " ++ *msg, *ack)
           }
         }
-      } |
-      contract isend(next, ret) = {
-        for (end <<- tail) {
-          ret!( *end == *next)
-        }
-      }
+      } 
     }
-  }|
-  new listener, ret, logList, log, ack in {
+  } |
+  new listener, ret, logList, log, ack, theEnd in {
     contract listener(value, ret) = {
       stdout!(*value ++ " listener")|
       log!(*value, *ack ) |
@@ -60,8 +60,8 @@ new insertArbitrary(`rho:registry:insertArbitrary`), uriCh in {
     } |
     result!("testing") |
     chat!(*ret) |
-    for ( pub, sub, isend <- ret) {
-      sub!(*listener) |
+    for ( pub, sub <- ret) {
+      sub!(*listener, *theEnd) |
       pub!("one",*ret) |
       for ( _ <- ret) {
         pub!("two", *ret) |
