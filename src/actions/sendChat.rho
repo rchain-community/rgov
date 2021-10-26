@@ -7,8 +7,8 @@ new
    ch
 in {
    for(@{"peek": *peek, ..._} <<- @[*deployerId, "inbox"]) {
-       return!("retrun one") |
-      peek!("chatAdmin", channel, *ch) |
+      return!("return one") |
+      peek!("chat", channel, *ch) |
       for (@[{"pub": pub, ..._}] <- ch) {
        return!("return two") |
           @pub!(message, *ch) |
