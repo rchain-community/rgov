@@ -11,10 +11,7 @@ in {
       peek!("chat", channel, *ch) |
       for (@[{"pub": pub, ..._}] <- ch) {
        return!("return two") |
-          @pub!(message, *ch) |
-          for (_ <- ch) {
-              return!("Chat sent!")
-          }
+          @pub!(message)
       }
    }
 }

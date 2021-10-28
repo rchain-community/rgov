@@ -7,7 +7,7 @@ new
 in {
    for(@{"peek": *peek, ..._} <<- @[*deployerId, "inbox"]) {
       peek!("chat", channel, *ch) |
-      for (@[{"listener": *listener, "isEnd": *isEnd}] <- ch) {
+      for (@[{"listener": *listener, "isEnd": *isEnd, ..._}] <- ch) {
         for(value, ack <- listener) {
             return!("message: " ++ *value) |
             ack!(Nil)
