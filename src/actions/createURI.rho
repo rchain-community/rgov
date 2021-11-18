@@ -1,15 +1,15 @@
-match ["value"] {
+match ["string:value"] {
 [value] => {
 new
    return(`rho:rchain:deployId`),
-   insert(`rho:registry:insertArbitrary`),   
+   insert(`rho:registry:insertArbitrary`),
    stdout(`rho:io:stdout`),
    uriCh
 in {
    insert!(
-      
+
       value               // enter value above or replace value here with longer rholang
-   
+
    , *uriCh) |
    for (@URI <- uriCh) {
       stdout!([ "URI", URI, "Obj", value]) |
