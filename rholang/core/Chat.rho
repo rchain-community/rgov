@@ -25,9 +25,9 @@ new insertArbitrary(`rho:registry:insertArbitrary`), uriCh in {
         new loop, ack in {
           loop!(*head) |
           contract loop(curr) = {
-            for (value, next <- curr ; _ <- nextCh) {
+            for (value, next <- curr) {
               listener!(*value, *ack) |
-              nextCh!(*next) |
+              //nextCh!(*next) |
               stdout!(["got next",*value]) |
               result!("listener called for " ++ *value) |
               for ( _ <- ack) {
@@ -39,17 +39,19 @@ new insertArbitrary(`rho:registry:insertArbitrary`), uriCh in {
           }
         }
       } |
-      contract pub(msg) = {
-        new newTail, ack in {
+      contract pub(msg, ack) = {
+        new newTail, ack1 in {
           for (end <- tail) {
             end!(*msg, *newTail) |
             tail!(*newTail) |
-            log!("pub: " ++ *msg, *ack)
-          }
+            log!("pub: " ++ *msg, *ack1)
+          }|
+          ack!(Nil)
         }
       } 
     }
   } |
+  result!("testing") |
   new listener, ret, logList, log, ack, theEnd in {
     contract listener(value, ret) = {
       stdout!(*value ++ " listener")|
@@ -58,12 +60,14 @@ new insertArbitrary(`rho:registry:insertArbitrary`), uriCh in {
         ret!(Nil)
       }
     } |
-    result!("testing") |
+
     chat!(*ret) |
     for ( pub, sub <- ret) {
+      stdout!("got chat")|
       sub!(*listener, *theEnd) |
       pub!("one",*ret) |
       for ( _ <- ret) {
+        stdout!("pub one")|
         pub!("two", *ret) |
         for ( _ <- ret ) {
           pub!("three", *ret) |
@@ -82,11 +86,12 @@ new insertArbitrary(`rho:registry:insertArbitrary`), uriCh in {
       }
     } |
     logList!([]) |
-    contract log(term, ack) = {
+    contract log(message, ack) = {
       for ( prior <- logList) {
-        stdout!("logged: " ++ *term) |
-        logList!(*prior ++ [*term]) |
+        stdout!("logged: " ++ *message) |
+        logList!(*prior ++ [*message]) |
         for ( _ <<- logList) {
+          stdout!("log ack")|
             ack!(Nil)
         }
       }
