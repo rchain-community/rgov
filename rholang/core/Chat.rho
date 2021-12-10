@@ -1,4 +1,4 @@
-new logList, result(`rho:io:stdout`), stdout(`rho:io:stdout`),  log, chat in {
+new result(`rho:io:stdout`), stdout(`rho:io:stdout`), chat in {
 new insertArbitrary(`rho:registry:insertArbitrary`), uriCh in {
     insertArbitrary!(bundle+{*chat}, *uriCh) | 
     for(@uri <- uriCh) {
@@ -25,14 +25,13 @@ new insertArbitrary(`rho:registry:insertArbitrary`), uriCh in {
         new loop, ack in {
           loop!(*head) |
           contract loop(curr) = {
-            for (value, next <- curr) {
-              listener!(*value, *ack) |
-              //nextCh!(*next) |
-              stdout!(["got next",*value]) |
-              result!("listener called for " ++ *value) |
+            for (message, next <<- curr) {
+              listener!(*message, *ack) |
+              stdout!(["got next",*message]) |
+              result!("listener called for " ++ *message) |
               for ( _ <- ack) {
-                result!(["sent",*value]) |
-                stdout!(["sent",*value]) |
+                result!(["sent",*message]) |
+                stdout!(["sent",*message]) |
                 loop!(*next)
               }
             }
@@ -44,7 +43,7 @@ new insertArbitrary(`rho:registry:insertArbitrary`), uriCh in {
           for (end <- tail) {
             end!(*msg, *newTail) |
             tail!(*newTail) |
-            log!("pub: " ++ *msg, *ack1)
+            stdout!("pub: " ++ *msg)
           }|
           ack!(Nil)
         }
@@ -52,13 +51,13 @@ new insertArbitrary(`rho:registry:insertArbitrary`), uriCh in {
     }
   } |
   result!("testing") |
-  new listener, ret, logList, log, ack, theEnd in {
-    contract listener(value, ret) = {
-      stdout!(*value ++ " listener")|
-      log!(*value, *ack ) |
-      for ( _ <- ack ) {
+  new listener, ret, logList, ack, theEnd in {
+    contract listener(message, ret) = {
+      stdout!(*message ++ " listener")|
+      //stdout!(*message ) |
+      //for ( _ <- ack ) {
         ret!(Nil)
-      }
+      //}
     } |
 
     chat!(*ret) |
@@ -74,27 +73,28 @@ new insertArbitrary(`rho:registry:insertArbitrary`), uriCh in {
           for ( _ <- ret ) {
             pub!("four", *ret) |
             for ( _ <- ret ) {
-              log!("done", *ret) |
-              for (_ <- ret; alist <- logList ) {
-                stdout!(*alist)|
-                result!({ "log":*alist}) |
-                logList!(*alist)
-              }
+              stdout!("done") //|
+              // for (_ <- ret; alist <- logList ) {
+              //   stdout!(*alist)|
+              //   result!({ "log":*alist}) |
+              //   logList!(*alist)|
+                
+              // }
             }
           }
         }
       }
-    } |
-    logList!([]) |
-    contract log(message, ack) = {
-      for ( prior <- logList) {
-        stdout!("logged: " ++ *message) |
-        logList!(*prior ++ [*message]) |
-        for ( _ <<- logList) {
-          stdout!("log ack")|
-            ack!(Nil)
-        }
-      }
-    }
+    } //|
+    // logList!([]) |
+    // contract log(message, ack) = {
+    //   for ( prior <- logList) {
+    //     stdout!("logged: " ++ *message) |
+    //     logList!(*prior ++ [*message]) |
+    //     //for ( _ <<- logList) {
+    //       stdout!("log ack")|
+    //       ack!(Nil)
+    //     //}
+    //   }
+    // }
   }
 }
