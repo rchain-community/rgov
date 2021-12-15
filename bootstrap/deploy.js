@@ -3,6 +3,9 @@
 const rchainToolkit = require('rchain-toolkit');
 const fs = require('fs');
 
+const ALLNETWORKS = require('./networks');
+const network_argument = 'localhost';
+
 let privateKey;
 try {
   privateKey = fs.readFileSync('./PrivateKeys/pk.bootstrap', 'utf8');
@@ -16,7 +19,7 @@ const rholang_files = process.argv.slice(2);
 const deploy = async (rholang_f) => {
 const rholang = fs.readFileSync(rholang_f, 'utf8');
   const validAfterBlockNumber = await rchainToolkit.http.validAfterBlockNumber(
-    'http://localhost:40403',
+    ALLNETWORKS[network_argument].observerBase,
   );
 
   const deployOptions = rchainToolkit.utils.getDeployOptions(
@@ -33,7 +36,7 @@ const rholang = fs.readFileSync(rholang_f, 'utf8');
   let deployResponse;
   try {
     deployResponse = await rchainToolkit.http.deploy(
-      "http://localhost:40403",
+      ALLNETWORKS[network_argument].observerBase,
       deployOptions
     );
   } catch (err) {

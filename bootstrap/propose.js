@@ -1,5 +1,7 @@
 #!/usr/local/bin/node
 
+
+//This is only needed in localhost mode and DOES NOT work with other networks
 const grpc = require('@grpc/grpc-js');
 const protoLoader = require('@grpc/proto-loader');
 const rchainToolkit = require('rchain-toolkit');

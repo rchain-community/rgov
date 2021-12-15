@@ -55,4 +55,4 @@ const NETWORKS = {
     },
 };
 
-module.export = NETWORKS;
+module.exports = NETWORKS;
