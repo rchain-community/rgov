@@ -1,13 +1,14 @@
 #!/usr/local/bin/node
+/* eslint-disable prettier/prettier */
 
 const rchainToolkit = require('rchain-toolkit');
 const fs = require('fs');
 
 const ALLNETWORKS = require('./networks');
-//const READ_ONLY_HOST = 'http://localhost:40403';
+//  const READ_ONLY_HOST = 'http://localhost:40403';
 const rholang_files = process.argv.slice(2);
 
-//TODO allow user input --network as a command argument
+// TODO allow user input --network as a command argument
 const network_argument = 'rhobot'
 
 const explore = async (rholang_f) => {
@@ -19,7 +20,6 @@ const explore = async (rholang_f) => {
       return result;
     } catch (e) {
       console.log(e);
-      return;
     }
   }
 
