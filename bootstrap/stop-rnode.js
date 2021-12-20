@@ -24,7 +24,7 @@ const main = async () => {
     ) {
       await exec_shell(`kill ${formatted_string}`);
     } else {
-      console.log('Aboring ...');
+      console.log('Aborting ...');
     }
     rl.close();
   });
