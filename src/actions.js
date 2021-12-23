@@ -23,6 +23,13 @@ export const actions = {
     },
     filename: 'actions/transfer.rho',
   },
+   _____________________________________: {
+	   fields: {},
+},
+  sequencialLooping: {
+    fields: {},
+    filename: 'actions/sequencialLooping.rho',
+},
   _____________________________: {
     fields: {},
   },
