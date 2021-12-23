@@ -29,7 +29,8 @@ fs.readdir(directoryPath, function (err, files) {
 
 // Get user input and use that to select a pk file
 rl.question(
-  `Select private key. Type 1 for alpha, 2 for bravo, 3 for charlie NB: bootstrap private key is used if no argument is given`,
+  `Select private key \n 1) alpha \n 2) bravo \n 3) charlie \n 
+Leave default to use bootstrap \n`,
   (answer) => {
     switch (answer) {
       case '1':
