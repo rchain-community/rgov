@@ -1,0 +1,38 @@
+match [] {
+  [] => {
+  new output, num, increaseByNum, increase, currentCount in {
+    currentCount!(0) |
+    contract increase(ack) = {
+      for(old <- currentCount) {
+        currentCount!(*old + 1) |
+        ack!(*old)
+      }
+      
+    } |
+    contract increaseByNum(num, ack) = {
+      // output!(*num) |
+      match *num {
+        0 => {
+          output!("Recursion finished.") |
+          ack!(Nil)
+        }
+        _ => {
+          new kiril in {
+            for (k <- kiril) { ack!(Nil) } |
+            output!(*num) |
+            increase!(*num) |
+            increaseByNum!(*num-1, *kiril)
+          }
+        }
+      }
+    } |
+    new finished in {
+      increaseByNum!(500, *finished) |
+      for (_ <- finished) {
+        for (cc <- currentCount) {
+          output!({"Current count": *cc})
+        }
+      }
+    }
+  }
+}
