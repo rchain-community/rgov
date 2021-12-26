@@ -50,7 +50,7 @@ const NETWORKS = {
       MasterURI: getMasterURI('rhobot'),
     },
     mainnet: {
-      hostPattern: 'main'
+      hostPattern: 'main',
       observerBase: 'https://observer.services.mainnet.rchain.coop',
       validatorBase: 'https://node12.root-shard.mainnet.rchain.coop',
       adminBase: '',
