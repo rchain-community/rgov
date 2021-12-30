@@ -1,31 +1,29 @@
-#!/usr/local/bin/node
+#!/usr/bin/env node
 /* eslint-disable prettier/prettier */
 
 const rchainToolkit = require('rchain-toolkit');
 const fs = require('fs');
+const path = require('path');
 
 const ALLNETWORKS = require('./networks');
-//  const READ_ONLY_HOST = 'http://localhost:40403';
-const rholang_files = process.argv.slice(2);
+const { explore } = require('./cli-utils/explore_script');
 
-// TODO allow user input --network as a command argument
-const network_argument = 'rhobot'
+const argv = require('minimist')(process.argv.slice(2));
+let privatekey_f = argv.pk;
+let rholang_files = argv._;
+let network = argv.network;
+if (privatekey_f == undefined) {
+  privatekey_f = path.join(__dirname, 'PrivateKeys/pk.bootstrap');
+  console.log(`Private Key undefined, defaulting to ${privatekey_f}`);
+}
+if (network == undefined) {
+  network = 'localhost';
+  console.log(`Network undefined, defaulting to ${network}`);
+}
 
-const explore = async (rholang_f) => {
-    const rholang = fs.readFileSync(rholang_f, 'utf8');
-    try {
-      const result = await rchainToolkit.http.exploreDeploy(ALLNETWORKS[network_argument].observerBase, {
-        term: rholang,
-      });
-      return result;
-    } catch (e) {
-      console.log(e);
-    }
-  }
-
- for(let i=0; i<rholang_files.length; i++){
-  const return_value = explore(rholang_files[i]);
-  return_value.then(function(result){
+for (let i = 0; i < rholang_files.length; i += 1) {
+  const return_value = explore(console, ALLNETWORKS, rholang_files[i], privatekey_f, network);
+  return_value.then(function(result) {
     console.log(result)
-    })
-  }
+  })
+}
