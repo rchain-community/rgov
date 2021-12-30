@@ -1,4 +1,4 @@
-#!/usr/local/bin/node
+#!/usr/bin/env node
 
 const rchainToolkit = require('rchain-toolkit');
 const fs = require('fs');

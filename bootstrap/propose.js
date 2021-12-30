@@ -1,4 +1,4 @@
-#!/usr/local/bin/node
+#!/usr/bin/env node
 
 
 //This is only needed in localhost mode and DOES NOT work with other networks

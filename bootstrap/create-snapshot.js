@@ -1,3 +1,4 @@
+#!/usr/bin/env node
 const fs = require('fs');
 const exec_shell = require('./util/exec_script');
 const readline = require('readline');
@@ -34,7 +35,7 @@ const main = async () => {
       }
       fs.mkdirSync('snapshot', { recursive: true });
       const target = `${__dirname}/snapshot/${arg_input}.tgz`;
-     
+
       if (fs.existsSync(target)) {
         //if snapshot exist, alert user to override or exit
         rl.question(

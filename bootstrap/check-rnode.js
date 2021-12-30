@@ -1,3 +1,4 @@
+#!/usr/bin/env node
 const exec_shell = require('./util/exec_script');
 
 const main = async () => {

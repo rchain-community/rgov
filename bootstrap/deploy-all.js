@@ -1,3 +1,4 @@
+#!/usr/bin/env node
 const fs = require('fs');
 const path = require('path');
 const { join, resolve } = require('path');
@@ -49,14 +50,14 @@ forAwait(getFiles(directory), (x) => {
 
 // TODO: Get propose working!!!!
 
-// TODO: propose 
-// TODO: Create snapshot of rchain core 
+// TODO: propose
+// TODO: Create snapshot of rchain core
 // TODO: Deploys dictionary.rho
 // TODO: Propose
 // TODO: Create master dictionary
 // TODO: Write Mater URI to MasterURI.localhost.json
 // TODO: Deploy rgov standard contract
-// TODO: Propose 
+// TODO: Propose
 // TODO: Create snapshot
 
 //run-rnode
