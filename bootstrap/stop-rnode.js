@@ -1,3 +1,4 @@
+#!/usr/bin/env node
 const exec_shell = require('./util/exec_script');
 const readline = require('readline');
 const rl = readline.createInterface({
@@ -20,7 +21,8 @@ const main = async () => {
   rl.question(`Execute 'kill ${formatted_string}' [y]? `, async (reply) => {
     if (
       reply.toLocaleLowerCase() === 'yes' ||
-      reply.toLocaleLowerCase() === 'y'
+      reply.toLocaleLowerCase() === 'y' ||
+      reply.toLocaleLowerCase() === ''
     ) {
       await exec_shell(`kill ${formatted_string}`);
     } else {
