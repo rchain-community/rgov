@@ -1,10 +1,10 @@
 #!/usr/local/bin/node
-/* eslint-disable prettier/prettier */
 
+/* eslint-disable */
 const rchainToolkit = require('rchain-toolkit');
 const fs = require('fs');
 
-const ALLNETWORKS = require('./networks');
+const ALLNETWORKS = require('./cli-utils/networks');
 //  const READ_ONLY_HOST = 'http://localhost:40403';
 const rholang_files = process.argv.slice(2);
 

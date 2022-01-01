@@ -1,3 +1,5 @@
+/* eslint-disable */
+
 const rchainToolkit = require('rchain-toolkit');
 const fs = require('fs');
 const path = require('path');
@@ -28,7 +30,7 @@ module.exports = {
         privateKey,
         publicKey,
         1,
-        100000,
+        100000000,
         validAfterBlockNumber,
       );
 

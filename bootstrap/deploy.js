@@ -1,12 +1,12 @@
 #!/usr/bin/env node
 
-const rchainToolkit = require('rchain-toolkit');
+/* eslint-disable */
 const fs = require('fs');
 const path = require('path');
 
 const { deploy } = require('./cli-utils/deploy_script');
 
-const ALLNETWORKS = require('./networks');
+const ALLNETWORKS = require('./cli-utils/networks');
 const console = require('console');
 
 const argv = require('minimist')(process.argv.slice(2));
