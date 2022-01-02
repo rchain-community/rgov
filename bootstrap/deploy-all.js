@@ -59,7 +59,14 @@ stop_rnode();
 
 create_snapshot('rchain-core');
 
-run_rnode(ALLNETWORKS, network);
+const { run_rnode } = require('./cli-utils/run-rnode_script');
+
+run_rnode(
+  ALLNETWORKS,
+  network,
+  path.join(__dirname, 'PrivateKeys', 'pk.bootstrap'),
+  path.join(__dirname, 'log', 'run-rnode.log'),
+);
 
 deploy(console, ALLNETWORKS, '../rholang/core/Directory.rho', privatekey_f, network);
 

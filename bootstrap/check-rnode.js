@@ -1,15 +1,16 @@
 #!/usr/bin/env node
-const exec_shell = require('./util/exec_script');
 
-const main = async () => {
-  const shell_output = await exec_shell(
-    `ps aux |grep -v grep | grep "java .*rnode"|sed 's/[ \t][ \t]*/ /g'|cut -d' ' -f 2`,
-  );
-  if (!shell_output) {
-    console.log(
-      `rnode is NOT currently running. Run "node run-rnode.js" to fix.`,
-    );
-  }
-};
+const { check_rnode } = require('./cli-utils/check-rnode_script');
+const ALLNETWORKS = require('./cli-utils/networks');
 
-main();
+// TODO: allow user to specify network on the command line
+const pid = check_rnode(ALLNETWORKS, 'localhost');
+
+// TODO: allow user to specify --quiet to supporess the console output
+if (pid == 0) {
+  console.log("rnode is not running. Use run-rnode to start");
+  return false;
+} else {
+  console.log(`rnode is running as PID ${pid}. Use stop-rnode to stop`);
+  return true;
+}

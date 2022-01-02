@@ -28,7 +28,6 @@ function deploy_master_dictionary(dictionary_contract_URI) {
                }
             }
          }
-
       }
    }
    `
