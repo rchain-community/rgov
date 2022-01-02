@@ -1,12 +1,12 @@
-#!/usr/bin/env node
-/* eslint-disable prettier/prettier */
+#!/usr/local/bin/node
 
+/* eslint-disable */
 const rchainToolkit = require('rchain-toolkit');
 const fs = require('fs');
 const path = require('path');
 
-const ALLNETWORKS = require('./networks');
-const { explore } = require('./cli-utils/explore_script');
+const ALLNETWORKS = require('./cli-utils/networks');
+const rholang_files = process.argv.slice(2);
 
 const argv = require('minimist')(process.argv.slice(2));
 let privatekey_f = argv.pk;
