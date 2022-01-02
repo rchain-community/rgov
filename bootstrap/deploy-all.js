@@ -59,14 +59,28 @@ stop_rnode();
 
 create_snapshot('rchain-core');
 
+run_rnode(ALLNETWORKS, network);
+
 deploy(console, ALLNETWORKS, '../rholang/core/Directory.rho', privatekey_f, network);
 
 propose();
 
+// TODO: get Directory URI from output or from log
 
+deploy_master_directory(directory_uri);
 
-// TODO: Create master dictionary
-// TODO: Write Mater URI to MasterURI.localhost.json
+propose();
+
+// TODO: get master URI from output or from log
+
+const masterURI = {
+  "localhostNETWORK": { "MasterURI": MasterURI }
+}
+
+fs.writeFileSync(path.join(__dirname, "../src/MasterURI.localhost.json"), JSON.stringify(masterURI));
+
+create_snapshot("bare-master-dictionary");
+
 // TODO: Deploy rgov standard contract
 // TODO: Propose
 // TODO: Create snapshot
