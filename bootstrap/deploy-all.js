@@ -72,7 +72,8 @@ deploy(console, ALLNETWORKS, '../rholang/core/Directory.rho', privatekey_f, netw
 
 propose();
 
-// TODO: get Directory URI from output or from log
+// TODO: get Directory URI from output
+
 
 deploy_master_directory(directory_uri);
 

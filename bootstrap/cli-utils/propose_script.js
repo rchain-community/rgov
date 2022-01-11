@@ -16,6 +16,7 @@ module.exports = {
     let proposeResponse;
     try {
       proposeResponse = await rchainToolkit.grpc.propose({}, grpcClient);
+      //const data = rchainToolkit.utils.rhoValToJs(JSON.parse(result).expr[0]);
     } catch (err) {
       console.log(err);
     }

@@ -6,7 +6,7 @@ const fs = require('fs');
 const path = require('path');
 
 const ALLNETWORKS = require('./cli-utils/networks');
-const rholang_files = process.argv.slice(2);
+const  {explore}  = require('./cli-utils/explore_script');
 
 const argv = require('minimist')(process.argv.slice(2));
 let privatekey_f = argv.pk;
