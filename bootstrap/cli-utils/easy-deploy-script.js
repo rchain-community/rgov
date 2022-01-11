@@ -11,12 +11,11 @@ module.exports = {
     privateKeyFile,
     network_argument,
   ) => {
-    const rholang = s.readFileSync(rholang_f, 'utf8');
+    const rholang = fs.readFileSync(rholang_f, 'utf8');
 
     const privateKey = fs.readFileSync(privateKeyFile, 'utf8');
 
     let dataAtNameResponse;
-    console.log(rholang);
     try {
       dataAtNameResponse = await rchainToolkit.http.easyDeploy(
         ALLNETWORKS[network_argument].observerBase,
@@ -35,14 +34,6 @@ module.exports = {
       JSON.parse(dataAtNameResponse).exprs[0].expr
     );
 
-    console.log(data);
-
-    // if (data.status !== 'completed') {
-    //   console.log(data);
-    //   throw new Error('deployBox 02');
-    // }
-
-    //console.log(data);
     return data;
   }
 }

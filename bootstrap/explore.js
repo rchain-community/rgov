@@ -6,7 +6,7 @@ const fs = require('fs');
 const path = require('path');
 
 const ALLNETWORKS = require('./cli-utils/networks');
-const  {explore}  = require('./cli-utils/explore_script');
+const  {explore}  = require('./cli-utils/explore-script');
 
 const argv = require('minimist')(process.argv.slice(2));
 let privatekey_f = argv.pk;

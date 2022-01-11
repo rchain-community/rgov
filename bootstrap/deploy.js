@@ -4,7 +4,7 @@
 const fs = require('fs');
 const path = require('path');
 
-const { deploy } = require('./cli-utils/deploy_script');
+const { deploy } = require('./cli-utils/deploy-script');
 
 const ALLNETWORKS = require('./cli-utils/networks');
 const console = require('console');

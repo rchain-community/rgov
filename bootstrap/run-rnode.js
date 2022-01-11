@@ -2,9 +2,11 @@
 
 /* eslint-disable */
 const path = require('path');
-const { check_rnode } = require('./cli-utils/check-rnode_script');
 
-const { run_rnode } = require('./cli-utils/run-rnode_script');
+const { check_rnode } = require('./cli-utils/check-rnode-script');
+const ALLNETWORKS = require('./cli-utils/networks');
+const { run_rnode } = require('./cli-utils/run-rnode-script');
+const network = 'localhost';
 
 run_rnode(
    ALLNETWORKS,

@@ -8,11 +8,14 @@ const { readdir } = require('fs').promises;
 
 const console = require('console');
 
-const shell = require('./cli-utils/exec_script.js');
-const { deploy } = require('./cli-utils/deploy_script');
-const { propose } = require('./cli-utils/propose_script');
-const { stop_rnode } = require('./cli-utils/stop-rnode_script');
-const { create_snapshot } = require('./cli-utils/create-snapshot');
+const shell = require('./cli-utils/exec-script.js');
+const { deploy } = require('./cli-utils/deploy-script');
+const { easyDeploy } = require('./cli-utils/easy-deploy-script');
+const { propose } = require('./cli-utils/propose-script');
+const { stop_rnode } = require('./cli-utils/stop-rnode-script');
+const { create_snapshot } = require('./cli-utils/create-snapshot-script');
+
+let directoryURI;
 
 console.log('Cloning into rchain. This may take a while');
 
@@ -59,7 +62,7 @@ stop_rnode();
 
 create_snapshot('rchain-core');
 
-const { run_rnode } = require('./cli-utils/run-rnode_script');
+const { run_rnode } = require('./cli-utils/run-rnode-script');
 
 run_rnode(
   ALLNETWORKS,
@@ -68,26 +71,36 @@ run_rnode(
   path.join(__dirname, 'log', 'run-rnode.log'),
 );
 
-deploy(console, ALLNETWORKS, '../rholang/core/Directory.rho', privatekey_f, network);
+// easyDeploy(console, ALLNETWORKS, '../rholang/core/Directory.rho', privatekey_f, network);
 
-propose();
+// propose();
 
-// TODO: get Directory URI from output
+// // TODO: get Directory URI from output
 
 
-deploy_master_directory(directory_uri);
+// deploy_master_directory(directory_uri);
 
-propose();
+// propose();
 
-// TODO: get master URI from output or from log
+// // TODO: get master URI from output or from log
 
-const masterURI = {
-  "localhostNETWORK": { "MasterURI": MasterURI }
+// const masterURI = {
+//   "localhostNETWORK": { "MasterURI": MasterURI }
+// }
+
+async function getMasterURI () {
+    directoryURI = await easyDeploy(console, ALLNETWORKS, '../rholang/core/Directory.rho', privatekey_f, network);
+
+    await propose();
+
+    console.log(directoryURI);
 }
 
-fs.writeFileSync(path.join(__dirname, "../src/MasterURI.localhost.json"), JSON.stringify(masterURI));
+getMasterURI;
 
-create_snapshot("bare-master-dictionary");
+// fs.writeFileSync(path.join(__dirname, "../src/MasterURI.localhost.json"), JSON.stringify(masterURI));
+
+// create_snapshot("bare-master-dictionary");
 
 // TODO: Deploy rgov standard contract
 // TODO: Propose
