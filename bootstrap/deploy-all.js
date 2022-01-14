@@ -15,17 +15,20 @@ const { propose } = require('./cli-utils/propose-script');
 const { stop_rnode } = require('./cli-utils/stop-rnode-script');
 const { create_snapshot } = require('./cli-utils/create-snapshot-script');
 
+const deployAll = async () => {
 let directoryURI;
 
 console.log('Cloning into rchain. This may take a while');
 
 try {
-shell(`git clone https://github.com/rchain/rchain.git || (cd rchain && git pull)`)
+await shell(`git clone https://github.com/rchain/rchain.git || (cd rchain && git pull)`)
 } catch (err) {
     console.log('Failed')
 }
 
 const directory = join(__dirname, 'rchain');
+
+console.log('getting all rchain core rholang files')
 
 async function* getFiles(dir) {
   const dirents = await readdir(dir, { withFileTypes: true });
@@ -49,6 +52,18 @@ const ALLNETWORKS = require('./cli-utils/networks');
 const network = 'localhost';
 const privatekey_f = path.join(__dirname, 'PrivateKeys/pk.bootstrap');
 
+const { run_rnode } = require('./cli-utils/run-rnode-script');
+
+console.log('starting rnode');
+
+await run_rnode(
+    ALLNETWORKS,
+    network,
+    path.join(__dirname, 'PrivateKeys', 'pk.bootstrap'),
+    path.join(__dirname, 'log', 'deploy-all.log'),
+  );
+
+console.log('deploying rchain core rholang files')
 
 forAwait(getFiles(directory), (x) => {
   if (x.endsWith('.rho') && !x.includes('test') && !x.includes('examples')) {
@@ -56,15 +71,11 @@ forAwait(getFiles(directory), (x) => {
   }
 });
 
-propose();
+await propose();
 
-stop_rnode();
+await create_snapshot('rchain-core');
 
-create_snapshot('rchain-core');
-
-const { run_rnode } = require('./cli-utils/run-rnode-script');
-
-run_rnode(
+await run_rnode(
   ALLNETWORKS,
   network,
   path.join(__dirname, 'PrivateKeys', 'pk.bootstrap'),
@@ -88,15 +99,15 @@ run_rnode(
 //   "localhostNETWORK": { "MasterURI": MasterURI }
 // }
 
-async function getMasterURI () {
-    directoryURI = await easyDeploy(console, ALLNETWORKS, '../rholang/core/Directory.rho', privatekey_f, network);
+// async function getMasterURI () {
+//     directoryURI = await easyDeploy(console, ALLNETWORKS, '../rholang/core/Directory.rho', privatekey_f, network);
 
-    await propose();
+//     await propose();
 
-    console.log(directoryURI);
-}
+//     console.log(directoryURI);
+// }
 
-getMasterURI;
+// getMasterURI;
 
 // fs.writeFileSync(path.join(__dirname, "../src/MasterURI.localhost.json"), JSON.stringify(masterURI));
 
@@ -110,3 +121,5 @@ getMasterURI;
 
 //run-rnode
 //restore-snapshot
+}
+deployAll();

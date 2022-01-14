@@ -44,7 +44,7 @@ module.exports = {
         console.log(err);
       }
 
-      console.log(deployResponse);
+      console.log('response from deploy', deployResponse);
     }
   },
 };

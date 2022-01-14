@@ -1,6 +1,7 @@
 /* eslint-disable */
 const fs = require('fs');
 const exec_shell = require('./exec-script');
+//const { stop_rnode } = require('./stop-rnode-script');
 const readline = require('readline');
 const rl = readline.createInterface({
   input: process.stdin,
@@ -8,17 +9,13 @@ const rl = readline.createInterface({
 });
 
 module.exports = { 
-  create_snapshot: async (name_of_snapshot) => {
+  create_snapshot: (name_of_snapshot) => {
   try {
     //take snapshot name from arg
     const arg_input = name_of_snapshot;
-    if (arg_input === undefined) {
-      console.log('Please specify snapshot name');
-      rl.close();
-      return;
-    }
+    console.log(arg_input);
 
-    //check if .rnode dir exist
+    // check if .rnode dir exist
     const homedir = require('os').homedir();
     if (!fs.existsSync(homedir + '/.rnode')) {
       console.log(`Cannot snapshot: ${homedir}/.rnode does not exist`);
@@ -34,11 +31,14 @@ module.exports = {
         rl.close();
         return;
       }
-      fs.mkdirSync('snapshot', { recursive: true });
-      const target = `${__dirname}/snapshot/${arg_input}.tgz`;
 
+      fs.mkdirSync('snapshot', { recursive: true });
+      const target = `${__dirname}/../snapshot/${arg_input}.tgz`;
+
+     console.log(target);
       if (fs.existsSync(target)) {
         //if snapshot exist, alert user to override or exit
+        
         rl.question(
           `Snapshot exist. Create new snapshot [y]? `,
           async (reply) => {
@@ -62,7 +62,7 @@ module.exports = {
       }
     });
 
-    //create snapshot dir
+    // create snapshot dir
   } catch (error) {
     console.log(error);
   }
