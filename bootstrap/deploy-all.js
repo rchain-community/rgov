@@ -18,15 +18,23 @@ const { create_snapshot } = require('./cli-utils/create-snapshot-script');
 const deployAll = async () => {
 let directoryURI;
 
-console.log('Cloning into rchain. This may take a while');
-
-try {
-await shell(`git clone https://github.com/rchain/rchain.git || (cd rchain && git pull)`)
-} catch (err) {
-    console.log('Failed')
-}
 
 const directory = join(__dirname, 'rchain');
+ 
+
+try {
+    
+    if (!fs.existsSync(directory)) {
+        console.log('Cloning into rchain. This may take a while');
+        await shell(`git clone https://github.com/rchain/rchain.git`)
+    } else {
+        console.log('rchain already exists, updating....')
+        await shell(`cd rchain && git pull`);
+    }
+} catch (err) {
+            console.log('Failed')
+            return;
+}
 
 console.log('getting all rchain core rholang files')
 
@@ -56,12 +64,12 @@ const { run_rnode } = require('./cli-utils/run-rnode-script');
 
 console.log('starting rnode');
 
-await run_rnode(
+setTimeout(() => { run_rnode(
     ALLNETWORKS,
     network,
     path.join(__dirname, 'PrivateKeys', 'pk.bootstrap'),
     path.join(__dirname, 'log', 'deploy-all.log'),
-  );
+  ); }, 10000);
 
 console.log('deploying rchain core rholang files')
 
@@ -73,14 +81,16 @@ forAwait(getFiles(directory), (x) => {
 
 await propose();
 
-await create_snapshot('rchain-core');
+console.log('creating snapshot.....');
 
-await run_rnode(
-  ALLNETWORKS,
-  network,
-  path.join(__dirname, 'PrivateKeys', 'pk.bootstrap'),
-  path.join(__dirname, 'log', 'run-rnode.log'),
-);
+create_snapshot('rchain-core');
+
+// await run_rnode(
+//   ALLNETWORKS,
+//   network,
+//   path.join(__dirname, 'PrivateKeys', 'pk.bootstrap'),
+//   path.join(__dirname, 'log', 'run-rnode.log'),
+// );
 
 // easyDeploy(console, ALLNETWORKS, '../rholang/core/Directory.rho', privatekey_f, network);
 
