@@ -22,5 +22,6 @@ module.exports = {
     }
 
     console.log(proposeResponse);
+    return proposeResponse;
   },
 };

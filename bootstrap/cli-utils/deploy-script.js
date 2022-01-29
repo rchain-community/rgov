@@ -10,7 +10,7 @@ module.exports = {
     ALLNETWORKS,
     rholang_f,
     privateKeyFile,
-    network_argument,
+    network_argument
   ) => {
     // Get user input and use that to select a pk file
     if (privateKeyFile) {
@@ -38,13 +38,13 @@ module.exports = {
       try {
         deployResponse = await rchainToolkit.http.deploy(
           ALLNETWORKS[network_argument].observerBase,
-          deployOptions,
+          deployOptions
         );
       } catch (err) {
         console.log(err);
       }
-
       console.log('response from deploy', deployResponse);
+      return deployResponse;
     }
   },
 };

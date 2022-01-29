@@ -21,7 +21,7 @@ module.exports = {
     const formatted_string = pid;
       await exec_shell(`kill ${formatted_string}`);
       console.log('rnode killed');
-      return
+      process.exit();
 
     // console.log(
     //   `rnode is currently running. Use 'kill ${formatted_string}' to fix`,

@@ -11,5 +11,6 @@ if (arg_input.length < 1){
 }
 
 for (i=0; i<arg_input.length; i++) {
-create_snapshot(arg_input[i]);
+    create_snapshot(arg_input[i]);
 }
+
