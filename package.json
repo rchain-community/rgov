@@ -20,6 +20,8 @@
   "devDependencies": {
     "@agoric/eslint-config": "^0.3.3",
     "@agoric/eslint-plugin": "^0.2.3",
+    "@grpc/grpc-js": "^1.4.4",
+    "@grpc/proto-loader": "^0.6.7",
     "@types/babel__core": "^7.1.14",
     "@types/mithril": "^2.0.7",
     "@typescript-eslint/eslint-plugin": "^4.21.0",
@@ -58,6 +60,7 @@
     "jake": "^10.8.2",
     "mithril": "^2.0.4",
     "prismjs": "^1.24.1",
-    "rchain-api": "github:rchain-community/rchain-api#http-client"
+    "rchain-api": "github:rchain-community/rchain-api#http-client",
+    "rchain-toolkit": "^0.4.2"
   }
 }

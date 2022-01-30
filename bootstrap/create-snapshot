@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Find out is they gave us a snapshot name
+# Find out if they gave us a snapshot name
 [ -z "$1" ] && echo "Please specify snapshot name" && exit 1
 
 # Find out if there's a localhost .rnode

@@ -1,4 +1,4 @@
-/* eslint-disable prettier/prettier */
+/* eslint-disable */
 
 const fs = require('fs');
 // TODO(#185): stop pretending MasterURI is a design-time constant.

@@ -1,51 +1,27 @@
-#!/usr/local/bin/node
+#!/usr/bin/env node
 
-const rchainToolkit = require('rchain-toolkit');
+/* eslint-disable */
 const fs = require('fs');
+const path = require('path');
 
-const ALLNETWORKS = require('./networks');
-const network_argument = 'localhost';
+const { deploy } = require('./cli-utils/deploy-script');
 
-let privateKey;
-try {
-  privateKey = fs.readFileSync('./PrivateKeys/pk.bootstrap', 'utf8');
-} catch (err) {
-  console.error(err);
+const ALLNETWORKS = require('./cli-utils/networks');
+const console = require('console');
+
+const argv = require('minimist')(process.argv.slice(2));
+let privatekey_f = argv.pk;
+let rholang_files = argv._;
+let network = argv.network;
+if (privatekey_f == undefined) {
+  privatekey_f = path.join(__dirname, 'PrivateKeys/pk.bootstrap');
+  console.log(`Private Key undefined, defaulting to ${privatekey_f}`);
 }
-const publicKey = rchainToolkit.utils.publicKeyFromPrivateKey(privateKey);
+if(network == undefined) {
+  network = 'localhost';
+  console.log(`Network undefined, defaulting to ${network}`);
+}
 
-const rholang_files = process.argv.slice(2);
-
-const deploy = async (rholang_f) => {
-const rholang = fs.readFileSync(rholang_f, 'utf8');
-  const validAfterBlockNumber = await rchainToolkit.http.validAfterBlockNumber(
-    ALLNETWORKS[network_argument].observerBase,
-  );
-
-  const deployOptions = rchainToolkit.utils.getDeployOptions(
-    "secp256k1",
-    new Date().valueOf(),
-    rholang,
-    privateKey,
-    publicKey,
-    1,
-    100000,
-    validAfterBlockNumber
-  );
-
-  let deployResponse;
-  try {
-    deployResponse = await rchainToolkit.http.deploy(
-      ALLNETWORKS[network_argument].observerBase,
-      deployOptions
-    );
-  } catch (err) {
-    console.log(err);
-  }
-
-  console.log(deployResponse);
-};
-
-for (let i = 0; i < rholang_files.length; i++) {
-deploy(rholang_files[i]);
+for (let i = 0; i < rholang_files.length; i += 1) {
+  deploy(console, ALLNETWORKS, rholang_files[i], privatekey_f, network);
 }
