@@ -13,7 +13,7 @@ const main = async () => {
     if (arg_input === undefined) {
       console.log('Please specify snapshot name');
       rl.close();
-      return;
+      return {message:"failed"}
     }
 
     //check if .rnode dir exist
@@ -21,7 +21,7 @@ const main = async () => {
     if (!fs.existsSync(homedir + '/.rnode')) {
       console.log(`Cannot snapshot: ${homedir}/.rnode does not exist`);
       rl.close();
-      return;
+      return {message:"failed"}
     }
 
     //run stop node script
@@ -30,7 +30,7 @@ const main = async () => {
       //if stop script terminates with error, exit
       if (code === 1) {
         rl.close();
-        return;
+        return {message:"failed"};
       }
       fs.mkdirSync('snapshot', { recursive: true });
       const target = `${__dirname}/snapshot/${arg_input}.tgz`;
@@ -47,9 +47,11 @@ const main = async () => {
               await exec_shell(`cd ~ && tar czf "${target}" .rnode`);
               console.log(`snapshot created: ${target}`);
               rl.close();
+              return {message:"successful"}
             } else {
               console.log('Aborting...');
               rl.close();
+              return {message:"failed"}
             }
           },
         );
@@ -57,6 +59,7 @@ const main = async () => {
         await exec_shell(`cd ~ && tar czf "${target}" .rnode`);
         console.log(`snapshot created: ${target}`);
         rl.close();
+        return {message:"successful"}
       }
     });
 
