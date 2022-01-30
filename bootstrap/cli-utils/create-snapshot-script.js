@@ -20,7 +20,7 @@ module.exports = {
     if (!fs.existsSync(homedir + '/.rnode')) {
       console.log(`Cannot snapshot: ${homedir}/.rnode does not exist`);
       rl.close();
-      return;
+      return {message:"failed"};
     }
 
     //run stop node script
@@ -29,7 +29,7 @@ module.exports = {
       //if stop script terminates with error, exit
       if (code === 1) {
         rl.close();
-        return;
+        return {message:"failed"};
       }
 
       fs.mkdirSync('snapshot', { recursive: true });
@@ -49,9 +49,11 @@ module.exports = {
               await exec_shell(`cd ~ && tar czf "${target}" .rnode`);
               console.log(`snapshot created: ${target}`);
               rl.close();
+              return {message:"successful"};
             } else {
               console.log('Aborting...');
               rl.close();
+              return {message:"failed"}
             }
           },
         );
@@ -59,6 +61,7 @@ module.exports = {
         await exec_shell(`cd ~ && tar czf "${target}" .rnode`);
         console.log(`snapshot created: ${target}`);
         rl.close();
+        return {message:"successful"};
       }
     });
 
