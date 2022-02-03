@@ -19,8 +19,10 @@ in {
         log!("creating ballot") |
         return!(bundle+{*admin}, bundle+{*tally}) |
         voterCh!({}) |
-
         contract admin(@"giveRightToVote", @name, return, log) = {
+          admin!("giveRightToVote", name, 1, *return, *log))
+        }
+        contract admin(@"giveRightToVote", @name, @trust, return, log) = {
           // voter names must be unique, a public key is suggested.
           new voter, voteCh, delegateCh in {
             log!({"admin": *admin, "gives right to vote": *voter}) |
@@ -50,6 +52,9 @@ in {
             contract voter(@"ballot", return, log) = {
               return!(ballot)
             } |
+            contract voter(@"trust", return) = {
+              return!(trust)
+            } // what is trust changed?
             contract voter(@"choices", @priorDelegates, return, log) = {
               for ( @votes <<- voteCh ) {
                 log!(["vote",votes])|
@@ -104,10 +109,11 @@ in {
                    // }
                   }
                   {name: *voter, ...tail} => {
-                    new eachIssue, ack, issueack in {
+                    new eachIssue, ack, ret2, issueack in {
                       log!(["voter", name]) |
                       voter!("choices", Set(), *ret, *log) |
-                      for (@votes <- ret ) {
+                      voter!("trust",  *ret2) |
+                      for (@votes <- ret; @trust <- ret2 ) {
                         eachIssue!(ballot.length()-1) |
 
                         contract eachIssue (@n) = {
@@ -119,7 +125,7 @@ in {
                               countCh!(counts.set(ballot.nth(n).get("label"),
                                 counts.getOrElse(ballot.nth(n).get("label"),{})
                                   .set(votes.nth(n),
-                                  counts.getOrElse(ballot.nth(n).get("label"),{}).getOrElse(votes.nth(n),0) + 1 ))
+                                  counts.getOrElse(ballot.nth(n).get("label"),{}).getOrElse(votes.nth(n),0) + trust ))
                               ) |
                               for (post <<- countCh) {
                                 log!(["postcount", name, ballot.nth(n).get("label"), *post])
