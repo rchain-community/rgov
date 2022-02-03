@@ -5,7 +5,7 @@ const rchainToolkit = require('rchain-toolkit');
 const fs = require('fs');
 const path = require('path');
 
-const ALLNETWORKS = require('./cli-utils/networks');
+const ALLNETWORKS = require('./cli-utils/networks-script');
 const  {explore}  = require('./cli-utils/explore-script');
 
 const argv = require('minimist')(process.argv.slice(2));

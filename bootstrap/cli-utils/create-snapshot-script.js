@@ -10,6 +10,8 @@ const rl = readline.createInterface({
 
 module.exports = { 
   create_snapshot: (name_of_snapshot) => {
+  let result;
+
   try {
     //take snapshot name from arg
     const arg_input = name_of_snapshot;
@@ -46,9 +48,10 @@ module.exports = {
               reply.toLocaleLowerCase() === 'yes' ||
               reply.toLocaleLowerCase() === 'y'
             ) {
-              await exec_shell(`cd ~ && tar czf "${target}" .rnode`);
-              console.log(`snapshot created: ${target}`);
+              result = await exec_shell(`cd ~ && tar czf "${target}" .rnode`);
+              console.log(`result: ${result}`);
               rl.close();
+              return result;
             } else {
               console.log('Aborting...');
               rl.close();
@@ -56,9 +59,10 @@ module.exports = {
           },
         );
       } else {
-        await exec_shell(`cd ~ && tar czf "${target}" .rnode`);
-        console.log(`snapshot created: ${target}`);
+        result = await exec_shell(`cd ~ && tar czf "${target}" .rnode`);
+        console.log(`result: ${result}`);
         rl.close();
+        return result;
       }
     });
 

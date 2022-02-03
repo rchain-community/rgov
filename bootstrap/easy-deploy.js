@@ -6,7 +6,7 @@ const path = require('path');
 
 const { easyDeploy } = require('./cli-utils/easy-deploy-script');
 
-const ALLNETWORKS = require('./cli-utils/networks');
+const ALLNETWORKS = require('./cli-utils/networks-script');
 const console = require('console');
 
 let privatekey_f;

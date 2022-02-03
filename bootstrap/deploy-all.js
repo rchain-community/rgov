@@ -9,7 +9,7 @@ const http = require("http");
 
 const console = require('console');
 
-const shell = require('./cli-utils/exec-script.js');
+const shell = require('./cli-utils/exec-script');
 const { deploy } = require('./cli-utils/deploy-script');
 const { easyDeploy } = require('./cli-utils/easy-deploy-script');
 const { propose } = require('./cli-utils/propose-script');
@@ -17,17 +17,24 @@ const { stop_rnode } = require('./cli-utils/stop-rnode-script');
 const { create_snapshot } = require('./cli-utils/create-snapshot-script');
 const { check_port } = require('./cli-utils/check-port-script');
 const { run_rnode } = require('./cli-utils/run-rnode-script');
+const { check_rnode } = require('./cli-utils/check-rnode-script');
+const { proposeWithInterval } = require('./cli-utils/propose-with-interval-script');
+const { deploy_master_dictionary } = require('./cli-utils/master-dictionary-script');
 
 const deployAll = async () => {
 
 const READ_ONLY_URL = 'http://127.0.0.1:40403'
 const directory = join(__dirname, 'rchain');
-const ALLNETWORKS = require('./cli-utils/networks');
+const ALLNETWORKS = require('./cli-utils/networks-script');
 const network = 'localhost';
 const privatekey_f = path.join(__dirname, 'PrivateKeys/pk.bootstrap');
 
+let directoryURI;
 let deploy_response;
+let masterReadURI;
 let propose_response;
+let snapshot_response;
+let pid;
  
 // clone rchain files from github
 try {
@@ -75,6 +82,8 @@ await run_rnode(
     path.join(__dirname, 'log', 'deploy-all.log'),
   )
 
+proposeWithInterval();
+
 // wait for http port to open and do deploy
 const waitAndDeploy = setInterval(() => {
     
@@ -105,6 +114,21 @@ const waitAndDeploy = setInterval(() => {
                             deploy_response = deploy(console, ALLNETWORKS, x, privatekey_f, network);
                         }
                     });
+
+                    
+
+
+                    // // deploy_master_directory(directory_uri);
+                    // const deployMasterDictionary = setInterval(
+                    //   async () => {
+                    //     console.log('check master dictionary', directoryURI);
+                    //     if (deploy_response || !directoryURI === ''){
+                    //       await deploy_master_dictionary(directoryURI);
+                    //       console.log('deploying master dictionary.....');
+                    //       clearInterval(deployMasterDictionary);
+                    //     }
+                    //   }, 10000
+                    // )
                 clearInterval(waitAndDeploy);
                   // RCHAIN READY
                 }
@@ -123,41 +147,62 @@ const waitAndDeploy = setInterval(() => {
   }, 10000);
 
 // wait for deploy response, do propose and create snapshot
-  const waitAndPropose = setInterval(
-   async () => {
-      if (deploy_response) {
-          console.log('propose in progress')
-          propose_response = await propose();
-          console.log('propose response:',propose_response.message);
-        clearInterval(waitAndPropose);
-          deploy_response = '';
-          if (propose_response.message === 'result'){
-            console.log('snapshot in progress')
-            create_snapshot('rchain-core');
-            console.log('next 01.....');
-        }
-      }
-    },
-    10000
-  );
+  // const waitAndPropose = setInterval(
+  //  async () => {
+  //     if (deploy_response) {
+  //         console.log('propose in progress')
+  //         propose_response = await propose();
+  //         console.log('propose response:',propose_response.message);
+  //       clearInterval(waitAndPropose);
+  //         deploy_response = '';
+  //       //   if (propose_response.message === 'result'){
+  //       //     console.log('snapshot in progress')
+  //       //     snapshot_response = await create_snapshot('rchain-core');
+  //       //     console.log('next 01.....:', snapshot_response); 
+  //       // }
+  //     }
+  //   },
+  //   10000
+  // );
 
-console.log('next 02......');
+  // get directory 
+  const waitAfterPropose = setInterval(
+    async () => {
+    if (deploy_response) {
+      directoryURI = await easyDeploy(console, ALLNETWORKS, '../rholang/core/Directory.rho', privatekey_f, network);
 
-await run_rnode(
-  ALLNETWORKS,
-  network,
-  path.join(__dirname, 'PrivateKeys', 'pk.bootstrap'),
-  path.join(__dirname, 'log', 'run-rnode.log'),
-);
+      masterReadURI = await deploy_master_dictionary(directoryURI);
+  
+      clearInterval(waitAfterPropose);
+  
+      console.log(directoryURI);
+      console.log(masterReadURI);
 
-// easyDeploy(console, ALLNETWORKS, '../rholang/core/Directory.rho', privatekey_f, network);
+      if (masterReadURI.typeof === object)
+    }
+  }, 10000)
 
-// propose();
+  // const waitAndRunRnode = setInterval(
+  //   async () =>{
+  //     pid = await check_rnode(ALLNETWORKS, network);
+  //     console.log('check to restart rnode - pid:', pid);
+  //     if (pid == 0) {
+  //       console.log('restarting rnode');
+  //       await run_rnode(
+  //         ALLNETWORKS,
+  //         network,
+  //         path.join(__dirname, 'PrivateKeys', 'pk.bootstrap'),
+  //         path.join(__dirname, 'log', 'deploy-all.log'),
+  //       )
+  //         clearInterval(waitAndRunRnode);
+  //     }
+  // },
+  // 10000
+  // )
 
 // // TODO: get Directory URI from output
 
 
-// deploy_master_directory(directory_uri);
 
 // propose();
 
@@ -177,7 +222,7 @@ await run_rnode(
 
 // getMasterURI;
 
-// fs.writeFileSync(path.join(__dirname, "../src/MasterURI.localhost.json"), JSON.stringify(masterURI));
+fs.writeFileSync(path.join(__dirname, "../src/MasterURI.localhost.json"), JSON.stringify(masterReadURI));
 
 // create_snapshot("bare-master-dictionary");
 

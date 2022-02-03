@@ -2,7 +2,7 @@
 
 /* eslint-disable */
 const { check_rnode } = require('./cli-utils/check-rnode-script');
-const ALLNETWORKS = require('./cli-utils/networks');
+const ALLNETWORKS = require('./cli-utils/networks-script');
 
 async function main () {
   // TODO: allow user to specify network on the command line
