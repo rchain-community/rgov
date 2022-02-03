@@ -29,7 +29,7 @@ fi
 
 # Finalize the rnode
 echo "Proposing...." |tee -a "$LOGFILE"
-rnode --grpc-port 40402 propose 2>&1 | tail -n 0 -F log/run-rnode.log | sed '/Blocks ready to be added/q' 2>&1
+rnode --grpc-port 40402 propose 2>&1 | tail -n 0 -F log/run-rnode.log | sed '//Propose finished: ProposeSuccess(Valid) Block/q;/Blocks ready to be added/q' 2>&1
 echo "Propose finished." |tee -a "$LOGFILE"
 
 URI=$(grep \#define log/run-rnode.log|tail -1|cut -d' ' -f3|sed 's/]//')
@@ -79,6 +79,6 @@ if [ $status -ne 0 ] ; then
    exit $status;
 fi
 echo "Proposing master directory update...." |tee -a "$LOGFILE"
-rnode --grpc-port 40402 propose 2>&1 | tail -n 0 -F log/run-rnode.log | sed '/Blocks ready to be added/q' 2>&1
+rnode --grpc-port 40402 propose 2>&1 | tail -n 0 -F log/run-rnode.log | sed '//Propose finished: ProposeSuccess(Valid) Block/q;/Blocks ready to be added/q' 2>&1
 
 echo "Waiting for rnode to complete (10s)" && sleep 10
