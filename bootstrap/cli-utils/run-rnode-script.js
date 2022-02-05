@@ -1,13 +1,13 @@
 /* eslint-disable */
-const exec_shell = require('./exec-script');
+const execShell = require('./exec-script');
 const fs = require('fs');
-const { check_rnode } = require('./check-rnode-script');
+const { checkRnode } = require('./check-rnode-script');
 
 module.exports = {
   // TODO: respect the ALLNETWORKS and network arguments
-  run_rnode: async (ALLNETWORKS, network, privatekey_f, logfile_f) => {
+  runRnode: async (ALLNETWORKS, network, privatekey_f, logfile_f) => {
     //get current pid for rnode
-    const pid = await check_rnode();
+    const pid = await checkRnode();
 
     if (pid != 0) {
       console.log(`rnode is currently running. Use 'kill ${pid}' to fix`);
@@ -17,7 +17,7 @@ module.exports = {
     const privateKey = fs.readFileSync(privatekey_f, 'utf8');
 
     // TODO: I think the await here is wrong because of the TODO item located below
-    await exec_shell(
+    await execShell(
       `rnode run -s --validator-private-key "${privateKey}" --dev-mode -XX:MaxDirectMemorySize=100m -XX:MaxRAMPercentage=25 > ${logfile_f} 2>&1 &`
     )
 

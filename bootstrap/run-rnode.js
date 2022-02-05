@@ -3,12 +3,12 @@
 /* eslint-disable */
 const path = require('path');
 
-const { check_rnode } = require('./cli-utils/check-rnode-script');
+const { checkRnode } = require('./cli-utils/check-rnode-script');
 const ALLNETWORKS = require('./cli-utils/networks-script');
-const { run_rnode } = require('./cli-utils/run-rnode-script');
+const { runRnode } = require('./cli-utils/run-rnode-script');
 const network = 'localhost';
 
-run_rnode(
+runRnode(
    ALLNETWORKS,
    network,
    path.join(__dirname, 'PrivateKeys', 'pk.bootstrap'),

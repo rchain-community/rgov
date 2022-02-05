@@ -1,17 +1,17 @@
 /* eslint-disable */
-const exec_shell = require('./exec-script');
+const execShell = require('./exec-script');
 const readline = require('readline');
 const rl = readline.createInterface({
   input: process.stdin,
   output: process.stdout,
 });
 
-const { check_rnode } = require('./check-rnode-script');
+const { checkRnode } = require('./check-rnode-script');
 
 module.exports = {
-  stop_rnode: async (force) => {
+  stopRnode: async (force) => {
     //get current pid for rnode
-    const pid = await check_rnode();
+    const pid = await checkRnode();
 
     if (pid == 0) {
       console.log("No rnode running, use node run-rnode.js to start one")
@@ -19,7 +19,7 @@ module.exports = {
     }
     else {
     const formatted_string = pid;
-      await exec_shell(`kill ${formatted_string}`);
+      await execShell(`kill ${formatted_string}`);
       console.log('rnode killed');
       process.exit();
 
@@ -33,7 +33,7 @@ module.exports = {
     //     reply.toLocaleLowerCase() === 'y' ||
     //     reply.toLocaleLowerCase() === ''
     //   ) {
-    //     await exec_shell(`kill ${formatted_string}`);
+    //     await execShell(`kill ${formatted_string}`);
     //   } else {
     //     console.log('Aborted');
     //   }

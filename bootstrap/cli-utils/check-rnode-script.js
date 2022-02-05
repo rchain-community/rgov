@@ -1,11 +1,11 @@
 /* eslint-disable */
-const exec_shell = require('./exec-script');
+const execShell = require('./exec-script');
 
 module.exports = {
   // TODO: re-implement this to respect the ALLNETWORKS and network arguments
-  check_rnode: async (ALLNETWORKS, network) => {
+  checkRnode: async (ALLNETWORKS, network) => {
     //get current pid for rnode
-    const shell_output = await exec_shell(
+    const shell_output = await execShell(
       `ps aux |grep -v grep | grep "java .*rnode"|sed 's/[ \t][ \t]*/ /g'|cut -d' ' -f 2`,
     );
     console.log(shell_output);

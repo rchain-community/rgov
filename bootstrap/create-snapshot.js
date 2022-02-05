@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
 /* eslint-disable */
-const { create_snapshot } = require('./cli-utils/create-snapshot-script');
+const { createSnapshot } = require('./cli-utils/create-snapshot-script');
 
 const arg_input = process.argv.slice(2);
  
@@ -11,6 +11,6 @@ if (arg_input.length < 1){
 }
 
 for (i=0; i<arg_input.length; i++) {
-    create_snapshot(arg_input[i]);
+    createSnapshot(arg_input[i]);
 }
 

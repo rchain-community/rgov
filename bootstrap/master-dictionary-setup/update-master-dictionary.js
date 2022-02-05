@@ -2,22 +2,20 @@
 const fs = require('fs');
 const { join, resolve } = require('path');
 const { readdir } = require('fs').promises;
+const http = require("http");
 
 const console = require('console');
 
+const { deploy } = require('../cli-utils/deploy-script');
 const { easyDeploy } = require('../cli-utils/easy-deploy-script');
-const { generateRholangContract } = require('../cli-utils/master-dictionary-script');
 
 const ALLNETWORKS = require('../cli-utils/networks-script');
 const network = 'localhost';
 const privatekey_f = join(__dirname, '../PrivateKeys/pk.bootstrap');
 
-const deployRgovContract = async () => {
-    let directoryURI;
-    let result;
-
-    const directory = join(__dirname, '../../rholang');
-    
+const deployMasterDictionary = async () => {
+    // get directory URI from output
+    const directory = join(__dirname, '../generated');
     // get rholang files from rchain directory function
     async function* getFiles(dir) {
         const dirents = await readdir(dir, { withFileTypes: true });
@@ -37,21 +35,15 @@ const deployRgovContract = async () => {
         forAwait(asyncIter, f);
         });
     }
-     // deploy rgov contracts
+
+    // updating master dictionary
+     console.log('updating master dictionary')
+
      forAwait(getFiles(directory), (x) => {
-         async function deployContract() {
-        
-        // exclude rgov contracts that should not be written into the master dictionary
-         if (x.endsWith('.rho') && !x.includes('CrowdFund') && !x.includes('memberIdGovRev') && !x.includes('RevIssuer') && !x.includes('MemberDirectory')) {
-
-             directoryURI = await easyDeploy(console, ALLNETWORKS, x, privatekey_f, network);
-
-            await generateRholangContract(directoryURI[1], directoryURI[2]);
-             
+         if (x.endsWith('.rho') && !x.includes('create-master-directory')) {
+             easyDeploy(console, ALLNETWORKS, x, privatekey_f, network);
          }
-        
-        }
-        deployContract();
      });
+
 }
-deployRgovContract();
+deployMasterDictionary();

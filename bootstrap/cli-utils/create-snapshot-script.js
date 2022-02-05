@@ -1,7 +1,7 @@
 /* eslint-disable */
 const fs = require('fs');
-const exec_shell = require('./exec-script');
-//const { stop_rnode } = require('./stop-rnode-script');
+const execShell = require('./exec-script');
+//const { stopRnode } = require('./stop-rnode-script');
 const readline = require('readline');
 const rl = readline.createInterface({
   input: process.stdin,
@@ -9,7 +9,7 @@ const rl = readline.createInterface({
 });
 
 module.exports = { 
-  create_snapshot: (name_of_snapshot) => {
+  createSnapshot: (name_of_snapshot) => {
   let result;
 
   try {
@@ -48,7 +48,7 @@ module.exports = {
               reply.toLocaleLowerCase() === 'yes' ||
               reply.toLocaleLowerCase() === 'y'
             ) {
-              result = await exec_shell(`cd ~ && tar czf "${target}" .rnode`);
+              result = await execShell(`cd ~ && tar czf "${target}" .rnode`);
               console.log(`result: ${result}`);
               rl.close();
               return result;
@@ -59,7 +59,7 @@ module.exports = {
           },
         );
       } else {
-        result = await exec_shell(`cd ~ && tar czf "${target}" .rnode`);
+        result = await execShell(`cd ~ && tar czf "${target}" .rnode`);
         console.log(`result: ${result}`);
         rl.close();
         return result;

@@ -11,7 +11,7 @@ const console = require('console');
 const privatekey_f = path.join(__dirname, '../PrivateKeys/pk.bootstrap');
 const network = 'localhost';
 
-async function deploy_master_dictionary(dictionary_contract_URI) {
+async function deployMasterDictionary(dictionary_contract_URI) {
    const rholang =
    `
    match [ \`${dictionary_contract_URI}\`] {
@@ -36,13 +36,13 @@ async function deploy_master_dictionary(dictionary_contract_URI) {
    `
 
    // output rholang to generated file generated/generated.create-master-directory.rho
-   const dir = path.join(__dirname, '/generated');
+   const dir = path.join(__dirname, '../generated');
 
    if (!fs.existsSync(dir)) {
       fs.mkdirSync(dir, { recursive: true});
     }
 
-   const output_f = path.join(__dirname, '/generated/generated.create-master-directory.rho');
+   const output_f = path.join(__dirname, '../generated/generated.create-master-directory.rho');
 
    fs.writeFileSync(output_f, rholang, function (err) {
       if (err) {
@@ -55,11 +55,12 @@ async function deploy_master_dictionary(dictionary_contract_URI) {
    return result;
 }
 
-async function update_master_dictionary(entry_name, URI) {
+// generate contracts from rgov to be written to master dictionary
+async function generateRholangContract(entry_name, URI) {
    const rholang =
    `
    match [ \`${URI}\` ] {
-      [ URI ] => new cliChannel, deployerId(\`rho:rchain:deployerId\`, stdout(\`rho:io:stdout\`), lookup(\`rho:registry:lookup\`), lookCh, ret in {
+      [ URI ] => { new cliChannel, deployerId(\`rho:rchain:deployerId\`), stdout(\`rho:io:stdout\`), lookup(\`rho:registry:lookup\`), lookCh, ret in {
          for (@{"write": write, ..._} <<- @[*deployerId, "MasterDictionary"]) {
             // insert ${entry_name}
             lookup!(URI, *lookCh) |
@@ -73,18 +74,17 @@ async function update_master_dictionary(entry_name, URI) {
             }
          }
       }
+   }
+}
    `
 
    // output rholang to generated file generated/generated.${entry_name}.rho
-   const output_f = path.join(__dirname, 'generated/generated.' + entry_name + '.rho');
+   const output_f = path.join(__dirname, '../generated/generated.' + entry_name + '.rho');
    fs.writeFileSync(output_f, rholang);
-
-   const result = await easyDeploy(console, ALLNETWORKS, output_f, privatekey_f, network);
-
-   return result;
+   console.log('generated rholang file', output_f)
 }
 
 module.exports = {
-   deploy_master_dictionary,
-   update_master_dictionary
+   deployMasterDictionary,
+   generateRholangContract
 }
