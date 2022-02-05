@@ -4,7 +4,7 @@
 const path = require('path');
 
 const { check_rnode } = require('./cli-utils/check-rnode-script');
-const ALLNETWORKS = require('./cli-utils/networks');
+const ALLNETWORKS = require('./cli-utils/networks-script');
 const { run_rnode } = require('./cli-utils/run-rnode-script');
 const network = 'localhost';
 

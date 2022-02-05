@@ -1,10 +1,9 @@
-new logList, result(`rho:io:stdout`), stdout(`rho:io:stdout`),  log, chat in {
+new cliChannel, deployId, logList, result(`rho:io:stdout`), stdout(`rho:io:stdout`),  log, chat in {
 new insertArbitrary(`rho:registry:insertArbitrary`), uriCh in {
     insertArbitrary!(bundle+{*chat}, *uriCh) | 
     for(@uri <- uriCh) {
-    stdout!(["#define $Chat", uri])
-//  |
-//    deployId!(uri)
+    stdout!(["#define", "Chat", uri]) |
+    cliChannel!(["#define", "Chat", uri])
     }
 } | 
   result!("starting") |

@@ -11,7 +11,7 @@ const ALLNETWORKS = require('../cli-utils/networks-script');
 const network = 'localhost';
 const privatekey_f = path.join(__dirname, '../PrivateKeys/pk.bootstrap');
 
-const deployMasterDictionary = async() => {
+const deployMasterDictionary = async () => {
     // get directory URI from output
     const directoryURI = await easyDeploy(console, ALLNETWORKS, '../rholang/core/Directory.rho', privatekey_f, network);
 

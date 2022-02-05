@@ -33,7 +33,6 @@ module.exports = {
     const data = rchainToolkit.utils.rhoValToJs(
       JSON.parse(dataAtNameResponse).exprs[0].expr
     );
-      console.log(data);
     return data;
   }
 }

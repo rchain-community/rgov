@@ -3,7 +3,7 @@ match [] {
 new wanna, stdout(`rho:io:stdout`), return(`rho:rchain:deployId`), callsForHelp, deployerId(`rho:rchain:deployerId`)
 // initialized the wanna class (channel)
 in {
-  for ( @{"write": *write, ..._} <<- @[*deployerId, "MasterContractAdmin"]) {
+  for ( @{"write": *write, ..._} <<- @[*deployerId, "MasterDictionary"]) {
     write!("Wanna", bundle+{*wanna}) |
     return!("writing wanna to master dictionary")
   } |

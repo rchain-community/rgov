@@ -5,12 +5,12 @@ new
    lookup(`rho:registry:lookup`),
    regCh
 in {
-   for (@{"read": *MCA, ..._} <<- @[*deployerId, "MasterContractAdmin"]) {
+   for (@{"read": *MCA, ..._} <<- @[*deployerId, "MasterDictionary"]) {
       trace!({"MCA": MCA}) |
       MCA("Directory", regCh)
    } |
    for (MemberDirectory <- regCh) {
-      for (@{"read": *MCA, ..._} <<- @[*deployerId, "MasterContractAdmin"]) {
+      for (@{"read": *MCA, ..._} <<- @[*deployerId, "MasterDictionary"]) {
          trace!({"MCA": MCA}) |
          MCA("Roll", regCh)
       } |

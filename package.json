@@ -58,7 +58,9 @@
     "fs": "0.0.1-security",
     "htm": "^3.0.4",
     "jake": "^10.8.2",
+    "minimist": "^1.2.5",
     "mithril": "^2.0.4",
+    "node-port-scanner": "^3.0.1",
     "prismjs": "^1.24.1",
     "rchain-api": "github:rchain-community/rchain-api#http-client",
     "rchain-toolkit": "^0.4.2"

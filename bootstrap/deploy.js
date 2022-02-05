@@ -6,7 +6,7 @@ const path = require('path');
 
 const { deploy } = require('./cli-utils/deploy-script');
 
-const ALLNETWORKS = require('./cli-utils/networks');
+const ALLNETWORKS = require('./cli-utils/networks-script');
 const console = require('console');
 
 const argv = require('minimist')(process.argv.slice(2));

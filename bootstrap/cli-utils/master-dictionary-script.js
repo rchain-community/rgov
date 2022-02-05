@@ -55,19 +55,20 @@ async function deploy_master_dictionary(dictionary_contract_URI) {
    return result;
 }
 
-function update_master_dictionary(entry_name, URI) {
+async function update_master_dictionary(entry_name, URI) {
    const rholang =
    `
    match [ \`${URI}\` ] {
-      [ URI ] => new deployerId(\`rho:rchain:deployerId\`, stdout(\`rho:io:stdout\`), lookup(\`rho:registry:lookup\`), lookCh, ret in {
-         for (@{"write": write, ..._} <<- @[*deployerId, "MasterContractAdmin"]) {
+      [ URI ] => new cliChannel, deployerId(\`rho:rchain:deployerId\`, stdout(\`rho:io:stdout\`), lookup(\`rho:registry:lookup\`), lookCh, ret in {
+         for (@{"write": write, ..._} <<- @[*deployerId, "MasterDictionary"]) {
             // insert ${entry_name}
             lookup!(URI, *lookCh) |
             for (C <- lookCh) {
                stdout!(["writing to master dictionary: ${entry_name} ", URI, *C]) |
                @write!("${entry_name}", *C, *ret) |
                for (@x <- ret) {
-                  stdout!(x)
+                  stdout!(x) |
+                  cliChannel!(x)
                }
             }
          }
@@ -78,7 +79,7 @@ function update_master_dictionary(entry_name, URI) {
    const output_f = path.join(__dirname, 'generated/generated.' + entry_name + '.rho');
    fs.writeFileSync(output_f, rholang);
 
-   const result = easyDeploy(console, ALLNETWORKS, output_f, privatekey_f, network);
+   const result = await easyDeploy(console, ALLNETWORKS, output_f, privatekey_f, network);
 
    return result;
 }

@@ -9,7 +9,7 @@ match [] {
     caps,
     ret
     in {
-      for(caps <<- @[*deployerId, "MasterContractAdmin"]) {
+      for(caps <<- @[*deployerId, "MasterDictionary"]) {
         deployId!(["caps", *caps]) |
         stdout!(["caps", *caps]) |
 

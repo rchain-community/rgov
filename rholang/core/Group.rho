@@ -1,7 +1,8 @@
 new
+cliChannel,
 Group,
 groupMapCh,
-deployId(`rho:rchain:deployId`),
+deployId,
 deployerId(`rho:rchain:deployerId`),
 RevAddress(`rho:rev:address`),
 stdout(`rho:io:stdout`),
@@ -15,7 +16,7 @@ in {
   insertArbitrary!(bundle+{*Group},*uriCh) |
   for ( @uri <- uriCh ) {
     stdout!(["#define $Group", uri]) |
-    deployId!(uri)
+    cliChannel!(["#define", "Group", uri])
   } |
   groupMapCh!({}) |
   contract deployerRevAddr(memberDeployerId,return) = {

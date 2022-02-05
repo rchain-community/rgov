@@ -1,5 +1,6 @@
 new
-  deployId(`rho:rchain:deployId`),
+  cliChannel,
+  deployId,
   stdout(`rho:io:stdout`),
   directory
 in {
@@ -76,8 +77,8 @@ in {
     uriCh, read, write, ret, ack in {
     insertArbitrary!(bundle+{*directory},*uriCh) |
     for (@uri <- uriCh ) {
-      stdout!(["#define $Directory", uri]) |
-      deployId!(uri)
+      stdout!(["#define", "Directory", uri]) |
+      cliChannel!(["#define", "Directory", uri])
     } |
     directory!(Nil, *ret) |
     for ( @{"read": read, "write": write, "grant": grant, ..._ } <- ret ) {

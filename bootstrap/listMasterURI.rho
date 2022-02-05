@@ -4,7 +4,7 @@ new
    ,deployerId(`rho:rchain:deployerId`)
    ,mapCh
 in {
-   for(@{"read": *read, ..._} <<- @[*deployerId, "MasterContractAdmin"])
+   for(@{"read": *read, ..._} <<- @[*deployerId, "MasterDictionary"])
    {  stdout!(["read", *read])
    | invoker!(["read", *read])
    |  deployerId!(["read", *read])

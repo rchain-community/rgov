@@ -54,7 +54,7 @@ match [
          | for (@{"read": read, "write": write, "grant": grant} <- caps) {
    
             // Create a global reference to the master contract directory
-            @[*deployerId, "MasterContractAdmin"]!({"read": read, "write": write, "grant": grant})
+            @[*deployerId, "MasterDictionary"]!({"read": read, "write": write, "grant": grant})
             | insertArbitrary!(read, *insertCh)
             | for (URI <- insertCh) {
                stdout!({ "ReadcapURI": *URI})

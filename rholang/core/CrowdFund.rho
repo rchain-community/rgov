@@ -1,4 +1,6 @@
-new log(`rho:rchain:deployId`),
+new 
+cliChannel,
+log(`rho:rchain:deployId`),
 CrowdFund,
 lookup(`rho:registry:lookup`),
 insertArbitrary(`rho:registry:insertArbitrary`),

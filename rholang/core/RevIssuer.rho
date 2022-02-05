@@ -13,7 +13,9 @@
  *
  * [ERTP]: https://agoric.com/documentation/ertp/guide/
  */
-new log(`rho:rchain:deployId`),
+new 
+cliChannel,
+log(`rho:rchain:deployId`),
 RevIssuerKit,
 insertArbitrary(`rho:registry:insertArbitrary`),
 lookup(`rho:registry:lookup`), vCh,

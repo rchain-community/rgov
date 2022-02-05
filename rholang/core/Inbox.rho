@@ -1,5 +1,7 @@
-new Inbox,
-  deployId(`rho:rchain:deployId`),
+new 
+  cliChannel,
+  Inbox,
+  deployId,
   lookup(`rho:registry:lookup`),
   stdout(`rho:io:stdout`) in {
 stdout!("begin") |
@@ -167,6 +169,7 @@ new creationCh, lookupCh, lookupCaps, capabilities, ack, ack1, ack2, ack3, ack4,
   insertArbitrary!(bundle+{*Inbox}, *creationCh)|
   for (@uri <- creationCh) {
     stdout!(["#define $Inbox", uri]) |
+    cliChannel!(["#define", "Inbox", uri]) |
     deployId!(uri) |
     lookup!(uri, *lookupCh) |
     for (InboxClass <- lookupCh) {

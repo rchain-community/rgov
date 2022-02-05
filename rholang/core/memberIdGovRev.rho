@@ -1,4 +1,6 @@
-new deployId(`rho:rchain:deployId`),
+new 
+cliChannel,
+deployId,
 MemberDirectory,
 regCh,
 RevAddress(`rho:rev:address`),
@@ -8,7 +10,10 @@ insertArbitrary(`rho:registry:insertArbitrary`),
 deployerRevAddr,
 log(`rho:io:stderr`)
 in {
-  insertArbitrary!(*MemberDirectory, *regCh) | for (@uri <- regCh) { deployId!(uri) }
+  insertArbitrary!(*MemberDirectory, *regCh) | for (@uri <- regCh) { 
+    stdout!(["#define", "MemberDirectory", uri]) |
+    cliChannel!(["#define", "MemberDirectory", uri]) |
+    deployId!(["#define", "MemberDirectory", uri]) }
   |
   contract MemberDirectory(@"makeFromURI", @addrURI, return) = {
     lookup!(addrURI, *regCh) | for (@revAddresses <- regCh) {
