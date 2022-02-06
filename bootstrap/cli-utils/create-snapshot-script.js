@@ -8,7 +8,7 @@ const rl = readline.createInterface({
   output: process.stdout,
 });
 
-module.exports = { 
+module.exports = {
   createSnapshot: (name_of_snapshot) => {
   let result;
 
@@ -26,7 +26,7 @@ module.exports = {
     }
 
     //run stop node script
-    const cp = require('child_process').fork('stop-rnode.js');
+    const cp = require('child_process').fork('stop-rnode');
     cp.on('close', async (code, signal) => {
       //if stop script terminates with error, exit
       if (code === 1) {
@@ -40,11 +40,12 @@ module.exports = {
      console.log(target);
       if (fs.existsSync(target)) {
         //if snapshot exist, alert user to override or exit
-        
+
         rl.question(
           `Snapshot exist. Create new snapshot [y]? `,
           async (reply) => {
             if (
+              reply.toLocaleLowerCase() === '' ||
               reply.toLocaleLowerCase() === 'yes' ||
               reply.toLocaleLowerCase() === 'y'
             ) {
