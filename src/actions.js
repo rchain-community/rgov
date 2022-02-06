@@ -32,6 +32,12 @@ export const actions = {
     },
     filename: 'actions/newinbox.rho',
   },
+  listMasterDictionary: {
+    fields: {
+      ReadcapURI: { value: '', type: 'MasterURI' },
+    },
+    filename: 'actions/listMasterDictionary.rho',
+  },
   peekInbox: {
     fields: {
       lockerTag: { value: 'inbox', type: 'string' },
@@ -57,7 +63,7 @@ export const actions = {
   },
 
   _________________________: {
-  fields: {},  
+  fields: {},
   },
   newChat: {
     fields: {
@@ -74,10 +80,10 @@ export const actions = {
   },
   readChat: {
     fields: {
-      channel: { value: '', type: 'string' },  
+      channel: { value: '', type: 'string' },
     },
     filename: 'actions/readChat.rho'
-  },  
+  },
 
   ______________________________: {
     fields: {},

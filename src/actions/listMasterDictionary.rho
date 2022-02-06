@@ -1,0 +1,22 @@
+match [`rho:id:o7hok7ybcprj7xys3nry1ef5y6iozmr83oa5ja3phs74gxfjeoocqr`] {
+[ReadcapURI] => {
+new
+  stdout(`rho:io:stdout`),
+  deployId(`rho:rchain:deployId`),
+  deployerId(`rho:rchain:deployerId`),
+  masterLookupCh,
+  lookupCh,
+  lookup(`rho:registry:lookup`),
+  ret
+in {
+  lookup!(ReadcapURI, *masterLookupCh) |
+  for (lookup_Master <- masterLookupCh) {
+    stdout!({"master-dictionary dictionary unforgeable": *lookup_Master}) |
+    lookup_Master!(*lookupCh) |
+    for (M_dictionary <- lookupCh) {
+      stdout!({"master-dictionary contents": *M_dictionary})
+    }
+  }
+}
+
+}} // end of match
