@@ -1,19 +1,16 @@
-#!/bin/bash
+#!/usr/bin/env node
 
-! cd "$(dirname "$0")" && echo "Could not cd to script directory" && exit 1
+/* eslint-disable */
+const path = require('path');
 
-! ./stop-rnode && exit $?
+const { checkRnode } = require('./cli-utils/check-rnode-script');
+const ALLNETWORKS = require('./cli-utils/networks-script');
+const { runRnode } = require('./cli-utils/run-rnode-script');
+const network = 'localhost';
 
-private_key=$(cat PrivateKeys/pk.bootstrap)
-
-mkdir -p log
-
-rnode run -s \
-   --validator-private-key "$private_key" \
-   --dev-mode \
-   -XX:MaxDirectMemorySize=100m -XX:MaxRAMPercentage=25 \
-   > log/run-rnode.log 2>&1 &
-
-tail -F log/run-rnode.log 2>/dev/null|sed -e '/Making a transition to Running state./q'
-
-stty echo
+runRnode(
+   ALLNETWORKS,
+   network,
+   path.join(__dirname, 'PrivateKeys', 'pk.bootstrap'),
+   path.join(__dirname, 'log', 'run-rnode.log'),
+);
