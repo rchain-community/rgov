@@ -1,0 +1,6 @@
+#!/bin/bash
+
+./run-rnode
+node master-dictionary-setup/deploy-rgov-contracts.js
+./propose.js
+./create-snapshot.js rgov
