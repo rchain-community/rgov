@@ -11,7 +11,7 @@ const ALLNETWORKS = require('../cli-utils/networks-script');
 const network = 'localhost';
 const privatekey_f = path.join(__dirname, '../PrivateKeys/pk.bootstrap');
 
-const deployMasterDictionary = async () => {
+const createMasterDictionary = async () => {
     // get directory URI from output
     const directoryURI = await easyDeploy(console, ALLNETWORKS, '../rholang/core/Directory.rho', privatekey_f, network);
 
@@ -27,4 +27,4 @@ const deployMasterDictionary = async () => {
     // write the master read uri to the MasterURI localhost file
     fs.writeFileSync(path.join(__dirname, "../src/MasterURI.localhost.json"), JSON.stringify(masterReadURI));
 }
-deployMasterDictionary();
+createMasterDictionary();
