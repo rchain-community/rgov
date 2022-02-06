@@ -2,7 +2,8 @@
 
 ! cd "$(dirname "$0")" && echo "$ME: Could not cd to script directory" && exit 1
 
-./run-rnode.sh
+./run-rnode
+./check-rnode
 node master-dictionary-setup/deploy-master-dictionary.js
 # ./propose
 ./create-snapshot master-dictionary

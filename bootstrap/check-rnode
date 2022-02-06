@@ -1,11 +1,21 @@
-#!/bin/bash
+#!/usr/bin/env node
 
-# shellcheck disable=SC2009
-ALREADY=$(ps aux |grep -v grep | grep "java .*rnode"|sed 's/[ \t][ \t]*/ /g'|cut -d' ' -f 2)
+/* eslint-disable */
+const { checkRnode } = require('./cli-utils/check-rnode-script');
+const ALLNETWORKS = require('./cli-utils/networks-script');
 
-if [ -z "$ALREADY" ]; then
-	echo "$0: rnode is NOT currently running. Run ./run-rnode to fix."
-	exit 1;
-fi
+async function main () {
+  // TODO: allow user to specify network on the command line
+  const pid = await checkRnode(ALLNETWORKS, 'localhost');
 
-exit 0
+  // TODO: allow user to specify --quiet to suppress the console output
+  if (pid == 0) {
+    console.log("rnode is not running. Use run-rnode to start");
+    return;
+  } else {
+    console.log(`rnode is running as PID ${pid}. Use stop-rnode to stop`);
+    return;
+  }
+}
+
+main();
