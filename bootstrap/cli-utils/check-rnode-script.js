@@ -18,22 +18,17 @@ module.exports = {
       return 0;
     }
 
-    console.log("rnode is running")
     let open = await checkPort('localhost', [40401, 40402, 40403, 40404]);
     if (open.length != 4) {
-      console.log("Waiting for ports to open")
+      console.log("rnode is running");
+      console.log("Waiting for ports to open");
       while (open.length != 4) {
-        // const sleep = ms => new Promise(res => setTimeout(res, ms));
-        // sleep(1000).then(_ => console.log("checking again"));
         open = await checkPort('localhost', [40401, 40402, 40403, 40404]);
       }
     }
-    console.log(open)
+    console.log("ports are open: " + open);
 
     const formatted_string = shell_output.replace(/\r?\n|\r/g, ' ');
-    // console.log(
-    //   `rnode is currently running as process ${formatted_string}. Use ./stop-rnode to stop it`,
-    // );
     return formatted_string;
   }
 }
