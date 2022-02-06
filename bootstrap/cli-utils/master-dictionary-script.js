@@ -74,8 +74,7 @@ async function generateRholangContract(entry_name, URI) {
             }
          }
       }
-   }
-}
+   }}
    `
 
    // output rholang to generated file generated/generated.${entry_name}.rho
