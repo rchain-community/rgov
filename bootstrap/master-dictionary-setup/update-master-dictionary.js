@@ -13,7 +13,7 @@ const ALLNETWORKS = require('../cli-utils/networks-script');
 const network = 'localhost';
 const privatekey_f = join(__dirname, '../PrivateKeys/pk.bootstrap');
 
-const deployMasterDictionary = async () => {
+const updateMasterDictionary = async () => {
     // get directory URI from output
     const directory = join(__dirname, '../generated');
     // get rholang files from rchain directory function
@@ -41,9 +41,10 @@ const deployMasterDictionary = async () => {
 
      forAwait(getFiles(directory), (x) => {
          if (x.endsWith('.rho') && !x.includes('create-master-dictionary')) {
-             easyDeploy(console, ALLNETWORKS, x, privatekey_f, network);
+             easyDeploy(console, ALLNETWORKS, x, privatekey_f, network).then(res => res);
+             await propose();
          }
      });
 
 }
-deployMasterDictionary();
+updateMasterDictionary();
