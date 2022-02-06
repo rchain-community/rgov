@@ -2,6 +2,7 @@
 const execShell = require('./exec-script');
 
 const { checkPort } = require('./check-port-script');
+const { SingleEntryPlugin } = require('webpack');
 
 module.exports = {
   // TODO: re-implement this to respect the ALLNETWORKS and network arguments
@@ -17,13 +18,17 @@ module.exports = {
       return 0;
     }
 
-    let open = checkPort('localhost', 40402).indexOf(40402) > -1;
-    setInterval(() => {
-      while (!open) {
-        open = checkPort('localhost', 40402).indexOf(40402) > -1;
-      }},
-      1000
-    );
+    console.log("rnode is running")
+    let open = await checkPort('localhost', [40401, 40402, 40403, 40404]);
+    if (open.length != 4) {
+      console.log("Waiting for ports to open")
+      while (open.length != 4) {
+        // const sleep = ms => new Promise(res => setTimeout(res, ms));
+        // sleep(1000).then(_ => console.log("checking again"));
+        open = await checkPort('localhost', [40401, 40402, 40403, 40404]);
+      }
+    }
+    console.log(open)
 
     const formatted_string = shell_output.replace(/\r?\n|\r/g, ' ');
     // console.log(
