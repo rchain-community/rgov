@@ -2,6 +2,7 @@
 
 node master-dictionary-setup/clone-rchain-core.js
 ./run-rnode
+./check-rnode
 node master-dictionary-setup/deploy-rchain-core.js
-node ./propose.js
-node ./create-snapshot.js rchain-core
+./propose
+./create-snapshot rchain-core
