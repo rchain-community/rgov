@@ -6,6 +6,7 @@ const console = require('console');
 
 const { easyDeploy } = require('../cli-utils/easy-deploy-script');
 const { generateRholangContract } = require('../cli-utils/master-dictionary-script');
+const { propose } = require('../cli-utils/propose-script');
 
 const ALLNETWORKS = require('../cli-utils/networks-script');
 const network = 'localhost';
@@ -53,4 +54,4 @@ const deployRgovContract = async () => {
         deployContract();
      });
 }
-deployRgovContract();
+deployRgovContract().then(_ => propose().then(res => console.log(res)));
