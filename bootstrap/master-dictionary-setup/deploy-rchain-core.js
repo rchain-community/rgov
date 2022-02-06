@@ -1,8 +1,6 @@
 /* eslint-disable */
-const fs = require('fs');
 const { join, resolve } = require('path');
 const { readdir } = require('fs').promises;
-const http = require("http");
 
 const console = require('console');
 

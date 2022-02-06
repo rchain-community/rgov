@@ -1,5 +1,4 @@
 /* eslint-disable */
-const fs = require('fs');
 const { join, resolve } = require('path');
 const { readdir } = require('fs').promises;
 
@@ -17,7 +16,7 @@ const deployRgovContract = async () => {
     let result;
 
     const directory = join(__dirname, '../../rholang');
-    
+
     // get rholang files from rchain directory function
     async function* getFiles(dir) {
         const dirents = await readdir(dir, { withFileTypes: true });
@@ -40,16 +39,16 @@ const deployRgovContract = async () => {
      // deploy rgov contracts
      forAwait(getFiles(directory), (x) => {
          async function deployContract() {
-        
+
         // exclude rgov contracts that should not be written into the master dictionary
          if (x.endsWith('.rho') && !x.includes('CrowdFund') && !x.includes('memberIdGovRev') && !x.includes('RevIssuer') && !x.includes('MemberDirectory')) {
 
              directoryURI = await easyDeploy(console, ALLNETWORKS, x, privatekey_f, network);
 
             await generateRholangContract(directoryURI[1], directoryURI[2]);
-             
+
          }
-        
+
         }
         deployContract();
      });
