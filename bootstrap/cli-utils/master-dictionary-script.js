@@ -42,7 +42,7 @@ async function deployMasterDictionary(dictionary_contract_URI) {
       fs.mkdirSync(dir, { recursive: true});
     }
 
-   const output_f = path.join(__dirname, '../generated/generated.create-master-directory.rho');
+   const output_f = path.join(__dirname, '../generated/generated.create-master-dictionary.rho');
 
    fs.writeFileSync(output_f, rholang, function (err) {
       if (err) {
