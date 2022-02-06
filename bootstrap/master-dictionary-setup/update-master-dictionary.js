@@ -40,7 +40,7 @@ const deployMasterDictionary = async () => {
      console.log('updating master dictionary')
 
      forAwait(getFiles(directory), (x) => {
-         if (x.endsWith('.rho') && !x.includes('create-master-directory')) {
+         if (x.endsWith('.rho') && !x.includes('create-master-dictionary')) {
              easyDeploy(console, ALLNETWORKS, x, privatekey_f, network);
          }
      });
