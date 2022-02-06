@@ -25,8 +25,8 @@ async function deployMasterDictionary(dictionary_contract_URI) {
                // Create a URI for the read capability to the dictionary
                insertArbitrary!(read, *ret) |
                for ( uri <- ret) {
-                  stdout!({"MasterReadURI": *uri}) |
-                  result!({"MasterReadURI": *uri})
+                  stdout!({"MasterURI": *uri}) |
+                  result!({"MasterURI": *uri})
                }
             }
          }
