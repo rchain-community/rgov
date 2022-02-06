@@ -35,7 +35,7 @@ const createMasterDictionary = async (URI) => {
     }
 
     // write the master read uri to the MasterURI localhost file
-    masterReadURI.then(uri => fs.writeFileSync(path.join(__dirname, "../src/MasterURI.localhost.json"), JSON.stringify({ "localhostNETWORK": uri})))
+    masterReadURI.then(uri => fs.writeFileSync(path.join(__dirname, "../../src/MasterURI.localhost.json"), JSON.stringify({ "localhostNETWORK": uri})))
 }
 
 createDirectoryContract().then(uri => console.log(uri));
