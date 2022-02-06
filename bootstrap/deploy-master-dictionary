@@ -5,5 +5,4 @@
 ./run-rnode
 ./check-rnode
 node master-dictionary-setup/deploy-master-dictionary.js
-# ./propose
 ./create-snapshot master-dictionary
