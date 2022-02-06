@@ -1,6 +1,8 @@
 /* eslint-disable */
 const execShell = require('./exec-script');
 
+const { checkPort } = require('./check-port-script');
+
 module.exports = {
   // TODO: re-implement this to respect the ALLNETWORKS and network arguments
   checkRnode: async (ALLNETWORKS, network) => {
@@ -14,6 +16,14 @@ module.exports = {
       //console.log("No rnode running, use ./run-rnode to start one")
       return 0;
     }
+
+    let open = checkPort('localhost', 40402).indexOf(40402) > -1;
+    setInterval(() => {
+      while (!open) {
+        open = checkPort('localhost', 40402).indexOf(40402) > -1;
+      }},
+      1000
+    );
 
     const formatted_string = shell_output.replace(/\r?\n|\r/g, ' ');
     // console.log(
