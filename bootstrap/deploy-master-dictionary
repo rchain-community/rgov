@@ -1,8 +1,9 @@
 #!/bin/bash
 
-! cd "$(dirname "$0")" && echo "$ME: Could not cd to script directory" && exit 1
+! cd "$(dirname "$0")" && echo "$0: Could not cd to script directory" && exit 1
 
 ./run-rnode
 ./check-rnode
 node master-dictionary-setup/deploy-master-dictionary.js
 ./create-snapshot master-dictionary
+cp log/run-rnode.log "log/$0.log"

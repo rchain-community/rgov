@@ -1,8 +1,11 @@
 #!/bin/bash
 
+! cd "$(dirname "$0")" && echo "$0: Could not cd to script directory" && exit 1
+
 node master-dictionary-setup/clone-rchain-core.js
 ./run-rnode
 ./check-rnode
 node master-dictionary-setup/deploy-rchain-core.js
 ./propose
 ./create-snapshot rchain-core
+cp log/run-rnode.log "log/$0.log"

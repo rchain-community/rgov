@@ -1,6 +1,10 @@
 #!/bin/bash
 
+! cd "$(dirname "$0")" && echo "$0: Could not cd to script directory" && exit 1
+
 ./run-rnode
 ./check-rnode
 node master-dictionary-setup/deploy-rgov-contracts.js
+node master-dictionary-setup/update-master-dictionary.js
 ./create-snapshot rgov
+cp log/run-rnode.log "log/$0.log"
