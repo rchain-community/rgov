@@ -6,11 +6,7 @@ mkdir -p log
 
 TMPFILE=$(mktemp)
 
-cat > "$TMPFILE" << EOF
-match [\`$1\`] { [URI] => {
-$(cat ../src/actions/lookupURI.rho)
-}}
-EOF
+sed "s/\"?\"/\"$1\"/" < ../src/actions/lookupURI.rho > "$TMPFILE"
 
 # shellcheck disable=SC2016
 ./deploy "$TMPFILE" | grep "DeployId is:" && ./propose | tail -n 0 -f log/run-rnode.log | sed '/URI/q' | grep URI
