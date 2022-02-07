@@ -9,7 +9,7 @@ module.exports = {
     const pid = await checkRnode();
 
     if (pid == 0) {
-      console.log("No rnode running, use node run-rnode.js to start one")
+      console.log("No rnode running, use node run-rnode to start one")
       process.exit();
     }
     else {
