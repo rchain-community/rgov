@@ -1,4 +1,4 @@
-match [`$masterURI`] {
+match [`MasterURI:$masterURI`] {
 [ReadcapURI] => {
 new
   stdout(`rho:io:stdout`),

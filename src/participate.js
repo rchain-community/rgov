@@ -11,7 +11,16 @@ import {
   listenAtDeployId,
   RhoExpr,
 } from 'rchain-api';
-import { actions } from './actions.js';
+
+
+/**
+ * @typedef {{ rholang?: string, fields?: Record<string, FieldSpec> }} ActionSpec
+ * @typedef {{ type: 'MasterURI' | 'number' | 'string' | 'set' | 'uri' | 'walletRevAddr' | 'MasterURI', value?: string }} FieldSpec
+ * @type {Record<string, ActionSpec>}
+ */
+let actions;
+
+// import { actions } from './actions.js';
 import { RholangGrammar } from './prism-rholang';
 
 // TODO(#185): stop pretending MasterURI is a design-time constant.
@@ -215,7 +224,7 @@ function rhoBody(tmp) {
  * @typedef {{[refID: string]: { shortDesc: string, docLink?: string, yesAddr: string, noAddr: string, abstainAddr: string }}} QAs
  * @typedef {{label: string, info?: any, rest?: any[], timestamp?: number }} LogEvent
  */
-export function buildUI({
+export async function buildUI({
   html,
   formValue,
   busy,
@@ -230,7 +239,6 @@ export function buildUI({
   updateHighlight,
 }) {
   const rnode = RNode(fetch);
-  let action = '_select_an_action_';
   let network = netFromHost(hostname);
   /** @type {{ MasterURI: string, observer: Observer, validator: Validator, admin: import('rchain-api/src/rnode').RNodeAdmin }} shard */
   let shard;
@@ -287,23 +295,16 @@ export function buildUI({
     async setAction(value) {
       if (typeof value !== 'string') return;
       action = value;
-      const { fields = {}, filename } = actions[action];
+      const { fields = {}, rholang } = actions[action];
       const init = fromEntries(
         entries(fields).map(([name, { value }]) => [name, value || '']),
       );
       state.fields = init;
       matchBody = '';
-      if (filename) {
+      if (rholang) {
         term = null;
-        await busy(
-          '#deploy',
-          fetch(filename).then((reply) =>
-            reply.text().then((text) => {
-              matchBody = rhoBody(text);
-              state.fields = init; // redraw
-            }),
-          ),
-        );
+        matchBody = rhoBody(rholang)
+        state.fields = init; // redraw
       }
     },
     get fields() {
@@ -394,32 +395,41 @@ export function buildUI({
       });
     },
   };
-
-  state.setAction(action); // compute initial term
   state.network = network; // set up shard of initial network
+
+  mount('#netControl', networkControl(state, { html }));
+
+  let rControl = runControl(state, {
+    html,
+    formValue,
+    busy,
+    clock,
+    getEthProvider,
+    setTimeout,
+  });
+
+  let aControl = await actionControl(state, {
+    html,
+    getEthProvider,
+    codeTextArea,
+    updateHighlight,
+  },
+    rControl.explore,
+  );
+
+  let action = 'checkBalance.rho';
+  state.setAction(action); // compute initial term
 
   mount(
     '#actionControl',
-    actionControl(state, {
-      html,
-      getEthProvider,
-      codeTextArea,
-      updateHighlight,
-    }),
+    aControl
   );
-  mount('#netControl', networkControl(state, { html }));
 
   mount(
     '#runControl',
-    runControl(state, {
-      html,
-      formValue,
-      busy,
-      clock,
-      getEthProvider,
-      setTimeout,
-    }),
+    rControl,
   );
+
   mount('#groupControl', groupControl(state, { html }));
   mount('#signIn', signIn(state, { html, formValue, busy, getEthProvider }));
   mount('#exploreControl', ballotControl(state, { html, formValue, busy }));
@@ -457,26 +467,46 @@ function fixIndent(code) {
 }
 
 /**
+ *   shard: { observer: Observer, validator: Validator, admin: import('rchain-api/src/rnode').RNodeAdmin },
+ *
  * @param {{
  *   action: string,
  *   setAction: (a: string) => Promise<void>,
  *   fields: Record<string, string>,
  *   term: string?,
- *   shard: { MasterURI: string },
+ *   results: RhoExpr[],
+ *   shard: { MasterURI: string, observer: Observer },
  * }} state
  * @param {HTMLBuilder & EthSignAccess & { codeTextArea: HTMLElement, updateHighlight: (text: string | null) => void }} io
+ * @param {(term: string?) => Promise<any>} explore
  */
-function actionControl(
+async function actionControl(
   state,
   { html, getEthProvider, codeTextArea, updateHighlight },
+  explore,
 ) {
+  const obs = state.shard.observer;
+  try {
+    const term = `new ret, ret2, lookup(\`rho:registry:lookup\`), lch in { lookup!(${state.shard.MasterURI}, *lch)|for (l<-lch){l!("ActionDictionary", *ret2)|for(r<-ret2){r!(*ret)}}}`;
+    console.log('explore...');
+    console.log('term:' + term);
+    let { expr, block} = await obs.exploratoryDeploy(term);
+    actions = RhoExpr.parse(expr[0]);
+    entries(actions).forEach(([k, v]) => {
+      actions[k].rholang = v.rholang.replace(/\\"/g,"\"");
+    });
+    console.log('... explore done.');
+    console.log('state.results: ' + state.results);
+  } catch (err) {
+    console.log('error ' + err.message);
+  }
   const options = (/** @type {string[]} */ ids) =>
-    ids.map(
-      (id) =>
+      ids.map(
+        (id) =>
         html`<option value=${id} ...${{ selected: id === state.action }}>
           ${id}
         </option>`,
-    );
+      );
 
   const metaMaskP = getEthProvider().then((ethereum) =>
     MetaMaskAccount(ethereum),
@@ -538,7 +568,7 @@ function actionControl(
       /* Not sure this should be in the Mithril view pattern.
          The <texarea> element for code editing used to be created here.
          It's been moved to participate.html and enhanced with syntax
-         highlighting, so this is the obvious place to update with new action data.
+         highlighting, so this still seems the obvious place to update with new action data.
       */
       codeTextArea.value = state.term;
       updateHighlight(state.term);
@@ -604,7 +634,7 @@ function runControl(
         obs.exploratoryDeploy(term),
       );
       console.log('... explore done.');
-      state.results = expr;
+      state.results = await expr;
     } catch (err) {
       state.problem = err.message;
     }
@@ -682,6 +712,7 @@ function runControl(
   }
 
   return freeze({
+    explore: explore,
     view() {
       return html`<button
           id="explore"
@@ -883,11 +914,11 @@ function signIn(state, { html, busy, getEthProvider }) {
   `;
 
                 const term2 = `
-                  new     
+                  new
                 return,
                 lookup(\`rho:registry:lookup\`),
                 stdout(\`rho:io:stdout\`),
-                lookupCh 
+                lookupCh
                 in {
                   lookup!(\`rho:id:1bagitnzth9qx5w1zgfg9hogfek3bcs1dox7gw94ybfwu1szr94brw\`, *lookupCh) |
                   for (u <- lookupCh) {

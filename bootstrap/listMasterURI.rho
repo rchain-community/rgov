@@ -13,5 +13,16 @@ in {
       |  stdout!(*map)
       |  deployerId!(*map)
       }
+   } |
+   for(@{"read": *read, ..._} <<- @[*deployerId, "ActionDictionary"])
+   {  stdout!(["read", *read])
+   |  deployerId!(["read", *read])
+   |  read!(*mapCh)
+   |  for (map <- mapCh)
+      {  stdout!(*map.keys().toList())
+      |  deployerId!(["read", *read])
+      |  stdout!(*map)
+      |  deployerId!(*map)
+      }
    }
 }
