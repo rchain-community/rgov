@@ -1,25 +1,31 @@
 match ["myTokenMint", "inbox"] {
-[name, lockerTag] => {
-new
-   return,
-   lookup(`rho:registry:lookup`),
-   deployerId(`rho:rchain:deployerId`),
-   deployId(`rho:rchain:deployId`),
-   ch
-in {
-  for (@{"read": *MCA, ..._} <<- @[*deployerId, "dictionary"]) {
-      trace!({"MCA": MCA}) |
-      MCA("MakeMint", ch)
-   } |
-  for (@(nonce, *MakeMint) <- ch) {
-    MakeMint!(*ch) |
-    for (aMint <- ch) {
-      for (@{"inbox": *inbox, ..._} <<- @{[*deployerId, lockerTag]}) {
-        // send the mint to my inbox for safe keeping.
-        inbox!(["Mint", name, *aMint], *deployId)
+  [name, lockerTag] => {
+    new
+    return,
+    rl(`rho:registry:lookup`),
+    deployerId(`rho:rchain:deployerId`),
+    deployId(`rho:rchain:deployId`),
+    //MakeMint(`rho:rchain:makeMint`),
+    ch
+    in {
+      for (@{"read": *MCA, ..._} <<- @[*deployerId, "dictionary"]) {
+        deployId!({"MCA": *MCA}) |
+        rl!(`rho:rchain:makeMint`, *ch)
+      } |
+      // for (MakeMint <- ch) {deployId!([*MakeMint, "MakeMint"] ) |
+      for (@(nonce, *MakeMint) <- ch) {
+        deployId!(["MakeMint", *MakeMint]) |
+        MakeMint!(*ch) |
+        for (aMint <- ch) {
+          deployId! (["aMint", *aMint]) |
+          for (@{"inbox": *inbox, ..._} <<- @{[*deployerId, lockerTag]}) {
+            //send the mint to my inbox for safe keeping.//inbox!(["issue", name, {"admin": *admin, "tally": *tally}], *return)
+            //inbox!(["issue", name, {"admin": *admin, "tally": *tally}], *return)
+            inbox!(["Mint", name, {"admin": *aMint}], *deployId) |
+            deployId!("Received to inbox")
+          }
+        }
       }
     }
   }
-}
-
-}} // end of match
+ // end of match
