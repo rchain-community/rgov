@@ -1,4 +1,4 @@
-match ["?", "?", "?", "?", "inbox"] {
+match ["", "", "", "", "string:inbox"] {
 [name, revAddress, themBoxReg, group, lockerTag] => {
 new
    deployId(`rho:rchain:deployId`),

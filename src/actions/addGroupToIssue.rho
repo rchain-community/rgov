@@ -1,4 +1,4 @@
-match ["inbox", "", ""] {
+match ["string:inbox", "", ""] {
   [lockerTag, group, issue] => {
     new
     stdout(`rho:io:stdout`),
@@ -8,7 +8,7 @@ match ["inbox", "", ""] {
     in {
       for(@{"peek": *peek, "URI": uri ..._} <<- @[*deployerId, lockerTag]) {
         deployId!({"URI": uri}) |
-        new lockerCh, ret, ret1, ret2, ret3, loop in { 
+        new lockerCh, ret, ret1, ret2, ret3, loop in {
         peek!("Group", group, *ret) |
         peek!("issue", issue, *ret1) |
         for ( @[{"read": *read, ..._}, ..._] <- ret;  @[{"admin": *admin, ..._}, ..._] <- ret1 ) {
@@ -38,5 +38,5 @@ match ["inbox", "", ""] {
       }
    }
 }
-  
+
 }} // end of match

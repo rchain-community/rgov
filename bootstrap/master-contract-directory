@@ -22,6 +22,7 @@ new
    ,lookCh
    ,insertCh
    ,caps
+   ,a_caps
    ,lastUri
 EOF
 
@@ -37,9 +38,13 @@ in {
    | for (Dir <- lookCh) {
       Dir!(*caps)
       | for (@{"read": read, "write": write, "grant": grant} <- caps) {
-
+         Dir!(*a_caps) |
+         for (@{"read": a_read, "write": a_write, "grant": a_grant} <- a_caps) {
+           @write!("ActionDictionary", a_read, *stdout)
+         | @[*deployerId, "ActionDictionary"]!({"read": a_read, "write": a_write, "grant": a_grant})
+         }
          // Create a global reference to the master contract directory
-         @[*deployerId, "MasterContractAdmin"]!({"read": read, "write": write, "grant": grant})
+         | @[*deployerId, "MasterContractAdmin"]!({"read": read, "write": write, "grant": grant})
          | insertArbitrary!(read, *insertCh)
          | for (URI <- insertCh) {
             stdout!({ "ReadcapURI": *URI})
